@@ -138,6 +138,76 @@ export const TEXT_ITEMS_4 = [
   { id: 'rempm4', label: 'REMPM4', hasNote: true }
 ];
 
+// ===== FORFAITS DSP =====
+export const DSP_ITEMS = [
+  // Ailes
+  { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileArd', label: 'DSP Aile ard', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileAvg', label: 'DSP Aile avg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileArg', label: 'DSP Aile arg', moQuantity: 0.5, consommable: 0 },
+  
+  // Portes
+  { id: 'dspPorteAvd', label: 'DSP Porte avd', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteArd', label: 'DSP Porte ard', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteAvg', label: 'DSP Porte avg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteArg', label: 'DSP Porte arg', moQuantity: 0.5, consommable: 0 },
+  
+  // Éléments de carrosserie
+  { id: 'dspCapot', label: 'DSP Capot', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspHayon', label: 'DSP Hayon', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPavillon', label: 'DSP Pavillon', moQuantity: 0.5, consommable: 0 },
+  
+  // Montants côté droit
+  { id: 'dspMontantAD', label: 'DSP Montant AD', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantBD', label: 'DSP Montant BD', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantCD', label: 'DSP Montant CD', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantDD', label: 'DSP Montant DD', moQuantity: 0.5, consommable: 0 },
+  
+  // Montants côté gauche
+  { id: 'dspMontantAG', label: 'DSP Montant AG', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantBG', label: 'DSP Montant BG', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantCG', label: 'DSP Montant CG', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantDG', label: 'DSP Montant DG', moQuantity: 0.5, consommable: 0 },
+  
+  // Bas de caisse
+  { id: 'dspBdcd', label: 'DSP Bdcd', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspBdcg', label: 'DSP Bdcg', moQuantity: 0.5, consommable: 0 },
+  
+  // Forfaits spéciaux grêle
+  { id: 'dspGrelePavillon', label: 'DSP Grêle Pavillon', moQuantity: 4, consommable: 0 },
+  { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
+];
+
+// Organiser les items DSP en deux colonnes pour l'affichage
+export const DSP_LEFT_ITEMS = [
+  { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileArd', label: 'DSP Aile ard', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileAvg', label: 'DSP Aile avg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileArg', label: 'DSP Aile arg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteAvd', label: 'DSP Porte avd', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteArd', label: 'DSP Porte ard', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteAvg', label: 'DSP Porte avg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteArg', label: 'DSP Porte arg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspCapot', label: 'DSP Capot', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspHayon', label: 'DSP Hayon', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPavillon', label: 'DSP Pavillon', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspBdcd', label: 'DSP Bdcd', moQuantity: 0.5, consommable: 0 }
+];
+
+export const DSP_RIGHT_ITEMS = [
+  { id: 'dspMontantAD', label: 'DSP Montant AD', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantBD', label: 'DSP Montant BD', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantCD', label: 'DSP Montant CD', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantDD', label: 'DSP Montant DD', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantAG', label: 'DSP Montant AG', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantBG', label: 'DSP Montant BG', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantCG', label: 'DSP Montant CG', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspMontantDG', label: 'DSP Montant DG', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspBdcg', label: 'DSP Bdcg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspGrelePavillon', label: 'DSP Grêle Pavillon', moQuantity: 4, consommable: 0 },
+  { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
+];
+
 // Tous les items combinés
 export const ALL_ITEMS = [
   ...LEFT_ITEMS,
@@ -149,7 +219,8 @@ export const ALL_ITEMS = [
   ...TEXT_ITEMS_1,
   ...TEXT_ITEMS_2,
   ...TEXT_ITEMS_3,
-  ...TEXT_ITEMS_4
+  ...TEXT_ITEMS_4,
+  ...DSP_ITEMS
 ];
 
 // Items qui ne peuvent pas avoir plusieurs pièces

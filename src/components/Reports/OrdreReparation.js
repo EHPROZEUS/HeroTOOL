@@ -1,6 +1,7 @@
 import React from 'react';
 import { calculateVehicleAge, formatDateFr } from '../../utils/formatters';
 import { getDefaultValues } from '../../utils/calculations';
+import { DSP_ITEMS } from '../../config/constants';
 
 const OrdreReparation = ({ 
   showOrdreReparation,
@@ -11,6 +12,7 @@ const OrdreReparation = ({
   setIncludeContrevisite,
   headerInfo,
   activeMecaniqueItems,
+  activeDSPItems,
   forfaitData,
   pieceLines,
   totals,
@@ -232,6 +234,33 @@ const OrdreReparation = ({
                     <td className="border border-gray-300 p-2 text-right">10.00 €</td>
                     <td className="border border-gray-300 p-2 text-right">10.00 €</td>
                   </tr>
+                )}
+                
+                {/* Section DSP */}
+                {activeDSPItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: '#DBEAFE' }}>
+                      <td colSpan="7" className="border border-gray-300 p-3 font-bold text-blue-600 text-lg">
+                        SMART - DSP
+                      </td>
+                    </tr>
+                    {activeDSPItems.map(dspItem => {
+                      const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
+                      if (!dspConfig) return null;
+                      
+                      return (
+                        <tr key={dspItem.id}>
+                          <td className="border border-gray-300 p-2">Main d'œuvre DSP</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">{dspConfig.label}</td>
+                          <td className="border border-gray-300 p-2">DSP</td>
+                          <td className="border border-gray-300 p-2 text-right">{dspConfig.moQuantity} h</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                      );
+                    })}
+                  </>
                 )}
               </tbody>
             </table>

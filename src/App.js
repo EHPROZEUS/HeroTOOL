@@ -24,7 +24,10 @@ import {
   TEXT_ITEMS_2,
   TEXT_ITEMS_3,
   TEXT_ITEMS_4,
-  EXCLUDED_MULTI_PIECES
+  EXCLUDED_MULTI_PIECES,
+  DSP_ITEMS,
+  DSP_LEFT_ITEMS,
+  DSP_RIGHT_ITEMS
 } from './config/constants';
 
 import { formatTireSize } from './utils/formatters';
@@ -514,13 +517,14 @@ function App() {
 
   // Calculs
   const activeItems = ALL_ITEMS.filter(item => itemStates[item.id] === 1 || itemStates[item.id] === 2);
-  const activeMecaniqueItems = activeItems;
+  const activeMecaniqueItems = activeItems.filter(item => !DSP_ITEMS.some(dsp => dsp.id === item.id));
+  const activeDSPItems = activeItems.filter(item => DSP_ITEMS.some(dsp => dsp.id === item.id));
   const totalActive = activeItems.length;
   const totalCompleted = ALL_ITEMS.filter(item => itemStates[item.id] === 2).length;
   const allCompleted = totalActive > 0 && totalActive === totalCompleted;
 
-  const totals = calculateTotals(activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite);
-  const moByCategory = calculateMOByCategory(activeMecaniqueItems, forfaitData);
+  const totals = calculateTotals(activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems);
+  const moByCategory = calculateMOByCategory(activeMecaniqueItems, forfaitData, activeDSPItems);
   const piecesBySupplier = getPiecesListBySupplier(activeMecaniqueItems, forfaitData, pieceLines);
 
   return (
@@ -657,6 +661,19 @@ function App() {
           onUpdateNote={updateNote}
         />
 
+        {/* Section DSP */}
+        <div className="mt-8 border-t-2 border-blue-300 pt-8">
+          <h2 className="text-2xl font-bold text-blue-600 mb-6">SMART - DSP</h2>
+          <ChecklistSection
+            leftItems={DSP_LEFT_ITEMS}
+            rightItems={DSP_RIGHT_ITEMS}
+            itemStates={itemStates}
+            itemNotes={itemNotes}
+            onCycleState={cycleState}
+            onUpdateNote={updateNote}
+          />
+        </div>
+
         {/* Message de completion */}
         {allCompleted && (
           <div className="mt-6 p-4 bg-green-100 rounded-xl text-center">
@@ -724,6 +741,7 @@ function App() {
               setIncludeContrevisite={setIncludeContrevisite}
               headerInfo={headerInfo}
               activeMecaniqueItems={activeMecaniqueItems}
+              activeDSPItems={activeDSPItems}
               forfaitData={forfaitData}
               pieceLines={pieceLines}
               totals={totals}
