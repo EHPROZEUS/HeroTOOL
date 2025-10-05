@@ -284,7 +284,7 @@ const OrdreReparation = ({
           <div className="mt-8 text-center">
             <button 
               onClick={printOrdreReparation}
-              className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
+              className="print-button px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
             >
               🖨️ Imprimer l'ordre de réparation
             </button>

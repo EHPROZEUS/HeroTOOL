@@ -458,9 +458,10 @@ function App() {
   // Fonctions d'impression
   const printOrdreReparation = () => {
     const printContent = document.getElementById('ordre-reparation-content');
+    const fileName = headerInfo.lead ? `Ordre_Reparation_${headerInfo.lead}` : 'Ordre_Reparation';
     const printWindow = window.open('', '', 'height=800,width=1000');
 
-    printWindow.document.write('<html><head><title>Ordre de Réparation - HeroTOOL</title>');
+    printWindow.document.write(`<html><head><title>${fileName}</title>`);
     printWindow.document.write('<style>');
     printWindow.document.write('body { font-family: Arial, sans-serif; padding: 20px; }');
     printWindow.document.write('table { width: 100%; border-collapse: collapse; margin: 20px 0; }');
@@ -470,7 +471,8 @@ function App() {
     printWindow.document.write('.font-bold { font-weight: bold; }');
     printWindow.document.write('h1 { color: #FF6B35; text-align: center; }');
     printWindow.document.write('h2 { color: #1f2937; background-color: #FFF0E6; padding: 10px; border-radius: 5px; }');
-    printWindow.document.write('@media print { body { margin: 0; } }');
+    printWindow.document.write('.print-button { display: none !important; }');
+    printWindow.document.write('@media print { body { margin: 0; } .print-button { display: none !important; } }');
     printWindow.document.write('</style></head><body>');
     printWindow.document.write(printContent.innerHTML);
     printWindow.document.write('</body></html>');
@@ -485,9 +487,10 @@ function App() {
 
   const printListePieces = () => {
     const printContent = document.getElementById('liste-pieces-content');
+    const fileName = headerInfo.lead ? `Liste_Pieces_${headerInfo.lead}` : 'Liste_Pieces';
     const printWindow = window.open('', '', 'height=800,width=1000');
 
-    printWindow.document.write('<html><head><title>Liste des Pièces - HeroTOOL</title>');
+    printWindow.document.write(`<html><head><title>${fileName}</title>`);
     printWindow.document.write('<style>');
     printWindow.document.write('body { font-family: Arial, sans-serif; padding: 20px; }');
     printWindow.document.write('table { width: 100%; border-collapse: collapse; margin: 20px 0; }');
@@ -495,7 +498,8 @@ function App() {
     printWindow.document.write('th { background-color: #e5e7eb; font-weight: bold; }');
     printWindow.document.write('.text-right { text-align: right; }');
     printWindow.document.write('h1 { color: #27AE60; text-align: center; }');
-    printWindow.document.write('@media print { body { margin: 0; } }');
+    printWindow.document.write('.print-button { display: none !important; }');
+    printWindow.document.write('@media print { body { margin: 0; } .print-button { display: none !important; } }');
     printWindow.document.write('</style></head><body>');
     printWindow.document.write(printContent.innerHTML);
     printWindow.document.write('</body></html>');
