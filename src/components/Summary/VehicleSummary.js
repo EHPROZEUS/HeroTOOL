@@ -1,7 +1,7 @@
 import React from 'react';
 import { calculateVehicleAge, formatDateFr, calculateTimeSince } from '../../utils/formatters';
 
-const VehicleSummary = ({ headerInfo, oilInfo, lastMaintenance }) => {
+const VehicleSummary = ({ headerInfo, oilInfo, lastMaintenance, includeContrevisite, setIncludeContrevisite }) => {
   return (
     <div className="mb-8 p-4 md:p-6 rounded-xl border-2" style={{ backgroundColor: '#FFF8F0', borderColor: '#FF6B35' }}>
       <h2 className="text-xl font-bold text-gray-800 mb-4">Récapitulatif véhicule</h2>
@@ -71,8 +71,33 @@ const VehicleSummary = ({ headerInfo, oilInfo, lastMaintenance }) => {
               <span className="text-gray-900 font-medium">Oui</span>
             </div>
           )}
+          <div className="flex items-center">
+            <span className="font-bold text-gray-700 w-32">Contre-visite:</span>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={includeContrevisite}
+                onChange={(e) => setIncludeContrevisite(e.target.checked)}
+                className="w-5 h-5 cursor-pointer"
+              />
+              <span className={`font-semibold ${includeContrevisite ? 'text-red-600' : 'text-gray-500'}`}>
+                {includeContrevisite ? 'OUI' : 'Non'}
+              </span>
+            </label>
+          </div>
         </div>
       </div>
+      
+      {/* Alerte Contre-visite */}
+      {includeContrevisite && (
+        <div className="mt-6 p-4 rounded-lg border-2 flex items-center gap-3" style={{ backgroundColor: '#FFF4E6', borderColor: '#FF6B35' }}>
+          <span className="text-3xl">⚠️</span>
+          <div>
+            <p className="text-lg font-bold" style={{ color: '#FF6B35' }}>CONTRE-VISITE REQUISE</p>
+            <p className="text-sm text-gray-700">Le véhicule nécessite une contre-visite du contrôle technique</p>
+          </div>
+        </div>
+      )}
       
       {(oilInfo.viscosity || oilInfo.quantity || Object.values(lastMaintenance).some(val => val)) && (
         <div className="mt-6 pt-6 border-t-2" style={{ borderColor: '#FF6B35' }}>

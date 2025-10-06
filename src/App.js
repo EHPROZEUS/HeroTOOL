@@ -68,6 +68,19 @@ function App() {
   const [parsedPieces, setParsedPieces] = useState([]);
   const [lastMaintenance, setLastMaintenance] = useState({});
   const [oilInfo, setOilInfo] = useState({ viscosity: '', quantity: '' });
+  
+  // États pour les catégories déroulantes - Fermées par défaut
+  const [expandedCategories, setExpandedCategories] = useState({
+    mecanique: false,
+    pneusFreins: false,
+    dsp: false,
+    lustrage: false,
+    carrosserie: false
+  });
+
+  const toggleCategory = (category) => {
+    setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }));
+  };
 
   // Fonctions de mise à jour header
   const updateHeaderInfo = (field, value) => setHeaderInfo(prev => ({ ...prev, [field]: value }));
@@ -530,8 +543,8 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-8">
-        {/* En-tête style Photo 1 */}
-        <div className="text-center mb-8 pb-6 border-b-2 border-gray-200">
+        {/* En-tête style AutoHero */}
+        <div className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center justify-center mb-3">
             <div style={{
               width: '60px',
@@ -549,11 +562,8 @@ function App() {
               HeroTOOL
             </h1>
           </div>
-          <p className="text-lg font-medium text-gray-700 mb-2">
-            Simple, précis, Autohero.
-          </p>
-          <p className="text-xs text-gray-400 italic">
-            Votre assistant professionnel d'entretien automobile
+          <p className="text-sm text-gray-600 italic">
+            Développé par Loïc L et codé par Claude.ia
           </p>
         </div>
 
@@ -593,12 +603,18 @@ function App() {
           toggleFreinParking={toggleFreinParking}
           toggleStartStop={toggleStartStop}
         />
-
-        {/* Historique maintenance */}
+        {/* ✅ Module ajouté ici */}
         <MaintenanceHistory
           lastMaintenance={lastMaintenance}
           updateLastMaintenance={updateLastMaintenance}
         />
+        {/* Récapitulatif véhicule */}
+        <VehicleSummary
+          headerInfo={headerInfo}
+          oilInfo={oilInfo}
+          lastMaintenance={lastMaintenance}
+        />
+
 
         {/* Informations huile */}
         <div className="mb-8">
@@ -608,72 +624,166 @@ function App() {
           />
         </div>
 
-        {/* Récapitulatif véhicule */}
-        <VehicleSummary
-          headerInfo={headerInfo}
-          oilInfo={oilInfo}
-          lastMaintenance={lastMaintenance}
-        />
-
-        {/* Checklists */}
-        <ChecklistSection
-          leftItems={LEFT_ITEMS}
-          rightItems={RIGHT_ITEMS}
-          itemStates={itemStates}
-          itemNotes={itemNotes}
-          onCycleState={cycleState}
-          onUpdateNote={updateNote}
-        />
-
-        <ChecklistSection
-          leftItems={LEFT_ITEMS_2}
-          rightItems={RIGHT_ITEMS_2}
-          itemStates={itemStates}
-          itemNotes={itemNotes}
-          onCycleState={cycleState}
-          onUpdateNote={updateNote}
-        />
-
-        <ChecklistSection
-          leftItems={LEFT_ITEMS_3}
-          rightItems={RIGHT_ITEMS_3}
-          itemStates={itemStates}
-          itemNotes={itemNotes}
-          onCycleState={cycleState}
-          onUpdateNote={updateNote}
-        />
-
-        <ChecklistSection
-          leftItems={TEXT_ITEMS_1}
-          rightItems={TEXT_ITEMS_2}
-          itemStates={itemStates}
-          itemNotes={itemNotes}
-          onCycleState={cycleState}
-          onUpdateNote={updateNote}
-        />
-
-        <ChecklistSection
-          leftItems={TEXT_ITEMS_3}
-          rightItems={TEXT_ITEMS_4}
-          itemStates={itemStates}
-          itemNotes={itemNotes}
-          onCycleState={cycleState}
-          onUpdateNote={updateNote}
-        />
-
-        {/* Section DSP */}
-        <div className="mt-8 border-t-2 border-blue-300 pt-8">
-          <h2 className="text-2xl font-bold text-blue-600 mb-6">SMART - DSP</h2>
+        {/* Catégorie Entretien - Toujours ouverte */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-2 border-">
+            Entretien
+          </h2>
           <ChecklistSection
-            leftItems={DSP_LEFT_ITEMS}
-            rightItems={DSP_RIGHT_ITEMS}
+            leftItems={LEFT_ITEMS}
+            rightItems={RIGHT_ITEMS}
             itemStates={itemStates}
             itemNotes={itemNotes}
             onCycleState={cycleState}
             onUpdateNote={updateNote}
           />
         </div>
+        {/* Trait de séparation ORANGE avant SMART */}
+        <div className="border-t-2 border-orange-400 my-8"></div>
+        {/* Catégorie Mécanique - Déroulante */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6 pb-2 ">
+            <h2 className="text-2xl font-bold text-gray-800">Mécanique</h2>
+            <button 
+              onClick={() => toggleCategory('mecanique')}
+              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              {expandedCategories.mecanique ? 'Fermer le module' : 'Ouvrir le module'}
+            </button>
+          </div>
+          {expandedCategories.mecanique && (
+            <>
+              <ChecklistSection
+                leftItems={LEFT_ITEMS_2}
+                rightItems={RIGHT_ITEMS_2}
+                itemStates={itemStates}
+                itemNotes={itemNotes}
+                onCycleState={cycleState}
+                onUpdateNote={updateNote}
+              />
+              <ChecklistSection
+                leftItems={TEXT_ITEMS_3}
+                rightItems={TEXT_ITEMS_4}
+                itemStates={itemStates}
+                itemNotes={itemNotes}
+                onCycleState={cycleState}
+                onUpdateNote={updateNote}
+              />
+            </>
+          )}
+        </div>
+        {/* Trait de séparation ORANGE avant SMART */}
+        <div className="border-t-2 border-orange-400 my-8"></div>
+        {/* Catégorie Pneus et Freins - Déroulante */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6 pb-2 border-b-">
+            <h2 className="text-2xl font-bold text-gray-800">Pneus et Freins</h2>
+            <button 
+              onClick={() => toggleCategory('pneusFreins')}
+              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              {expandedCategories.pneusFreins ? 'Fermer le module' : 'Ouvrir le module'}
+            </button>
+          </div>
+          {expandedCategories.pneusFreins && (
+            <ChecklistSection
+              leftItems={LEFT_ITEMS_3}
+              rightItems={RIGHT_ITEMS_3}
+              itemStates={itemStates}
+              itemNotes={itemNotes}
+              onCycleState={cycleState}
+              onUpdateNote={updateNote}
+            />
+          )}
+        </div>
 
+        {/* Trait de séparation ORANGE avant SMART */}
+        <div className="border-t-2 border-orange-400 my-8"></div>
+
+        {/* Section DSP */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-blue-600">SMART - DSP</h2>
+            <button 
+              onClick={() => toggleCategory('dsp')}
+              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              {expandedCategories.dsp ? 'Fermer le module' : 'Ouvrir le module'}
+            </button>
+          </div>
+          
+          {expandedCategories.dsp && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {DSP_ITEMS.map(item => {
+                const state = itemStates[item.id];
+                const bgColor = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
+                const borderColor = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
+                const textColor = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
+                
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => cycleState(item.id)}
+                    className={`rounded-lg border-2 transition-all cursor-pointer hover:shadow-md px-4 py-4 ${bgColor} ${borderColor} flex items-center justify-center text-center`}
+                  >
+                    <span className={`text-sm font-medium ${textColor}`}>{item.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Section LUSTRAGE - Dans SMART */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-blue-600">SMART - LUSTRAGE</h2>
+            <button 
+              onClick={() => toggleCategory('lustrage')}
+              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              {expandedCategories.lustrage ? 'Fermer le module' : 'Ouvrir le module'}
+            </button>
+          </div>
+          {expandedCategories.lustrage && (
+            <div className="text-center py-8 text-gray-500 italic">
+              Section en préparation
+            </div>
+          )}
+        </div>
+
+        {/* Trait de séparation ORANGE avant Carrosserie */}
+        <div className="border-t-2 border-orange-400 my-8"></div>
+
+        {/* Catégorie Carrosserie */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6 ">
+            <h2 className="text-2xl font-bold text-orange-800">Carrosserie</h2>
+            <button 
+              onClick={() => toggleCategory('carrosserie')}
+              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              {expandedCategories.carrosserie ? 'Fermer le module' : 'Ouvrir le module'}
+            </button>
+          </div>
+          {expandedCategories.carrosserie && (
+            <ChecklistSection
+              leftItems={TEXT_ITEMS_1}
+              rightItems={TEXT_ITEMS_2}
+              itemStates={itemStates}
+              itemNotes={itemNotes}
+              onCycleState={cycleState}
+              onUpdateNote={updateNote}
+            />
+          )}
+        </div>
+        {/* Trait de séparation ORANGE avant SMART */}
+        <div className="border-t-2 border-orange-400 my-8"></div>
         {/* Message de completion */}
         {allCompleted && (
           <div className="mt-6 p-4 bg-green-100 rounded-xl text-center">
