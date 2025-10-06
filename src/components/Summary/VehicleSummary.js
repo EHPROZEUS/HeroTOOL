@@ -71,20 +71,7 @@ const VehicleSummary = ({ headerInfo, oilInfo, lastMaintenance, includeContrevis
               <span className="text-gray-900 font-medium">Oui</span>
             </div>
           )}
-          <div className="flex items-center">
-            <span className="font-bold text-gray-700 w-32">Contre-visite:</span>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={includeContrevisite}
-                onChange={(e) => setIncludeContrevisite(e.target.checked)}
-                className="w-5 h-5 cursor-pointer"
-              />
-              <span className={`font-semibold ${includeContrevisite ? 'text-red-600' : 'text-gray-500'}`}>
-                {includeContrevisite ? 'OUI' : 'Non'}
-              </span>
-            </label>
-          </div>
+          
         </div>
       </div>
       
