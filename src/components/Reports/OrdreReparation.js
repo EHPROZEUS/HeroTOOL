@@ -1,7 +1,7 @@
 import React from 'react';
 import { calculateVehicleAge, formatDateFr } from '../../utils/formatters';
 import { getDefaultValues } from '../../utils/calculations';
-import { DSP_ITEMS } from '../../config/constants';
+import { DSP_ITEMS, LUSTRAGE_ITEMS } from '../../config/constants';
 
 const OrdreReparation = ({ 
   showOrdreReparation,
@@ -17,7 +17,8 @@ const OrdreReparation = ({
   pieceLines,
   totals,
   moByCategory,
-  printOrdreReparation
+  printOrdreReparation,
+  activeLustrageItems
 }) => {
   return (
     <div className="mt-8 border-t-2 border-gray-300 pt-8">
@@ -262,6 +263,32 @@ const OrdreReparation = ({
                     })}
                   </>
                 )}
+                        {/* Nouvelle section LUSTRAGE */}
+        {activeLustrageItems.length > 0 && (
+          <>
+            <tr style={{ backgroundColor: '#FDF2F8' }}>
+              <td colSpan="7" className="border border-gray-300 p-3 font-bold text-pink-600 text-lg">
+                SMART - LUSTRAGE
+              </td>
+            </tr>
+            {activeLustrageItems.map(lustrageItem => {
+              const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
+              if (!lustrageConfig) return null;
+              
+              return (
+                <tr key={lustrageItem.id}>
+                  <td className="border border-gray-300 p-2">Main d'œuvre Lustrage</td>
+                  <td className="border border-gray-300 p-2">-</td>
+                  <td className="border border-gray-300 p-2">{lustrageConfig.label}</td>
+                  <td className="border border-gray-300 p-2">Lustrage</td>
+                  <td className="border border-gray-300 p-2 text-right">{lustrageConfig.moQuantity} h</td>
+                  <td className="border border-gray-300 p-2 text-right">-</td>
+                  <td className="border border-gray-300 p-2 text-right">-</td>
+                </tr>
+              );
+            })}
+          </>
+        )}
               </tbody>
             </table>
           </div>
