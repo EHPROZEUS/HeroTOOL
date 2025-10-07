@@ -319,6 +319,31 @@ export const DEFAULT_VALUES = {
     piecePrix: '5',
     pieceFournisseur: 'Divers Comptoir'
   },
+  },
+  pneusAvant: {
+    moQuantity: '0.5',
+    moPrix: '35.8',
+    pieceReference: '',
+    pieceQuantity: '2',
+    piecePrix: '',
+    pieceFournisseur: ''
+  },
+  pneusArriere: {
+    moQuantity: '0.5',
+    moPrix: '35.8',
+    pieceReference: '',
+    pieceQuantity: '2',
+    piecePrix: '',
+    pieceFournisseur: ''
+  },
+  pneus4: {
+    moQuantity: '1.0',
+    moPrix: '35.8',
+    pieceReference: '',
+    pieceQuantity: '4',
+    piecePrix: '',
+    pieceFournisseur: ''
+  },
   default: {
     moQuantity: '0.1',
     moPrix: '35.8',
