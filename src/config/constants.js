@@ -103,7 +103,9 @@ export const LEFT_ITEMS_3 = [
 // Items de checklist 3 - Droite (avec notes)
 export const RIGHT_ITEMS_3 = [
   { id: 'disquesPlaquettesAv', label: 'Disques et plaquettes AV', hasNote: true },
-  { id: 'disquesPlaquettesAr', label: 'Disques et plaquettes AR', hasNote: true }
+  { id: 'disquesPlaquettesAr', label: 'Disques et plaquettes AR', hasNote: true },
+  { id: 'plaquettesAv', label: 'plaquettes avant', hasNote: true },
+  { id: 'plaquettesAr', label: 'plaquettes arrière', hasNote: true }
 ];
 
 // Items texte 1
@@ -235,11 +237,11 @@ export const DSP_LEFT_ITEMS = [
   { id: 'dspPorteAvd', label: 'DSP Porte avant droite', moQuantity: 0.5, consommable: 0 },
   { id: 'dspPorteArd', label: 'DSP Porte arrière droite', moQuantity: 0.5, consommable: 0 },
   { id: 'dspPorteAvg', label: 'DSP Porte avant gauche', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteArg', label: 'DSP Porte arrière gauche', moQuantity: 0.5, consommable: 0 },,
+  { id: 'dspPorteArg', label: 'DSP Porte arrière gauche', moQuantity: 0.5, consommable: 0 },
   { id: 'dspCapot', label: 'DSP Capot', moQuantity: 0.5, consommable: 0 },
   { id: 'dspHayon', label: 'DSP Hayon', moQuantity: 0.5, consommable: 0 },
   { id: 'dspPavillon', label: 'DSP Pavillon', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspBdcd', label: 'DSP Bas caisse d', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspBdcd', label: 'DSP Bas caisse d', moQuantity: 0.5, consommable: 0 }
 ];
 
 export const DSP_RIGHT_ITEMS = [
@@ -318,7 +320,6 @@ export const DEFAULT_VALUES = {
     pieceQuantity: '1',
     piecePrix: '5',
     pieceFournisseur: 'Divers Comptoir'
-  },
   },
   pneusAvant: {
     moQuantity: '0.5',
