@@ -180,8 +180,6 @@ export const DSP_ITEMS = [
 
 // ===== FORFAITS LUSTRAGE =====
 export const LUSTRAGE_ITEMS = [
-  // Lustrage éléments principaux
-[
   { id: 'L1', label: 'Lustrage 1 élément', moQuantity: 0.25, consommable: 1.00 },
   { id: "L2", label: "Lustrage 2 éléments", moQuantity: 0.25, consommable: 2.00 },
   { id: "L3", label: "Lustrage capot ou pavillon", moQuantity: 0.25, consommable: 1.00 },
@@ -225,7 +223,8 @@ export const LUSTRAGE_ITEMS = [
   { id: "LPDPARG", label: "Lustrage poignée de porte arrière gauche", moQuantity: 0.25, consommable: 0.50 },
   { id: "LBDCD", label: "Lustrage bas de caisse droit", moQuantity: 0.25, consommable: 1.00 },
   { id: "LBDCG", label: "Lustrage bas de caisse gauche", moQuantity: 0.25, consommable: 1.00 },
-  { id: "DE-COVERING", label: "Retrait covering", moQuantity: 0.25, consommable: 0.00 }
+  { id: "DE-COVERING", label: "Retrait covering", moQuantity: 0.25, consommable: 0.00 },
+  { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 }
 ];
 
 // Organiser les items DSP en deux colonnes pour l'affichage
