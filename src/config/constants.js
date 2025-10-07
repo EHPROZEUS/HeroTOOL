@@ -104,8 +104,6 @@ export const LEFT_ITEMS_3 = [
 export const RIGHT_ITEMS_3 = [
   { id: 'disquesPlaquettesAv', label: 'Disques et plaquettes AV', hasNote: true },
   { id: 'disquesPlaquettesAr', label: 'Disques et plaquettes AR', hasNote: true }
-  { id: 'plaquettesAv', label: 'plaquettes avant', hasNote: true }
-  { id: 'plaquettesAr', label: 'plaquettes arrière', hasNote: true }
 ];
 
 // Items texte 1
