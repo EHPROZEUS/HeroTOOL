@@ -42,7 +42,7 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
 
   const totalMO = totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
-  const totalHTSansPrestations = totalMO + totalPieces + totalConsommables;
+  const totalHTSansPrestations = totalPieces + totalConsommables;
   const totalHT = totalHTSansPrestations + prestationsExterieures;
 
   return {
