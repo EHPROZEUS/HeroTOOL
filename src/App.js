@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { gapi } from 'gapi-script';
 import VehicleInfoForm from './components/Header/VehicleInfoForm';
 import MaintenanceHistory from './components/Maintenance/MaintenanceHistory';
 import OilInfoForm from './components/Maintenance/OilInfoForm';
@@ -68,7 +69,59 @@ function App() {
   const [parsedPieces, setParsedPieces] = useState([]);
   const [lastMaintenance, setLastMaintenance] = useState({});
   const [oilInfo, setOilInfo] = useState({ viscosity: '', quantity: '' });
-  
+
+  // --- AUTO-SAVE ET GOOGLE DRIVE INIT ---
+  useEffect(() => {
+    // 1️⃣ Auto-save localStorage toutes les 10 secondes
+    const interval = setInterval(() => {
+      if (headerInfo.lead.trim()) {
+        const quoteData = {
+          headerInfo,
+          itemStates,
+          itemNotes,
+          forfaitData,
+          pieceLines,
+          lastMaintenance,
+          oilInfo,
+          includeControleTechnique,
+          includeContrevisite,
+          savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(`herotool_quote_${headerInfo.lead}`, JSON.stringify(quoteData));
+        console.log('💾 Auto-save localStorage');
+      }
+    }, 10000); // toutes les 10 secondes
+
+    // 2️⃣ Init Google Drive
+    const initGapi = () => {
+      gapi.load('client:auth2', () => {
+        gapi.client
+          .init({
+            apiKey: process.env.REACT_APP_GOOGLE_API_KEY || 'YOUR_API_KEY',
+            clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID',
+            scope: 'https://www.googleapis.com/auth/drive.file',
+            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+          })
+          .then(() => {
+            console.log('✅ Google API client initialized');
+            const authInstance = gapi.auth2.getAuthInstance();
+            if (!authInstance.isSignedIn.get()) {
+              console.log('ℹ️ Utilisateur non connecté à Google Drive');
+            }
+          })
+          .catch(error => {
+            console.error('❌ Erreur lors de l’initialisation de Google API:', error);
+            alert('⚠️ Erreur lors de l’initialisation de Google Drive. Vérifiez votre clé API et ID client.');
+          });
+      });
+    };
+
+    initGapi();
+
+    // 3️⃣ Cleanup de l’interval
+    return () => clearInterval(interval);
+  }, [headerInfo, itemStates, itemNotes, forfaitData, pieceLines, lastMaintenance, oilInfo, includeControleTechnique, includeContrevisite]);
+
   // États pour les catégories déroulantes - Fermées par défaut
   const [expandedCategories, setExpandedCategories] = useState({
     mecanique: false,
@@ -447,6 +500,95 @@ function App() {
     }
   };
 
+  const uploadToDrive = async () => {
+    if (!headerInfo.lead.trim()) {
+      alert('⚠️ Veuillez renseigner un Lead avant de sauvegarder sur Google Drive');
+      return;
+    }
+
+    try {
+      const authInstance = gapi.auth2.getAuthInstance();
+      if (!authInstance.isSignedIn.get()) {
+        await authInstance.signIn();
+      }
+
+      const quoteData = {
+        headerInfo,
+        itemStates,
+        itemNotes,
+        forfaitData,
+        pieceLines,
+        lastMaintenance,
+        oilInfo,
+        includeControleTechnique,
+        includeContrevisite,
+        savedAt: new Date().toISOString()
+      };
+
+      const fileContent = JSON.stringify(quoteData, null, 2);
+      const blob = new Blob([fileContent], { type: 'application/json' });
+
+      const metadata = {
+        name: `${headerInfo.lead || 'Devis'}_${new Date().toISOString()}.json`,
+        mimeType: 'application/json',
+      };
+
+      const accessToken = authInstance.currentUser.get().getAuthResponse().access_token;
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', blob);
+
+      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: new Headers({ Authorization: `Bearer ${accessToken}` }),
+        body: form,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      alert('✅ Fichier sauvegardé sur Google Drive !');
+    } catch (error) {
+      console.error('❌ Erreur lors de la sauvegarde sur Google Drive:', error);
+      alert('❌ Erreur lors de la sauvegarde sur Google Drive: ' + error.message);
+    }
+  };
+
+  const autoSave = () => {
+    if (!headerInfo.lead.trim()) return;
+
+    const quoteData = {
+      headerInfo,
+      itemStates,
+      itemNotes,
+      forfaitData,
+      pieceLines,
+      lastMaintenance,
+      oilInfo,
+      includeControleTechnique,
+      includeContrevisite,
+      savedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(`herotool_quote_${headerInfo.lead}`, JSON.stringify(quoteData));
+    console.log(`✅ Auto-save pour "${headerInfo.lead}"`);
+  };
+  
+  useEffect(() => {
+    autoSave();
+  }, [
+    headerInfo,
+    itemStates,
+    itemNotes,
+    forfaitData,
+    pieceLines,
+    lastMaintenance,
+    oilInfo,
+    includeControleTechnique,
+    includeContrevisite
+  ]);
+
   const getSavedQuotes = () => {
     const quotes = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -558,12 +700,13 @@ function App() {
             }}>
               <span style={{ fontSize: '32px', color: 'white', fontWeight: 'bold' }}>H</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold" style={{ color: '#FF6B35' }}>
-              HeroTOOL
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold font-sans tracking-tight">
+             <span style={{ color: '#FF6B35' }}>Hero</span>
+             <span style={{ color: '#002F6C' }}>TOOL</span>
+           </h1>
           </div>
-          <p className="text-sm text-gray-600 italic">
-            Développé par Loïc L et codé par Claude.ia
+          <p className="text-sm font-bold text-gray-500 italic">
+            Développé par Loïc.L, codé par Claude.ia
           </p>
         </div>
 
@@ -593,6 +736,22 @@ function App() {
           </div>
         </div>
 
+        <div className="flex gap-3 mt-3">
+          <button
+            onClick={() => gapi.auth2.getAuthInstance().signIn()}
+            className="px-6 py-3 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-all"
+          >
+            🔐 Se connecter à Google Drive
+          </button>
+
+          <button
+            onClick={uploadToDrive}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all"
+          >
+            ☁️ Sauvegarder sur Drive
+          </button>
+        </div>
+
         {/* Formulaire véhicule */}
         <VehicleInfoForm
           headerInfo={headerInfo}
@@ -603,7 +762,7 @@ function App() {
           toggleFreinParking={toggleFreinParking}
           toggleStartStop={toggleStartStop}
         />
-        {/* ✅ Module ajouté ici */}
+        {/* Module Maintenance */}
         <MaintenanceHistory
           lastMaintenance={lastMaintenance}
           updateLastMaintenance={updateLastMaintenance}
@@ -614,7 +773,6 @@ function App() {
           oilInfo={oilInfo}
           lastMaintenance={lastMaintenance}
         />
-
 
         {/* Informations huile */}
         <div className="mb-8">
@@ -705,7 +863,7 @@ function App() {
         {/* Section DSP */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-blue-600">SMART - DSP</h2>
+            <h2 className="text-2xl font-bold text-gray-800">SMART - DSP</h2>
             <button 
               onClick={() => toggleCategory('dsp')}
               className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
@@ -714,7 +872,8 @@ function App() {
               {expandedCategories.dsp ? 'Fermer le module' : 'Ouvrir le module'}
             </button>
           </div>
-          
+          {/* Trait de séparation ORANGE avant SMART */}
+          <div className="border-t-2 border-orange-400 my-8"></div>
           {expandedCategories.dsp && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {DSP_ITEMS.map(item => {
@@ -740,7 +899,7 @@ function App() {
         {/* Section LUSTRAGE - Dans SMART */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-blue-600">SMART - LUSTRAGE</h2>
+            <h2 className="text-2xl font-bold text-gray-800">SMART - LUSTRAGE</h2>
             <button 
               onClick={() => toggleCategory('lustrage')}
               className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
