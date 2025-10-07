@@ -178,6 +178,25 @@ export const DSP_ITEMS = [
   { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
 ];
 
+// ===== FORFAITS LUSTRAGE =====
+export const LUSTRAGE_ITEMS = [
+  // Lustrage éléments principaux
+  { id: 'lustrageComplet', label: 'Lustrage complet', moQuantity: 4, consommable: 1 },
+  { id: 'lustrageAvant', label: 'Lustrage avant', moQuantity: 1.5, consommable: 0.5 },
+  { id: 'lustrageArriere', label: 'Lustrage arrière', moQuantity: 1.5, consommable: 0.5 },
+  { id: 'lustrageCote', label: 'Lustrage côté', moQuantity: 1, consommable: 0.3 },
+  { id: 'lustragePavillon', label: 'Lustrage pavillon', moQuantity: 1, consommable: 0.3 },
+  { id: 'lustrageCapot', label: 'Lustrage capot', moQuantity: 1, consommable: 0.3 },
+  { id: 'lustrageHayon', label: 'Lustrage hayon', moQuantity: 1, consommable: 0.3 },
+  
+  // Lustrage éléments spécifiques
+  { id: 'lustragePhares', label: 'Lustrage phares', moQuantity: 0.5, consommable: 0.2 },
+  { id: 'lustrageOptique', label: 'Lustrage optique', moQuantity: 0.5, consommable: 0.2 },
+  { id: 'lustragePorteAvant', label: 'Lustrage porte avant', moQuantity: 0.5, consommable: 0.2 },
+  { id: 'lustragePorteArriere', label: 'Lustrage porte arrière', moQuantity: 0.5, consommable: 0.2 },
+  { id: 'lustrageAile', label: 'Lustrage aile', moQuantity: 0.5, consommable: 0.2 }
+];
+
 // Organiser les items DSP en deux colonnes pour l'affichage
 export const DSP_LEFT_ITEMS = [
   { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 },
@@ -220,7 +239,8 @@ export const ALL_ITEMS = [
   ...TEXT_ITEMS_2,
   ...TEXT_ITEMS_3,
   ...TEXT_ITEMS_4,
-  ...DSP_ITEMS
+  ...DSP_ITEMS,
+  ...LUSTRAGE_ITEMS
 ];
 
 // Items qui ne peuvent pas avoir plusieurs pièces
