@@ -1,6 +1,7 @@
 import React from 'react';
 
 const TaskSummary = ({ allItems, itemStates, itemNotes, cycleState }) => {
+  const filteredItems = allItems.filter(item => item.label !== "DSP");
   const inProgressItems = allItems.filter(item => itemStates[item.id] === 1);
   const completedItems = allItems.filter(item => itemStates[item.id] === 2);
   
