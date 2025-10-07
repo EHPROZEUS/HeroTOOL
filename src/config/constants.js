@@ -104,6 +104,8 @@ export const LEFT_ITEMS_3 = [
 export const RIGHT_ITEMS_3 = [
   { id: 'disquesPlaquettesAv', label: 'Disques et plaquettes AV', hasNote: true },
   { id: 'disquesPlaquettesAr', label: 'Disques et plaquettes AR', hasNote: true }
+  { id: 'plaquettesAv', label: 'plaquettes avant', hasNote: true }
+  { id: 'plaquettesAr', label: 'plaquettes arrière', hasNote: true }
 ];
 
 // Items texte 1
@@ -141,16 +143,16 @@ export const TEXT_ITEMS_4 = [
 // ===== FORFAITS DSP =====
 export const DSP_ITEMS = [
   // Ailes
-  { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileArd', label: 'DSP Aile ard', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileAvg', label: 'DSP Aile avg', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileArg', label: 'DSP Aile arg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileAvd', label: 'DSP Aile avant droite', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileArd', label: 'DSP Aile arrière droite', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileAvg', label: 'DSP Aile avant gauche', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileArg', label: 'DSP Aile arrière gauche', moQuantity: 0.5, consommable: 0 },
   
   // Portes
-  { id: 'dspPorteAvd', label: 'DSP Porte avd', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteArd', label: 'DSP Porte ard', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteAvg', label: 'DSP Porte avg', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteArg', label: 'DSP Porte arg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteAvd', label: 'DSP Porte avant droite', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteArd', label: 'DSP Porte arrière droite', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteAvg', label: 'DSP Porte avant gauche', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteArg', label: 'DSP Porte arrière gauche', moQuantity: 0.5, consommable: 0 },
   
   // Éléments de carrosserie
   { id: 'dspCapot', label: 'DSP Capot', moQuantity: 0.5, consommable: 0 },
@@ -170,8 +172,8 @@ export const DSP_ITEMS = [
   { id: 'dspMontantDG', label: 'DSP Montant DG', moQuantity: 0.5, consommable: 0 },
   
   // Bas de caisse
-  { id: 'dspBdcd', label: 'DSP Bdcd', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspBdcg', label: 'DSP Bdcg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspBdcd', label: 'DSP Bas caisse d', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspBdcg', label: 'DSP Bas caisse g', moQuantity: 0.5, consommable: 0 },
   
   // Forfaits spéciaux grêle
   { id: 'dspGrelePavillon', label: 'DSP Grêle Pavillon', moQuantity: 4, consommable: 0 },
@@ -228,18 +230,18 @@ export const LUSTRAGE_ITEMS = [
 
 // Organiser les items DSP en deux colonnes pour l'affichage
 export const DSP_LEFT_ITEMS = [
-  { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileArd', label: 'DSP Aile ard', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileAvg', label: 'DSP Aile avg', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileArg', label: 'DSP Aile arg', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteAvd', label: 'DSP Porte avd', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteArd', label: 'DSP Porte ard', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteAvg', label: 'DSP Porte avg', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteArg', label: 'DSP Porte arg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileAvd', label: 'DSP Aile avant droite', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileArd', label: 'DSP Aile arrière droite', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileAvg', label: 'DSP Aile avant gauche', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspAileArg', label: 'DSP Aile arrière gauche', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteAvd', label: 'DSP Porte avant droite', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteArd', label: 'DSP Porte arrière droite', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteAvg', label: 'DSP Porte avant gauche', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspPorteArg', label: 'DSP Porte arrière gauche', moQuantity: 0.5, consommable: 0 },,
   { id: 'dspCapot', label: 'DSP Capot', moQuantity: 0.5, consommable: 0 },
   { id: 'dspHayon', label: 'DSP Hayon', moQuantity: 0.5, consommable: 0 },
   { id: 'dspPavillon', label: 'DSP Pavillon', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspBdcd', label: 'DSP Bdcd', moQuantity: 0.5, consommable: 0 }
+  { id: 'dspBdcd', label: 'DSP Bas caisse d', moQuantity: 0.5, consommable: 0 },
 ];
 
 export const DSP_RIGHT_ITEMS = [
@@ -251,7 +253,7 @@ export const DSP_RIGHT_ITEMS = [
   { id: 'dspMontantBG', label: 'DSP Montant BG', moQuantity: 0.5, consommable: 0 },
   { id: 'dspMontantCG', label: 'DSP Montant CG', moQuantity: 0.5, consommable: 0 },
   { id: 'dspMontantDG', label: 'DSP Montant DG', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspBdcg', label: 'DSP Bdcg', moQuantity: 0.5, consommable: 0 },
+  { id: 'dspBdcg', label: 'DSP Bas caisse g', moQuantity: 0.5, consommable: 0 },
   { id: 'dspGrelePavillon', label: 'DSP Grêle Pavillon', moQuantity: 4, consommable: 0 },
   { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
 ];
