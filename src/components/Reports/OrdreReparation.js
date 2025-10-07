@@ -1,7 +1,7 @@
 import React from 'react';
 import { calculateVehicleAge, formatDateFr } from '../../utils/formatters';
 import { getDefaultValues } from '../../utils/calculations';
-import { DSP_ITEMS } from '../../config/constants';
+import { DSP_ITEMS, LUSTRAGE_ITEMS } from '../../config/constants';
 
 const OrdreReparation = ({ 
   showOrdreReparation,
@@ -13,6 +13,7 @@ const OrdreReparation = ({
   headerInfo,
   activeMecaniqueItems,
   activeDSPItems,
+  activeLustrageItems,
   forfaitData,
   pieceLines,
   totals,
@@ -255,6 +256,33 @@ const OrdreReparation = ({
                           <td className="border border-gray-300 p-2">{dspConfig.label}</td>
                           <td className="border border-gray-300 p-2">DSP</td>
                           <td className="border border-gray-300 p-2 text-right">{dspConfig.moQuantity} h</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
+                
+                {/* Section LUSTRAGE */}
+                {activeLustrageItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: '#FEF3C7' }}>
+                      <td colSpan="7" className="border border-gray-300 p-3 font-bold text-yellow-700 text-lg">
+                        SMART - LUSTRAGE
+                      </td>
+                    </tr>
+                    {activeLustrageItems.map(lustrageItem => {
+                      const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
+                      if (!lustrageConfig) return null;
+                      
+                      return (
+                        <tr key={lustrageItem.id}>
+                          <td className="border border-gray-300 p-2">Main d'œuvre Lustrage</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">{lustrageConfig.label}</td>
+                          <td className="border border-gray-300 p-2">Lustrage</td>
+                          <td className="border border-gray-300 p-2 text-right">{lustrageConfig.moQuantity} h</td>
                           <td className="border border-gray-300 p-2 text-right">-</td>
                           <td className="border border-gray-300 p-2 text-right">-</td>
                         </tr>

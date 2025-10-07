@@ -28,7 +28,10 @@ import {
   EXCLUDED_MULTI_PIECES,
   DSP_ITEMS,
   DSP_LEFT_ITEMS,
-  DSP_RIGHT_ITEMS
+  DSP_RIGHT_ITEMS,
+  LUSTRAGE_ITEMS,
+  LUSTRAGE_LEFT_ITEMS,
+  LUSTRAGE_RIGHT_ITEMS
 } from './config/constants';
 
 import { formatTireSize } from './utils/formatters';
@@ -786,14 +789,18 @@ function App() {
 
   // Calculs
   const activeItems = ALL_ITEMS.filter(item => itemStates[item.id] === 1 || itemStates[item.id] === 2);
-  const activeMecaniqueItems = activeItems.filter(item => !DSP_ITEMS.some(dsp => dsp.id === item.id));
   const activeDSPItems = activeItems.filter(item => DSP_ITEMS.some(dsp => dsp.id === item.id));
+  const activeLustrageItems = activeItems.filter(item => LUSTRAGE_ITEMS.some(lustrage => lustrage.id === item.id));
+  const activeMecaniqueItems = activeItems.filter(item => 
+    !DSP_ITEMS.some(dsp => dsp.id === item.id) && 
+    !LUSTRAGE_ITEMS.some(lustrage => lustrage.id === item.id)
+  );
   const totalActive = activeItems.length;
   const totalCompleted = ALL_ITEMS.filter(item => itemStates[item.id] === 2).length;
   const allCompleted = totalActive > 0 && totalActive === totalCompleted;
 
-  const totals = calculateTotals(activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems);
-  const moByCategory = calculateMOByCategory(activeMecaniqueItems, forfaitData, activeDSPItems);
+  const totals = calculateTotals(activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems, activeLustrageItems);
+  const moByCategory = calculateMOByCategory(activeMecaniqueItems, forfaitData, activeDSPItems, activeLustrageItems);
   const piecesBySupplier = getPiecesListBySupplier(activeMecaniqueItems, forfaitData, pieceLines);
 
   // Fonction pour obtenir le statut d'affichage de Google API
@@ -1074,8 +1081,23 @@ function App() {
             </button>
           </div>
           {expandedCategories.lustrage && (
-            <div className="text-center py-8 text-gray-500 italic">
-              Section en préparation
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {LUSTRAGE_ITEMS.map(item => {
+                const state = itemStates[item.id];
+                const bgColor = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
+                const borderColor = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
+                const textColor = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
+                
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => cycleState(item.id)}
+                    className={`rounded-lg border-2 transition-all cursor-pointer hover:shadow-md px-4 py-4 ${bgColor} ${borderColor} flex items-center justify-center text-center`}
+                  >
+                    <span className={`text-sm font-medium ${textColor}`}>{item.label}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -1178,6 +1200,7 @@ function App() {
               headerInfo={headerInfo}
               activeMecaniqueItems={activeMecaniqueItems}
               activeDSPItems={activeDSPItems}
+              activeLustrageItems={activeLustrageItems}
               forfaitData={forfaitData}
               pieceLines={pieceLines}
               totals={totals}

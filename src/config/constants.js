@@ -178,6 +178,46 @@ export const DSP_ITEMS = [
   { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
 ];
 
+// ===== FORFAITS LUSTRAGE =====
+export const LUSTRAGE_ITEMS = [
+  // Forfaits personnalisables L1 à L9
+  { id: 'lustrageL1', label: 'Lustrage L1', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL2', label: 'Lustrage L2', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL3', label: 'Lustrage L3', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL4', label: 'Lustrage L4', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL5', label: 'Lustrage L5', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL6', label: 'Lustrage L6', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL7', label: 'Lustrage L7', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL8', label: 'Lustrage L8', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL9', label: 'Lustrage L9', moQuantity: 0.5, consommable: 0 },
+  
+  // Forfaits fixes
+  { id: 'lustragePavillon', label: 'Lustrage Pavillon', moQuantity: 1, consommable: 0 },
+  { id: 'lustrageCapot', label: 'Lustrage Capot', moQuantity: 0.8, consommable: 0 },
+  { id: 'lustrageHayon', label: 'Lustrage Hayon', moQuantity: 0.8, consommable: 0 },
+  { id: 'lustrageComplet', label: 'Lustrage Complet', moQuantity: 4, consommable: 0 }
+];
+
+// Organiser les items LUSTRAGE en deux colonnes pour l'affichage
+export const LUSTRAGE_LEFT_ITEMS = [
+  { id: 'lustrageL1', label: 'Lustrage L1', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL2', label: 'Lustrage L2', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL3', label: 'Lustrage L3', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL4', label: 'Lustrage L4', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL5', label: 'Lustrage L5', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustragePavillon', label: 'Lustrage Pavillon', moQuantity: 1, consommable: 0 },
+  { id: 'lustrageCapot', label: 'Lustrage Capot', moQuantity: 0.8, consommable: 0 }
+];
+
+export const LUSTRAGE_RIGHT_ITEMS = [
+  { id: 'lustrageL6', label: 'Lustrage L6', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL7', label: 'Lustrage L7', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL8', label: 'Lustrage L8', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageL9', label: 'Lustrage L9', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageHayon', label: 'Lustrage Hayon', moQuantity: 0.8, consommable: 0 },
+  { id: 'lustrageComplet', label: 'Lustrage Complet', moQuantity: 4, consommable: 0 }
+];
+
 // Organiser les items DSP en deux colonnes pour l'affichage
 export const DSP_LEFT_ITEMS = [
   { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 },
@@ -220,7 +260,8 @@ export const ALL_ITEMS = [
   ...TEXT_ITEMS_2,
   ...TEXT_ITEMS_3,
   ...TEXT_ITEMS_4,
-  ...DSP_ITEMS
+  ...DSP_ITEMS,
+  ...LUSTRAGE_ITEMS
 ];
 
 // Items qui ne peuvent pas avoir plusieurs pièces
