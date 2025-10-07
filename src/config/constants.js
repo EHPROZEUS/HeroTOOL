@@ -223,8 +223,7 @@ export const LUSTRAGE_ITEMS = [
   { id: "LPDPARG", label: "Lustrage poignée de porte arrière gauche", moQuantity: 0.25, consommable: 0.50 },
   { id: "LBDCD", label: "Lustrage bas de caisse droit", moQuantity: 0.25, consommable: 1.00 },
   { id: "LBDCG", label: "Lustrage bas de caisse gauche", moQuantity: 0.25, consommable: 1.00 },
-  { id: "DE-COVERING", label: "Retrait covering", moQuantity: 0.25, consommable: 0.00 },
-  { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 }
+  { id: "DE-COVERING", label: "Retrait covering", moQuantity: 0.25, consommable: 0.00 }
 ];
 
 // Organiser les items DSP en deux colonnes pour l'affichage
