@@ -226,7 +226,6 @@ export const LUSTRAGE_ITEMS = [
   { id: "LBDCD", label: "Lustrage bas de caisse droit", moQuantity: 0.25, consommable: 1.00 },
   { id: "LBDCG", label: "Lustrage bas de caisse gauche", moQuantity: 0.25, consommable: 1.00 },
   { id: "DE-COVERING", label: "Retrait covering", moQuantity: 0.25, consommable: 0.00 }
-]
 ];
 
 // Organiser les items DSP en deux colonnes pour l'affichage
