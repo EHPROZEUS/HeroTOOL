@@ -787,14 +787,18 @@ function App() {
 
   // Calculs
   const activeItems = ALL_ITEMS.filter(item => itemStates[item.id] === 1 || itemStates[item.id] === 2);
-  const activeMecaniqueItems = activeItems.filter(item => !DSP_ITEMS.some(dsp => dsp.id === item.id));
+  const activeMecaniqueItems = activeItems.filter(item => 
+    !DSP_ITEMS.some(dsp => dsp.id === item.id) && 
+    !LUSTRAGE_ITEMS.some(lus => lus.id === item.id)
+  );
   const activeDSPItems = activeItems.filter(item => DSP_ITEMS.some(dsp => dsp.id === item.id));
+  const activeLustrageItems = activeItems.filter(item => LUSTRAGE_ITEMS.some(lus => lus.id === item.id));
   const totalActive = activeItems.length;
   const totalCompleted = ALL_ITEMS.filter(item => itemStates[item.id] === 2).length;
   const allCompleted = totalActive > 0 && totalActive === totalCompleted;
 
-  const totals = calculateTotals(activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems);
-  const moByCategory = calculateMOByCategory(activeMecaniqueItems, forfaitData, activeDSPItems);
+  const totals = calculateTotals(activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems, activeLustrageItems);
+  const moByCategory = calculateMOByCategory(activeMecaniqueItems, forfaitData, activeDSPItems, activeLustrageItems);
   const piecesBySupplier = getPiecesListBySupplier(activeMecaniqueItems, forfaitData, pieceLines);
 
   // Fonction pour obtenir le statut d'affichage de Google API
@@ -1167,6 +1171,25 @@ function App() {
                 <div>
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
                   {activeMecaniqueItems.map(item => (
+                    <ForfaitForm
+                      key={item.id}
+                      item={item}
+                      forfaitData={forfaitData}
+                      pieceLines={pieceLines}
+                      updateForfaitField={updateForfaitField}
+                      addPieceLine={addPieceLine}
+                      removePieceLine={removePieceLine}
+                      updatePieceLine={updatePieceLine}
+                      canHaveMultiplePieces={canHaveMultiplePieces}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {activeLustrageItems.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Lustrage</h3>
+                  {activeLustrageItems.map(item => (
                     <ForfaitForm
                       key={item.id}
                       item={item}

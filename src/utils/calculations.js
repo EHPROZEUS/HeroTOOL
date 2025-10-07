@@ -1,4 +1,4 @@
-import { DEFAULT_VALUES, DSP_ITEMS } from '../config/constants';
+import { DEFAULT_VALUES, DSP_ITEMS, LUSTRAGE_ITEMS } from '../config/constants';
 
 // Obtenir les valeurs par défaut d'un item
 export const getDefaultValues = (itemId) => {
@@ -6,7 +6,7 @@ export const getDefaultValues = (itemId) => {
 };
 
 // Calculer les totaux
-export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems = []) => {
+export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems = [], activeLustrageItems = []) => {
   let totalMOHeures = 0;
   let totalPieces = 0;
   let totalConsommables = 0;
@@ -40,6 +40,15 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
     }
   });
 
+  // Calcul pour les items Lustrage
+  activeLustrageItems.forEach(lustrageItem => {
+    const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
+    if (lustrageConfig) {
+      totalMOHeures += lustrageConfig.moQuantity;
+      totalConsommables += lustrageConfig.consommable;
+    }
+  });
+
   const totalMO = totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
   const totalHTSansPrestations = totalPieces + totalConsommables;
@@ -56,7 +65,7 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
 };
 
 // Calculer les heures de MO par catégorie
-export const calculateMOByCategory = (activeMecaniqueItems, forfaitData, activeDSPItems = []) => {
+export const calculateMOByCategory = (activeMecaniqueItems, forfaitData, activeDSPItems = [], activeLustrageItems = []) => {
   const categories = {
     'Mécanique': 0,
     'Carrosserie': 0,
@@ -82,6 +91,14 @@ export const calculateMOByCategory = (activeMecaniqueItems, forfaitData, activeD
     const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
     if (dspConfig) {
       categories['DSP'] += dspConfig.moQuantity;
+    }
+  });
+
+  // Calcul pour les items Lustrage
+  activeLustrageItems.forEach(lustrageItem => {
+    const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
+    if (lustrageConfig) {
+      categories['Lustrage'] += lustrageConfig.moQuantity;
     }
   });
 

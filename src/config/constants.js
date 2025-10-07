@@ -138,6 +138,25 @@ export const TEXT_ITEMS_4 = [
   { id: 'rempm4', label: 'REMPM4', hasNote: true }
 ];
 
+// ===== FORFAITS LUSTRAGE =====
+export const LUSTRAGE_ITEMS = [
+  // Services de lustrage
+  { id: 'lustrageCapot', label: 'Lustrage Capot', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustragePavillon', label: 'Lustrage Pavillon', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustragePorteAvd', label: 'Lustrage Porte avd', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustragePorteAvg', label: 'Lustrage Porte avg', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustragePorteArd', label: 'Lustrage Porte ard', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustragePorteArg', label: 'Lustrage Porte arg', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustrageAileAvd', label: 'Lustrage Aile avd', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustrageAileAvg', label: 'Lustrage Aile avg', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustrageAileArd', label: 'Lustrage Aile ard', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustrageAileArg', label: 'Lustrage Aile arg', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustrageHayon', label: 'Lustrage Hayon', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustragePareChocAvant', label: 'Lustrage Pare-choc AV', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustragePareChocArriere', label: 'Lustrage Pare-choc AR', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustrageComplet', label: 'Lustrage Complet', moQuantity: 3, consommable: 0 }
+];
+
 // ===== FORFAITS DSP =====
 export const DSP_ITEMS = [
   // Ailes
@@ -220,7 +239,8 @@ export const ALL_ITEMS = [
   ...TEXT_ITEMS_2,
   ...TEXT_ITEMS_3,
   ...TEXT_ITEMS_4,
-  ...DSP_ITEMS
+  ...DSP_ITEMS,
+  ...LUSTRAGE_ITEMS
 ];
 
 // Items qui ne peuvent pas avoir plusieurs pièces
