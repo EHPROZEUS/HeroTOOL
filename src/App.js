@@ -1062,34 +1062,39 @@ function App() {
           )}
         </div>
 
-        {/* Section LUSTRAGE - Dans SMART */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">SMART - LUSTRAGE</h2>
-            <button 
-              onClick={() => toggleCategory('lustrage')}
-              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
-              style={{ backgroundColor: '#FF6B35' }}
-            >
-{expandedCategories.lustrage && (
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-    {LUSTRAGE_ITEMS.map(item => {
-      const state = itemStates[item.id];
-      const bgColor = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
-      const borderColor = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
-      const textColor = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
-      
-      return (
-        <div
-          key={item.id}
-          onClick={() => cycleState(item.id)}
-          className={`rounded-lg border-2 transition-all cursor-pointer hover:shadow-md px-4 py-4 ${bgColor} ${borderColor} flex items-center justify-center text-center`}
-        >
-          <span className={`text-sm font-medium ${textColor}`}>{item.label}</span>
-        </div>
-      );
-    })}
+{/* Section LUSTRAGE - Dans SMART */}
+<div className="mb-8">
+  <div className="flex items-center justify-between mb-6">
+    <h2 className="text-2xl font-bold text-gray-800">SMART - LUSTRAGE</h2>
+    <button 
+      onClick={() => toggleCategory('lustrage')}
+      className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-all"
+      style={{ backgroundColor: '#FF6B35' }}
+    >
+      {expandedCategories.lustrage ? 'Fermer le module' : 'Ouvrir le module'}
+    </button>
   </div>
+  {expandedCategories.lustrage && (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      {LUSTRAGE_ITEMS.map(item => {
+        const state = itemStates[item.id];
+        const bgColor = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
+        const borderColor = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
+        const textColor = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
+        
+        return (
+          <div
+            key={item.id}
+            onClick={() => cycleState(item.id)}
+            className={`rounded-lg border-2 transition-all cursor-pointer hover:shadow-md px-4 py-4 ${bgColor} ${borderColor} flex items-center justify-center text-center`}
+          >
+            <span className={`text-sm font-medium ${textColor}`}>{item.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
 )}
         {/* Trait de séparation ORANGE avant Carrosserie */}
         <div className="border-t-2 border-orange-400 my-8"></div>
