@@ -17,9 +17,18 @@ const OrdreReparation = ({
   pieceLines,
   totals,
   moByCategory,
-  printOrdreReparation,
-  activeLustrageItems
+  printOrdreReparation
 }) => {
+  // Identifie les items de lustrage actifs
+  const activeLustrageItems = activeMecaniqueItems.filter(item => 
+    LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
+  );
+  
+  // Filtre les items de mécanique pour exclure les items de lustrage
+  const pureActiveMecaniqueItems = activeMecaniqueItems.filter(item => 
+    !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
+  );
+
   return (
     <div className="mt-8 border-t-2 border-gray-300 pt-8">
       <div className="flex justify-between items-center mb-6">
@@ -148,7 +157,7 @@ const OrdreReparation = ({
                 </tr>
               </thead>
               <tbody>
-                {activeMecaniqueItems.map(item => {
+                {pureActiveMecaniqueItems.map(item => {
                   const forfait = forfaitData[item.id] || {};
                   const defaults = getDefaultValues(item.id);
                   
@@ -209,6 +218,7 @@ const OrdreReparation = ({
                     </React.Fragment>
                   );
                 })}
+                
                 {includeControleTechnique && (
                   <>
                     <tr style={{ backgroundColor: '#FFE4D6' }}>
@@ -263,32 +273,36 @@ const OrdreReparation = ({
                     })}
                   </>
                 )}
-                        {/* Nouvelle section LUSTRAGE */}
-        {activeLustrageItems.length > 0 && (
-          <>
-            <tr style={{ backgroundColor: '#FDF2F8' }}>
-              <td colSpan="7" className="border border-gray-300 p-3 font-bold text-pink-600 text-lg">
-                SMART - LUSTRAGE
-              </td>
-            </tr>
-            {activeLustrageItems.map(lustrageItem => {
-              const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
-              if (!lustrageConfig) return null;
-              
-              return (
-                <tr key={lustrageItem.id}>
-                  <td className="border border-gray-300 p-2">Main d'œuvre Lustrage</td>
-                  <td className="border border-gray-300 p-2">-</td>
-                  <td className="border border-gray-300 p-2">{lustrageConfig.label}</td>
-                  <td className="border border-gray-300 p-2">Lustrage</td>
-                  <td className="border border-gray-300 p-2 text-right">{lustrageConfig.moQuantity} h</td>
-                  <td className="border border-gray-300 p-2 text-right">-</td>
-                  <td className="border border-gray-300 p-2 text-right">-</td>
-                </tr>
-              );
-            })}
-          </>
-        )}
+                
+                {/* Section LUSTRAGE */}
+                {activeLustrageItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: '#FEF3C7' }}>
+                      <td colSpan="7" className="border border-gray-300 p-3 font-bold text-amber-600 text-lg">
+                        SMART - LUSTRAGE
+                      </td>
+                    </tr>
+                    {activeLustrageItems.map(lustrageItem => {
+                      const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
+                      if (!lustrageConfig) return null;
+                      
+                      const forfait = forfaitData[lustrageItem.id] || {};
+                      const moQuantity = forfait.moQuantity !== undefined ? forfait.moQuantity : lustrageConfig.moQuantity;
+                      
+                      return (
+                        <tr key={lustrageItem.id}>
+                          <td className="border border-gray-300 p-2">Main d'œuvre Lustrage</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">{lustrageConfig.label}</td>
+                          <td className="border border-gray-300 p-2">Lustrage</td>
+                          <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
               </tbody>
             </table>
           </div>
