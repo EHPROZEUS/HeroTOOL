@@ -1093,6 +1093,7 @@ function App() {
         );
       })}
     </div>
+  )}    
 </div>
 
         {/* Trait de séparation ORANGE avant Carrosserie */}
