@@ -345,6 +345,38 @@ export const DEFAULT_VALUES = {
     piecePrix: '',
     pieceFournisseur: ''
   },
+  disquesPlaquettesAv: {
+    moQuantity: '0.5',
+    moPrix: '35.8',
+    pieceReference: '',
+    pieceQuantity: '1',
+    piecePrix: '',
+    pieceFournisseur: ''
+  },
+  disquesPlaquettesAr: {
+    moQuantity: '1.3',
+    moPrix: '35.8',
+    pieceReference: '',
+    pieceQuantity: '1',
+    piecePrix: '',
+    pieceFournisseur: ''
+  },
+  plaquettesAv: {
+    moQuantity: '0.5',
+    moPrix: '35.8',
+    pieceReference: '',
+    pieceQuantity: '1',
+    piecePrix: '',
+    pieceFournisseur: ''
+  },
+  plaquettesAr: {
+    moQuantity: '0.8',
+    moPrix: '35.8',
+    pieceReference: '',
+    pieceQuantity: '1',
+    piecePrix: '',
+    pieceFournisseur: ''
+  },
   default: {
     moQuantity: '0.1',
     moPrix: '35.8',
