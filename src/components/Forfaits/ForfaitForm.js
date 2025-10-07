@@ -1,6 +1,7 @@
 import React from 'react';
 import { FOURNISSEURS } from '../../config/constants';
 import { getDefaultValues } from '../../utils/calculations';
+import { LUSTRAGE_ITEMS } from '../../config/constants';
 
 const ForfaitForm = ({ 
   item, 
@@ -20,6 +21,9 @@ const ForfaitForm = ({
   const pieceReference = forfait.pieceReference !== undefined ? forfait.pieceReference : defaults.pieceReference;
   const pieceQuantity = forfait.pieceQuantity !== undefined ? forfait.pieceQuantity : defaults.pieceQuantity;
   const piecePrix = forfait.piecePrix !== undefined ? forfait.piecePrix : defaults.piecePrix;
+  
+  // Check if the item is a lustrage item
+  const isLustrageItem = LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id);
   
   return (
     <div className="bg-gray-50 rounded-xl border-2 border-gray-300 p-6 mb-6">
@@ -43,7 +47,7 @@ const ForfaitForm = ({
           <div>
             <label className="text-xs">Catégorie</label>
             <select 
-              value={forfait.moCategory || 'Mécanique'} 
+              value={forfait.moCategory || (isLustrageItem ? 'Lustrage' : 'Mécanique')} 
               onChange={(e) => updateForfaitField(item.id, 'moCategory', e.target.value)}
               className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               style={{ borderColor: '#FF6B35' }}
@@ -232,10 +236,12 @@ const ForfaitForm = ({
             )}
           </div>
           
-          {/* Consommable (huile) */}
-          {item.id === 'filtreHuile' && (
+          {/* Consommable section - for both filtreHuile and lustrage items */}
+          {(item.id === 'filtreHuile' || isLustrageItem) && (
             <div>
-              <span className="font-semibold block mb-2">Consommable (Huile)</span>
+              <span className="font-semibold block mb-2">
+                {item.id === 'filtreHuile' ? 'Consommable (Huile)' : 'Consommable (Lustrage)'}
+              </span>
               <div className="grid grid-cols-6 gap-4">
                 <div>
                   <label className="text-xs">Référence</label>
@@ -243,8 +249,8 @@ const ForfaitForm = ({
                     type="text" 
                     value={forfait.consommableReference || ''} 
                     onChange={(e) => updateForfaitField(item.id, 'consommableReference', e.target.value)}
-                    placeholder="Huile 5W-30" 
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50" 
+                    placeholder={item.id === 'filtreHuile' ? "Huile 5W-30" : "Référence produit"} 
+                    className={`w-full px-3 py-2 border rounded-lg text-sm ${item.id === 'filtreHuile' ? 'bg-orange-50' : 'bg-amber-50'}`} 
                   />
                 </div>
                 <div>
@@ -253,8 +259,8 @@ const ForfaitForm = ({
                     type="text" 
                     value={forfait.consommableDesignation || ''} 
                     onChange={(e) => updateForfaitField(item.id, 'consommableDesignation', e.target.value)}
-                    placeholder="Huile moteur..." 
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50" 
+                    placeholder={item.id === 'filtreHuile' ? "Huile moteur..." : "Produit lustrage..."} 
+                    className={`w-full px-3 py-2 border rounded-lg text-sm ${item.id === 'filtreHuile' ? 'bg-orange-50' : 'bg-amber-50'}`} 
                   />
                 </div>
                 <div>
@@ -262,20 +268,22 @@ const ForfaitForm = ({
                   <select 
                     value={forfait.consommableFournisseur || ''} 
                     onChange={(e) => updateForfaitField(item.id, 'consommableFournisseur', e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
+                    className={`w-full px-3 py-2 border rounded-lg text-sm ${item.id === 'filtreHuile' ? 'bg-orange-50' : 'bg-amber-50'}`}
                   >
                     <option value="">-</option>
                     {FOURNISSEURS.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs">Quantité (litres)</label>
+                  <label className="text-xs">
+                    {item.id === 'filtreHuile' ? 'Quantité (litres)' : 'Quantité'}
+                  </label>
                   <input 
                     type="text" 
                     value={forfait.consommableQuantity || ''} 
                     onChange={(e) => updateForfaitField(item.id, 'consommableQuantity', e.target.value)}
-                    placeholder="4.5" 
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50" 
+                    placeholder={item.id === 'filtreHuile' ? "4.5" : "1"} 
+                    className={`w-full px-3 py-2 border rounded-lg text-sm ${item.id === 'filtreHuile' ? 'bg-orange-50' : 'bg-amber-50'}`} 
                   />
                 </div>
                 <div>
@@ -284,7 +292,7 @@ const ForfaitForm = ({
                     type="text" 
                     value={forfait.consommablePrixUnitaire || ''} 
                     onChange={(e) => updateForfaitField(item.id, 'consommablePrixUnitaire', e.target.value)}
-                    placeholder="7.50" 
+                    placeholder={item.id === 'filtreHuile' ? "7.50" : "15.00"} 
                     className="w-full px-3 py-2 border rounded-lg text-sm" 
                   />
                 </div>
