@@ -138,6 +138,19 @@ export const TEXT_ITEMS_4 = [
   { id: 'rempm4', label: 'REMPM4', hasNote: true }
 ];
 
+// ===== FORFAITS LUSTRAGE =====
+export const LUSTRAGE_ITEMS = [
+  { id: 'lustragePolissage', label: 'Polissage', moQuantity: 2, consommable: 0 },
+  { id: 'lustrageLavage', label: 'Lavage complet', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageInterieur', label: 'Nettoyage intérieur', moQuantity: 1, consommable: 0 },
+  { id: 'lustrageCire', label: 'Application cire', moQuantity: 1, consommable: 0 },
+  { id: 'lustrageVitres', label: 'Nettoyage vitres', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustragePlastiques', label: 'Rénovation plastiques', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustrageJantes', label: 'Nettoyage jantes', moQuantity: 0.5, consommable: 0 },
+  { id: 'lustragePneus', label: 'Rénovation pneus', moQuantity: 0.3, consommable: 0 },
+  { id: 'lustrageMoteur', label: 'Nettoyage moteur', moQuantity: 0.5, consommable: 0 }
+];
+
 // ===== FORFAITS DSP =====
 export const DSP_ITEMS = [
   // Ailes
@@ -220,7 +233,8 @@ export const ALL_ITEMS = [
   ...TEXT_ITEMS_2,
   ...TEXT_ITEMS_3,
   ...TEXT_ITEMS_4,
-  ...DSP_ITEMS
+  ...DSP_ITEMS,
+  ...LUSTRAGE_ITEMS
 ];
 
 // Items qui ne peuvent pas avoir plusieurs pièces
