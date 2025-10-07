@@ -288,17 +288,33 @@ const OrdreReparation = ({
                       
                       const forfait = forfaitData[lustrageItem.id] || {};
                       const moQuantity = forfait.moQuantity !== undefined ? forfait.moQuantity : lustrageConfig.moQuantity;
+                      const consommableQuantity = forfait.consommableQuantity !== undefined ? forfait.consommableQuantity : lustrageConfig.consommable;
+                      const consommablePrixUnitaire = forfait.consommablePrixUnitaire || 1.00; // Prix unitaire par défaut
+                      const consommablePrix = consommableQuantity * consommablePrixUnitaire;
                       
                       return (
-                        <tr key={lustrageItem.id}>
-                          <td className="border border-gray-300 p-2">Main d'œuvre Lustrage</td>
-                          <td className="border border-gray-300 p-2">-</td>
-                          <td className="border border-gray-300 p-2">{lustrageConfig.label}</td>
-                          <td className="border border-gray-300 p-2">Lustrage</td>
-                          <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
-                          <td className="border border-gray-300 p-2 text-right">-</td>
-                          <td className="border border-gray-300 p-2 text-right">-</td>
-                        </tr>
+                        <React.Fragment key={lustrageItem.id}>
+                          <tr>
+                            <td className="border border-gray-300 p-2">Main d'œuvre Lustrage</td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2">{lustrageConfig.label}</td>
+                            <td className="border border-gray-300 p-2">Lustrage</td>
+                            <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
+                            <td className="border border-gray-300 p-2 text-right">-</td>
+                            <td className="border border-gray-300 p-2 text-right">-</td>
+                          </tr>
+                          {consommableQuantity > 0 && (
+                            <tr>
+                              <td className="border border-gray-300 p-2">Consommable</td>
+                              <td className="border border-gray-300 p-2">{forfait.consommableReference || '-'}</td>
+                              <td className="border border-gray-300 p-2">{forfait.consommableDesignation || 'Consommable lustrage'}</td>
+                              <td className="border border-gray-300 p-2">-</td>
+                              <td className="border border-gray-300 p-2 text-right">{consommableQuantity}</td>
+                              <td className="border border-gray-300 p-2 text-right">{consommablePrixUnitaire.toFixed(2)} €</td>
+                              <td className="border border-gray-300 p-2 text-right">{consommablePrix.toFixed(2)} €</td>
+                            </tr>
+                          )}
+                        </React.Fragment>
                       );
                     })}
                   </>
