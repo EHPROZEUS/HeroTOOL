@@ -188,8 +188,6 @@ export const LUSTRAGE_ITEMS = [
   { id: 'lustragePavillon', label: 'Lustrage pavillon', moQuantity: 1, consommable: 0.3 },
   { id: 'lustrageCapot', label: 'Lustrage capot', moQuantity: 1, consommable: 0.3 },
   { id: 'lustrageHayon', label: 'Lustrage hayon', moQuantity: 1, consommable: 0.3 },
-  
-  // Lustrage éléments spécifiques
   { id: 'lustragePhares', label: 'Lustrage phares', moQuantity: 0.5, consommable: 0.2 },
   { id: 'lustrageOptique', label: 'Lustrage optique', moQuantity: 0.5, consommable: 0.2 },
   { id: 'lustragePorteAvant', label: 'Lustrage porte avant', moQuantity: 0.5, consommable: 0.2 },
