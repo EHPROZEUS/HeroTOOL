@@ -178,6 +178,23 @@ export const DSP_ITEMS = [
   { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
 ];
 
+// Items pour le lustrage
+export const LUSTRAGE_ITEMS = [
+  { id: 'lustrageCapot', label: 'Lustrage Capot' },
+  { id: 'lustragePavillon', label: 'Lustrage Pavillon' },
+  { id: 'lustrageHayon', label: 'Lustrage Hayon' },
+  { id: 'lustragePorteAvd', label: 'Lustrage Porte AVD' },
+  { id: 'lustragePorteArd', label: 'Lustrage Porte ARD' },
+  { id: 'lustragePorteAvg', label: 'Lustrage Porte AVG' },
+  { id: 'lustragePorteArg', label: 'Lustrage Porte ARG' },
+  { id: 'lustrageAileAvd', label: 'Lustrage Aile AVD' },
+  { id: 'lustrageAileArd', label: 'Lustrage Aile ARD' },
+  { id: 'lustrageAileAvg', label: 'Lustrage Aile AVG' },
+  { id: 'lustrageAileArg', label: 'Lustrage Aile ARG' },
+  { id: 'lustragePareChocAv', label: 'Lustrage Pare-choc AV' },
+  { id: 'lustragePareChocAr', label: 'Lustrage Pare-choc AR' }
+];
+
 // Organiser les items DSP en deux colonnes pour l'affichage
 export const DSP_LEFT_ITEMS = [
   { id: 'dspAileAvd', label: 'DSP Aile avd', moQuantity: 0.5, consommable: 0 },
