@@ -91,32 +91,40 @@ function App() {
         console.log('💾 Auto-save localStorage');
       }
     }, 10000); // toutes les 10 secondes
-
-    // 2️⃣ Init Google Drive
+const App = () => {
+  useEffect(() => {
     const initGapi = () => {
+      if (typeof gapi === 'undefined') return console.error('gapi non chargé');
+
       gapi.load('client:auth2', () => {
-        gapi.client
-          .init({
-            apiKey: process.env.REACT_APP_GOOGLE_API_KEY || 'YOUR_API_KEY',
-            clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID',
-            scope: 'https://www.googleapis.com/auth/drive.file',
-            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-          })
-          .then(() => {
-            console.log('✅ Google API client initialized');
-            const authInstance = gapi.auth2.getAuthInstance();
-            if (!authInstance.isSignedIn.get()) {
-              console.log('ℹ️ Utilisateur non connecté à Google Drive');
-            }
-          })
-          .catch(error => {
-            console.error('❌ Erreur lors de l’initialisation de Google API:', error);
-            alert('⚠️ Erreur lors de l’initialisation de Google Drive. Vérifiez votre clé API et ID client.');
-          });
+        gapi.client.init({
+          apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+          clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+          scope: 'https://www.googleapis.com/auth/drive.file',
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+        }).then(() => {
+          console.log('✅ Google API initialisé');
+          const auth = gapi.auth2.getAuthInstance();
+          if (!auth.isSignedIn.get()) {
+            // Option : auth.signIn(); pour connecter l'utilisateur
+          }
+        }).catch(error => {
+          console.error('❌ Erreur init GAPI:', error);
+        });
       });
     };
 
     initGapi();
+  }, []);
+
+  return (
+    <div className="bg-gray-100 min-h-screen p-4 md:p-8">
+      {/* Votre UI HeroTOOL ici, avec couleurs Tailwind comme bg-hero-orange */}
+      <h1 className="text-3xl font-bold text-hero-orange">HeroTOOL - Assistant Automobile</h1>
+      {/* ... */}
+    </div>
+  );
+};
 
     // 3️⃣ Cleanup de l’interval
     return () => clearInterval(interval);
