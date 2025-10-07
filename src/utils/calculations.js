@@ -1,4 +1,4 @@
-import { DEFAULT_VALUES, DSP_ITEMS } from '../config/constants';
+import { DEFAULT_VALUES, DSP_ITEMS, LUSTRAGE_ITEMS } from '../config/constants';
 
 // Obtenir les valeurs par défaut d'un item
 export const getDefaultValues = (itemId) => {
@@ -11,8 +11,18 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
   let totalPieces = 0;
   let totalConsommables = 0;
 
-  // Calcul pour les items de mécanique
-  activeMecaniqueItems.forEach(item => {
+  // Identifier les items de lustrage parmi les items de mécanique
+  const activeLustrageItems = activeMecaniqueItems.filter(item => 
+    LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
+  );
+  
+  // Items de mécanique sans les items de lustrage
+  const pureMecaniqueItems = activeMecaniqueItems.filter(item => 
+    !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
+  );
+
+  // Calcul pour les items de mécanique (hors lustrage)
+  pureMecaniqueItems.forEach(item => {
     const forfait = forfaitData[item.id] || {};
     const defaults = getDefaultValues(item.id);
     
@@ -31,6 +41,25 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
     }
   });
 
+  // Calcul pour les items de lustrage
+  activeLustrageItems.forEach(lustrageItem => {
+    const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
+    if (lustrageConfig) {
+      const forfait = forfaitData[lustrageItem.id] || {};
+      
+      // Main d'œuvre
+      const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : lustrageConfig.moQuantity) || 0;
+      totalMOHeures += moQuantity;
+      
+      // Consommables
+      const consommableQuantity = parseFloat(forfait.consommableQuantity !== undefined ? forfait.consommableQuantity : lustrageConfig.consommable) || 0;
+      const consommablePrixUnitaire = parseFloat(forfait.consommablePrixUnitaire || 1.00);
+      const consommablePrix = consommableQuantity * consommablePrixUnitaire;
+      
+      totalConsommables += consommablePrix;
+    }
+  });
+
   // Calcul pour les items DSP
   activeDSPItems.forEach(dspItem => {
     const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
@@ -42,7 +71,7 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
 
   const totalMO = totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
-  const totalHTSansPrestations = totalPieces + totalConsommables;
+  const totalHTSansPrestations = totalMO + totalPieces + totalConsommables;
   const totalHT = totalHTSansPrestations + prestationsExterieures;
 
   return {
