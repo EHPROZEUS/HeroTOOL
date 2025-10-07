@@ -1166,7 +1166,9 @@ function App() {
               {activeMecaniqueItems.length > 0 && (
                 <div>
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
-                  {activeMecaniqueItems.map(item => (
+                  {activeMecaniqueItems
+                    .filter(item => !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id))
+                    .map(item => (
                     <ForfaitForm
                       key={item.id}
                       item={item}
