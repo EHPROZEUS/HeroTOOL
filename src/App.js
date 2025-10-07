@@ -1094,7 +1094,7 @@ function App() {
       })}
     </div>
 </div>
-)}
+
         {/* Trait de séparation ORANGE avant Carrosserie */}
         <div className="border-t-2 border-orange-400 my-8"></div>
 
