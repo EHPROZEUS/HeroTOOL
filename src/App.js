@@ -38,6 +38,11 @@ import {
   getPiecesListBySupplier 
 } from './utils/calculations';
 
+// Configuration Google API
+const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
 function App() {
   // États principaux
   const [headerInfo, setHeaderInfo] = useState({
@@ -70,9 +75,108 @@ function App() {
   const [lastMaintenance, setLastMaintenance] = useState({});
   const [oilInfo, setOilInfo] = useState({ viscosity: '', quantity: '' });
 
-  // --- AUTO-SAVE ET GOOGLE DRIVE INIT ---
+  // État pour Google API - avec plus de détails
+  const [googleApiState, setGoogleApiState] = useState({
+    loaded: false,
+    initialized: false,
+    signedIn: false,
+    error: null
+  });
+
+  // États pour les catégories déroulantes - Fermées par défaut
+  const [expandedCategories, setExpandedCategories] = useState({
+    mecanique: false,
+    pneusFreins: false,
+    dsp: false,
+    lustrage: false,
+    carrosserie: false
+  });
+
+  // --- INITIALISATION GOOGLE API COMPLÈTEMENT REFAITE ---
   useEffect(() => {
-    // 1️⃣ Auto-save localStorage toutes les 10 secondes
+    const initGoogleApi = async () => {
+      try {
+        console.log('🔄 Starting Google API initialization...');
+        
+        // Vérifier que les credentials sont présents
+        if (!CLIENT_ID || !API_KEY) {
+          throw new Error('Credentials Google manquants. Vérifiez vos variables d\'environnement.');
+        }
+
+        // Attendre que window.gapi soit disponible
+        let attempts = 0;
+        while (!window.gapi && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+
+        if (!window.gapi) {
+          throw new Error('Google API script not loaded after 5 seconds');
+        }
+
+        setGoogleApiState(prev => ({ ...prev, loaded: true }));
+        console.log('✅ Google API script loaded');
+
+        // Charger les modules client et auth2
+        await new Promise((resolve, reject) => {
+          window.gapi.load('client:auth2', {
+            callback: resolve,
+            onerror: reject
+          });
+        });
+
+        console.log('✅ Google API modules loaded');
+
+        // Initialiser l'API client
+        await window.gapi.client.init({
+          apiKey: API_KEY,
+          clientId: CLIENT_ID,
+          scope: SCOPES,
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+        });
+
+        console.log('✅ Google API client initialized');
+
+        // Obtenir l'instance auth2
+        const auth2 = window.gapi.auth2.getAuthInstance();
+        if (!auth2) {
+          throw new Error('Failed to get auth2 instance');
+        }
+
+        // Mettre à jour l'état
+        setGoogleApiState({
+          loaded: true,
+          initialized: true,
+          signedIn: auth2.isSignedIn.get(),
+          error: null
+        });
+
+        // Écouter les changements de statut de connexion
+        auth2.isSignedIn.listen((isSignedIn) => {
+          setGoogleApiState(prev => ({ ...prev, signedIn: isSignedIn }));
+        });
+
+        console.log('✅ Google API fully initialized', {
+          isSignedIn: auth2.isSignedIn.get(),
+          hasCredentials: !!(CLIENT_ID && API_KEY)
+        });
+
+      } catch (error) {
+        console.error('❌ Google API initialization failed:', error);
+        setGoogleApiState({
+          loaded: false,
+          initialized: false,
+          signedIn: false,
+          error: error.message
+        });
+      }
+    };
+
+    initGoogleApi();
+  }, []);
+
+  // --- AUTO-SAVE LOCALSTORAGE ---
+  useEffect(() => {
     const interval = setInterval(() => {
       if (headerInfo.lead.trim()) {
         const quoteData = {
@@ -88,56 +192,12 @@ function App() {
           savedAt: new Date().toISOString()
         };
         localStorage.setItem(`herotool_quote_${headerInfo.lead}`, JSON.stringify(quoteData));
-        console.log('💾 Auto-save localStorage');
+        console.log('💾 Auto-save localStorage pour:', headerInfo.lead);
       }
-    }, 10000); // toutes les 10 secondes
-const App = () => {
-  useEffect(() => {
-    const initGapi = () => {
-      if (typeof gapi === 'undefined') return console.error('gapi non chargé');
+    }, 10000);
 
-      gapi.load('client:auth2', () => {
-        gapi.client.init({
-          apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-          clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-          scope: 'https://www.googleapis.com/auth/drive.file',
-          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-        }).then(() => {
-          console.log('✅ Google API initialisé');
-          const auth = gapi.auth2.getAuthInstance();
-          if (!auth.isSignedIn.get()) {
-            // Option : auth.signIn(); pour connecter l'utilisateur
-          }
-        }).catch(error => {
-          console.error('❌ Erreur init GAPI:', error);
-        });
-      });
-    };
-
-    initGapi();
-  }, []);
-
-  return (
-    <div className="bg-gray-100 min-h-screen p-4 md:p-8">
-      {/* Votre UI HeroTOOL ici, avec couleurs Tailwind comme bg-hero-orange */}
-      <h1 className="text-3xl font-bold text-hero-orange">HeroTOOL - Assistant Automobile</h1>
-      {/* ... */}
-    </div>
-  );
-};
-
-    // 3️⃣ Cleanup de l’interval
     return () => clearInterval(interval);
   }, [headerInfo, itemStates, itemNotes, forfaitData, pieceLines, lastMaintenance, oilInfo, includeControleTechnique, includeContrevisite]);
-
-  // États pour les catégories déroulantes - Fermées par défaut
-  const [expandedCategories, setExpandedCategories] = useState({
-    mecanique: false,
-    pneusFreins: false,
-    dsp: false,
-    lustrage: false,
-    carrosserie: false
-  });
 
   const toggleCategory = (category) => {
     setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }));
@@ -508,6 +568,33 @@ const App = () => {
     }
   };
 
+  // --- FONCTION GOOGLE DRIVE ENTIÈREMENT SÉCURISÉE ---
+  const handleGoogleSignIn = async () => {
+    try {
+      if (!googleApiState.initialized) {
+        alert('⏳ Google API en cours d\'initialisation, veuillez patienter...');
+        return;
+      }
+
+      if (!window.gapi?.auth2) {
+        throw new Error('Google Auth2 not available');
+      }
+
+      const auth2 = window.gapi.auth2.getAuthInstance();
+      if (!auth2) {
+        throw new Error('Cannot get auth2 instance');
+      }
+
+      console.log('🔐 Attempting to sign in...');
+      await auth2.signIn();
+      console.log('✅ Successfully signed in to Google');
+      
+    } catch (error) {
+      console.error('❌ Error signing in to Google:', error);
+      alert('❌ Erreur de connexion Google: ' + error.message);
+    }
+  };
+
   const uploadToDrive = async () => {
     if (!headerInfo.lead.trim()) {
       alert('⚠️ Veuillez renseigner un Lead avant de sauvegarder sur Google Drive');
@@ -515,11 +602,33 @@ const App = () => {
     }
 
     try {
-      const authInstance = gapi.auth2.getAuthInstance();
-      if (!authInstance.isSignedIn.get()) {
-        await authInstance.signIn();
+      // Vérifications de sécurité complètes
+      if (!googleApiState.initialized) {
+        throw new Error('Google API not initialized. Please wait for initialization to complete.');
       }
 
+      if (!window.gapi?.auth2) {
+        throw new Error('Google Auth2 not available');
+      }
+
+      const auth2 = window.gapi.auth2.getAuthInstance();
+      if (!auth2) {
+        throw new Error('Cannot get auth2 instance');
+      }
+
+      // Vérifier la connexion
+      if (!auth2.isSignedIn.get()) {
+        console.log('🔐 User not signed in, attempting to sign in...');
+        await auth2.signIn();
+      }
+
+      if (!auth2.isSignedIn.get()) {
+        throw new Error('User is not signed in to Google');
+      }
+
+      console.log('📤 Preparing data for upload...');
+      
+      // Préparation des données
       const quoteData = {
         headerInfo,
         itemStates,
@@ -537,65 +646,62 @@ const App = () => {
       const blob = new Blob([fileContent], { type: 'application/json' });
 
       const metadata = {
-        name: `${headerInfo.lead || 'Devis'}_${new Date().toISOString()}.json`,
+        name: `HeroTOOL_${headerInfo.lead}_${new Date().toISOString().split('T')[0]}.json`,
         mimeType: 'application/json',
       };
 
-      const accessToken = authInstance.currentUser.get().getAuthResponse().access_token;
+      // Obtenir le token d'accès
+      const user = auth2.currentUser.get();
+      const authResponse = user.getAuthResponse();
+      
+      if (!authResponse || !authResponse.access_token) {
+        throw new Error('No valid access token available');
+      }
+
+      const accessToken = authResponse.access_token;
+
+      // Préparer la requête multipart
       const form = new FormData();
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
       form.append('file', blob);
 
+      console.log('☁️ Uploading to Google Drive...');
+
+      // Upload vers Google Drive
       const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method: 'POST',
-        headers: new Headers({ Authorization: `Bearer ${accessToken}` }),
+        headers: new Headers({ 
+          'Authorization': `Bearer ${accessToken}`
+        }),
         body: form,
       });
 
       if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Drive API Error:', errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      alert('✅ Fichier sauvegardé sur Google Drive !');
+      const result = await response.json();
+      console.log('✅ File uploaded successfully:', result);
+      
+      alert(`✅ Fichier "${metadata.name}" sauvegardé sur Google Drive avec succès !`);
+      
     } catch (error) {
       console.error('❌ Erreur lors de la sauvegarde sur Google Drive:', error);
-      alert('❌ Erreur lors de la sauvegarde sur Google Drive: ' + error.message);
+      
+      let errorMessage = error.message;
+      if (error.message.includes('popup_blocked')) {
+        errorMessage = 'Pop-up bloqué. Veuillez autoriser les pop-ups pour ce site et réessayer.';
+      } else if (error.message.includes('access_denied')) {
+        errorMessage = 'Accès refusé. Veuillez accepter les permissions Google Drive.';
+      } else if (error.message.includes('not initialized')) {
+        errorMessage = 'Google API en cours d\'initialisation. Veuillez patienter quelques secondes et réessayer.';
+      }
+      
+      alert('❌ Erreur: ' + errorMessage);
     }
   };
-
-  const autoSave = () => {
-    if (!headerInfo.lead.trim()) return;
-
-    const quoteData = {
-      headerInfo,
-      itemStates,
-      itemNotes,
-      forfaitData,
-      pieceLines,
-      lastMaintenance,
-      oilInfo,
-      includeControleTechnique,
-      includeContrevisite,
-      savedAt: new Date().toISOString()
-    };
-
-    localStorage.setItem(`herotool_quote_${headerInfo.lead}`, JSON.stringify(quoteData));
-    console.log(`✅ Auto-save pour "${headerInfo.lead}"`);
-  };
-  
-  useEffect(() => {
-    autoSave();
-  }, [
-    headerInfo,
-    itemStates,
-    itemNotes,
-    forfaitData,
-    pieceLines,
-    lastMaintenance,
-    oilInfo,
-    includeControleTechnique,
-    includeContrevisite
-  ]);
 
   const getSavedQuotes = () => {
     const quotes = [];
@@ -690,6 +796,25 @@ const App = () => {
   const moByCategory = calculateMOByCategory(activeMecaniqueItems, forfaitData, activeDSPItems);
   const piecesBySupplier = getPiecesListBySupplier(activeMecaniqueItems, forfaitData, pieceLines);
 
+  // Fonction pour obtenir le statut d'affichage de Google API
+  const getGoogleApiStatusDisplay = () => {
+    if (googleApiState.error) {
+      return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
+    }
+    if (!googleApiState.loaded) {
+      return { text: '⏳ Chargement Google API...', color: 'text-orange-600' };
+    }
+    if (!googleApiState.initialized) {
+      return { text: '⏳ Initialisation Google API...', color: 'text-orange-600' };
+    }
+    if (googleApiState.signedIn) {
+      return { text: '✅ Connecté à Google Drive', color: 'text-green-600' };
+    }
+    return { text: '🔓 Google API prêt (non connecté)', color: 'text-blue-600' };
+  };
+
+  const statusDisplay = getGoogleApiStatusDisplay();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-8">
@@ -718,17 +843,18 @@ const App = () => {
           </p>
         </div>
 
-        {/* Module Sauvegarde/Chargement */}
+        {/* Module Sauvegarde/Chargement - AVEC STYLE UNIFIÉ */}
         <div className="mb-8 p-6 rounded-xl border-2 border-green-200 bg-green-50">
           <h2 className="text-lg font-bold text-gray-800 mb-4">Sauvegardez votre progression</h2>
           <p className="text-sm text-gray-600 mb-4">Enregistrez et rechargez vos devis</p>
           
-          <div className="flex gap-3">
+          {/* GRILLE DE BOUTONS AVEC STYLE UNIFIÉ */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={saveQuote}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all"
+              className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-md"
             >
-              💾 Sauvegarder
+              💾 Sauvegarder localement
             </button>
             
             <button
@@ -736,28 +862,53 @@ const App = () => {
                 const leadName = prompt('Entrez le nom du Lead à charger:');
                 if (leadName) loadQuote(leadName);
               }}
-              className="px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
-              style={{ backgroundColor: '#3B82F6' }}
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md"
             >
-              📂 Charger
+              📂 Charger un devis
+            </button>
+
+            <button
+              onClick={handleGoogleSignIn}
+              className="w-full px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!googleApiState.initialized}
+            >
+              🔐 Se connecter à Google Drive
+            </button>
+
+            <button
+              onClick={uploadToDrive}
+              className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!googleApiState.initialized}
+            >
+              ☁️ Sauvegarder sur Drive
             </button>
           </div>
-        </div>
 
-        <div className="flex gap-3 mt-3">
-          <button
-            onClick={() => gapi.auth2.getAuthInstance().signIn()}
-            className="px-6 py-3 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-all"
-          >
-            🔐 Se connecter à Google Drive
-          </button>
-
-          <button
-            onClick={uploadToDrive}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all"
-          >
-            ☁️ Sauvegarder sur Drive
-          </button>
+          {/* Indicateur d'état Google API */}
+          <div className="mt-4 p-3 bg-white rounded-lg border-2 border-gray-200 shadow-sm">
+            <div className="text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-current opacity-50"></div>
+                <span className={`font-medium ${statusDisplay.color}`}>{statusDisplay.text}</span>
+              </div>
+              {googleApiState.error && (
+                <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">
+                  <strong>Erreur de configuration:</strong><br/>
+                  Vérifiez vos variables d'environnement REACT_APP_GOOGLE_CLIENT_ID et REACT_APP_GOOGLE_API_KEY
+                </div>
+              )}
+              {!googleApiState.error && !googleApiState.initialized && (
+                <div className="mt-2 text-xs text-orange-600 bg-orange-50 p-2 rounded">
+                  ⏳ Les boutons Google Drive seront activés une fois l'API initialisée
+                </div>
+              )}
+              {googleApiState.initialized && !googleApiState.signedIn && (
+                <div className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                  👆 Cliquez sur "Se connecter à Google Drive" pour autoriser l'accès
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Formulaire véhicule */}
@@ -770,11 +921,13 @@ const App = () => {
           toggleFreinParking={toggleFreinParking}
           toggleStartStop={toggleStartStop}
         />
+
         {/* Module Maintenance */}
         <MaintenanceHistory
           lastMaintenance={lastMaintenance}
           updateLastMaintenance={updateLastMaintenance}
         />
+
         {/* Récapitulatif véhicule */}
         <VehicleSummary
           headerInfo={headerInfo}
@@ -804,8 +957,10 @@ const App = () => {
             onUpdateNote={updateNote}
           />
         </div>
+
         {/* Trait de séparation ORANGE avant SMART */}
         <div className="border-t-2 border-orange-400 my-8"></div>
+
         {/* Catégorie Mécanique - Déroulante */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6 pb-2 ">
@@ -839,8 +994,10 @@ const App = () => {
             </>
           )}
         </div>
+
         {/* Trait de séparation ORANGE avant SMART */}
         <div className="border-t-2 border-orange-400 my-8"></div>
+
         {/* Catégorie Pneus et Freins - Déroulante */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6 pb-2 border-b-">
@@ -949,8 +1106,10 @@ const App = () => {
             />
           )}
         </div>
+
         {/* Trait de séparation ORANGE avant SMART */}
         <div className="border-t-2 border-orange-400 my-8"></div>
+
         {/* Message de completion */}
         {allCompleted && (
           <div className="mt-6 p-4 bg-green-100 rounded-xl text-center">
