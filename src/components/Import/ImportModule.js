@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FOURNISSEURS } from '../../config/constants';
 
-// Formats internes (optionnels si on force une source)
 const IMPORT_FORMATS = [
   { id: 'auto', name: 'Détection automatique' },
   { id: 'ned', name: 'Forcer NED' },
@@ -13,7 +12,6 @@ const IMPORT_FORMATS = [
   { id: 'standard', name: 'Format standard (Ref | Désignation | Qté | Prix)' }
 ];
 
-// Sélecteur de provenance utilisateur
 const SOURCE_SYSTEMS = [
   { id: 'auto', label: 'Provenance auto (détecter)' },
   { id: 'NED', label: 'NED' },
@@ -23,6 +21,14 @@ const SOURCE_SYSTEMS = [
   { id: 'RENAULT', label: 'RENAULT' }
 ];
 
+// Mapping identique à App.js (MAJ SERVICEBOX -> XPR, ajout AUTOSSIMO)
+const SOURCE_FORCED_SUPPLIERS = {
+  NED: 'NED',
+  SERVICEBOX: 'XPR',
+  RENAULT: 'GUEUDET',
+  AUTOSSIMO: 'AUTOSSIMO'
+};
+
 const ImportModule = ({ 
   showImportModule,
   setShowImportModule,
@@ -30,7 +36,7 @@ const ImportModule = ({
   setImportText,
   parsedPieces,
   setParsedPieces,
-  parsePiecesText,   // (format, sourceSystem, defaultSupplier)
+  parsePiecesText,
   updateParsedPiece,
   removeParsedPiece,
   dispatchPieces,
@@ -40,18 +46,17 @@ const ImportModule = ({
   const [sourceSystem, setSourceSystem] = useState('auto');
   const [defaultFournisseur, setDefaultFournisseur] = useState('');
   
+  const forcedSupplier = SOURCE_FORCED_SUPPLIERS[sourceSystem] || '';
+
   const handleParsePieces = () => {
     parsePiecesText(selectedFormat, sourceSystem, defaultFournisseur);
   };
   
   const applyFournisseurToAll = (fournisseur) => {
+    if (forcedSupplier) return; // ignoré si forcé
     setDefaultFournisseur(fournisseur);
     if (parsedPieces.length > 0) {
-      const updatedPieces = parsedPieces.map(piece => ({
-        ...piece,
-        fournisseur
-      }));
-      setParsedPieces(updatedPieces);
+      setParsedPieces(parsedPieces.map(p => ({ ...p, fournisseur })));
     }
   };
 
@@ -108,17 +113,29 @@ const ImportModule = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fournisseur par défaut
+                  Fournisseur par défaut {forcedSupplier && '(forcé)'}
                 </label>
                 <select
-                  value={defaultFournisseur}
+                  value={forcedSupplier ? forcedSupplier : defaultFournisseur}
+                  disabled={!!forcedSupplier}
                   onChange={(e) => applyFournisseurToAll(e.target.value)}
-                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-3 py-2 border-2 rounded-lg text-sm disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                   style={{ borderColor: '#FF6B35' }}
                 >
-                  <option value="">-- Aucun --</option>
-                  {FOURNISSEURS.map(f => <option key={f} value={f}>{f}</option>)}
+                  {forcedSupplier ? (
+                    <option value={forcedSupplier}>{forcedSupplier}</option>
+                  ) : (
+                    <>
+                      <option value="">-- Aucun --</option>
+                      {FOURNISSEURS.map(f => <option key={f} value={f}>{f}</option>)}
+                    </>
+                  )}
                 </select>
+                {forcedSupplier && (
+                  <p className="text-xs mt-1 text-orange-700 font-semibold">
+                    Fournisseur imposé par la provenance.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -151,6 +168,11 @@ const ImportModule = ({
               <h3 className="text-lg font-bold text-gray-800 mb-3">
                 Étape 2: Vérifier et dispatcher ({parsedPieces.length} pièces)
               </h3>
+              {forcedSupplier && (
+                <div className="mb-3 p-3 bg-orange-50 border border-orange-300 rounded text-xs text-orange-800">
+                  Fournisseur forcé: <strong>{forcedSupplier}</strong> (édition désactivée).
+                </div>
+              )}
               <div className="bg-white rounded-lg border-2 p-4 max-h-96 overflow-y-auto" style={{ borderColor: '#FF6B35' }}>
                 {parsedPieces.map((piece, idx) => (
                   <div key={piece.id} className="mb-4 pb-4 border-b border-gray-200 last:border-b-0">
@@ -204,15 +226,21 @@ const ImportModule = ({
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700">Fournisseur</label>
+                        <label className="text-xs font-semibold text-gray-700">
+                          Fournisseur {piece._forcedFournisseur && '(forcé)'}
+                        </label>
                         <select
                           value={piece.fournisseur || ''}
+                          disabled={piece._forcedFournisseur}
                           onChange={(e) => updateParsedPiece(piece.id, 'fournisseur', e.target.value)}
-                          className="w-full px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          className="w-full px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
                           style={{ borderColor: '#FF6B35' }}
                         >
-                          <option value="">-</option>
-                          {FOURNISSEURS.map(f => <option key={f} value={f}>{f}</option>)}
+                          {!piece._forcedFournisseur && <option value="">-</option>}
+                          {piece._forcedFournisseur
+                            ? <option value={piece.fournisseur}>{piece.fournisseur}</option>
+                            : FOURNISSEURS.map(f => <option key={f} value={f}>{f}</option>)
+                          }
                         </select>
                       </div>
                       <div>
