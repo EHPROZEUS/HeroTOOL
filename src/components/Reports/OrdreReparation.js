@@ -106,29 +106,19 @@ const VENTILATION_CATEGORIES = [
 
 // Fonction pour ventiler les quantités et montants HT par catégorie
 function computeVentilation({
-  activeMecaniqueItems,
-  activeDSPItems,
-  forfaitData,
-  pieceLines,
-  moByCategory,
-  totals,
-  includeControleTechnique,
+  activeMecaniqueItems = [],
+  activeDSPItems = [],
+  forfaitData = {},
+  pieceLines = {},
+  moByCategory = {},
+  totals = {},
+  includeControleTechnique = false,
 }) {
   // Initialisation des résultats
   const result = {};
   VENTILATION_CATEGORIES.forEach(cat => {
     result[cat.key] = { qty: 0, ht: 0 };
   });
-
-  // MO MECANIQUE (additionne tous les moByCategory.mecanique et les MO obligatoires)
-  // MO CONTROLLING (obligatoire + autres)
-  // MO LUSTRAGE (catégorie Lustrage)
-  // MO DSP (catégorie DSP)
-  // PIECES MECANIQUE (toutes pièces hors DSP/lustrage)
-  // PRES. SOUS-TRAITEES (contrôle technique si activé)
-  // FLUIDES (ex: huile moteur, à adapter selon données)
-  // RECYCLAGE DECHETS (à remplir si prestations associées)
-  // etc.
 
   // MO OBLIGATOIRES
   for (const ob of OBLIGATORY_PRESTATIONS) {
@@ -143,66 +133,62 @@ function computeVentilation({
         break;
     }
   }
-  // Nettoyage obligatoire
+  // Nettoyage obligatoire (consommables sur pièces mécanique)
   for (const ob of OBLIGATORY_CLEANING) {
-    result.moMecanique.qty += 0; // pas de MO mécanique
-    result.moControlling.qty += 0; // pas de MO controlling
-    result.piecesMecanique.ht += ob.consommable.totalPrice;
-    result.piecesMecanique.qty += ob.consommable.quantity;
-    result.moMecanique.qty += 0; // ou créer une ligne MO Nettoyage spécifique si besoin
-    // Ici, on ne ventile pas sur MO LUSTRAGE, MO DSP, etc.
+    result.piecesMecanique.ht += ob.consommable.totalPrice || 0;
+    result.piecesMecanique.qty += ob.consommable.quantity || 0;
   }
 
   // MO dynamiques
-  if (moByCategory && moByCategory.mecanique) result.moMecanique.qty += moByCategory.mecanique;
-  if (moByCategory && moByCategory.lustrage) result.moLustrage.qty += moByCategory.lustrage;
-  if (moByCategory && moByCategory.dsp) result.moDSP.qty += moByCategory.dsp;
-  if (moByCategory && moByCategory.controlling) result.moControlling.qty += moByCategory.controlling;
-  if (moByCategory && moByCategory.forfaitaire) result.moForfaitaire.qty += moByCategory.forfaitaire;
-  if (moByCategory && moByCategory.peinture) result.moPeinture.qty += moByCategory.peinture;
-  if (moByCategory && moByCategory.tolerie) result.moTolerie.qty += moByCategory.tolerie;
+  result.moMecanique.qty += moByCategory.mecanique || 0;
+  result.moLustrage.qty += moByCategory.lustrage || 0;
+  result.moDSP.qty += moByCategory.dsp || 0;
+  result.moControlling.qty += moByCategory.controlling || 0;
+  result.moForfaitaire.qty += moByCategory.forfaitaire || 0;
+  result.moPeinture.qty += moByCategory.peinture || 0;
+  result.moTolerie.qty += moByCategory.tolerie || 0;
 
   // PIECES MECANIQUE (somme totalPieces)
-  if (totals && totals.totalPieces) {
-    result.piecesMecanique.ht += totals.totalPieces;
-    // qty non calculée précisément ici (pour du détail, adapter)
-  }
-  // FLUIDES (exemple : huile moteur) : à adapter selon ton data model
+  result.piecesMecanique.ht += totals.totalPieces || 0;
+
   // PRES. SOUS-TRAITEES (contrôle technique)
   if (includeControleTechnique) {
     result.presSousTraitees.qty += 1;
     result.presSousTraitees.ht += 42;
   }
 
-  // Tout le reste reste à 0 par défaut
   return result;
 }
 
-const OrdreReparation = ({ 
+const OrdreReparation = ({
   showOrdreReparation,
   setShowOrdreReparation,
-  includeControleTechnique,
+  includeControleTechnique = false,
   setIncludeControleTechnique,
-  includeContrevisite,
+  includeContrevisite = false,
   setIncludeContrevisite,
-  headerInfo,
-  activeMecaniqueItems,
-  activeDSPItems,
-  forfaitData,
-  pieceLines,
-  totals,
-  moByCategory,
+  headerInfo = {},
+  activeMecaniqueItems = [],
+  activeDSPItems = [],
+  forfaitData = {},
+  pieceLines = {},
+  totals = {},
+  moByCategory = {},
   printOrdreReparation
 }) => {
   // Identifie les items de lustrage actifs
-  const activeLustrageItems = activeMecaniqueItems.filter(item => 
-    LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
-  );
-  
+  const activeLustrageItems = Array.isArray(activeMecaniqueItems)
+    ? activeMecaniqueItems.filter(item =>
+        LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
+      )
+    : [];
+
   // Filtre les items de mécanique pour exclure les items de lustrage
-  const pureActiveMecaniqueItems = activeMecaniqueItems.filter(item => 
-    !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
-  );
+  const pureActiveMecaniqueItems = Array.isArray(activeMecaniqueItems)
+    ? activeMecaniqueItems.filter(item =>
+        !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
+      )
+    : [];
 
   // Calcul ventilation comptable
   const ventilation = computeVentilation({
@@ -221,25 +207,25 @@ const OrdreReparation = ({
         <h2 className="text-2xl font-bold text-gray-800">Ordre de réparation</h2>
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={includeControleTechnique}
-              onChange={(e) => setIncludeControleTechnique(e.target.checked)}
+            <input
+              type="checkbox"
+              checked={!!includeControleTechnique}
+              onChange={e => setIncludeControleTechnique && setIncludeControleTechnique(e.target.checked)}
               className="w-5 h-5 cursor-pointer"
             />
             <span className="text-sm font-medium">Contrôle Technique (42€)</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={includeContrevisite}
-              onChange={(e) => setIncludeContrevisite(e.target.checked)}
+            <input
+              type="checkbox"
+              checked={!!includeContrevisite}
+              onChange={e => setIncludeContrevisite && setIncludeContrevisite(e.target.checked)}
               className="w-5 h-5 cursor-pointer"
             />
             <span className="text-sm font-medium">Contre-visite (+10€)</span>
           </label>
-          <button 
-            onClick={() => setShowOrdreReparation(!showOrdreReparation)}
+          <button
+            onClick={() => setShowOrdreReparation && setShowOrdreReparation(!showOrdreReparation)}
             className="px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
             style={{ backgroundColor: '#FF6B35' }}
           >
@@ -249,19 +235,34 @@ const OrdreReparation = ({
       </div>
 
       {showOrdreReparation && (
-        <div id="ordre-reparation-content" className="bg-white border-4 rounded-xl p-8 shadow-2xl" style={{ borderColor: '#FF6B35' }}>
+        <div
+          id="ordre-reparation-content"
+          className="bg-white border-4 rounded-xl p-8 shadow-2xl"
+          style={{ borderColor: '#FF6B35' }}
+        >
           <div className="text-center mb-8 pb-6 border-b-2 border-gray-300">
-            <h1 className="text-3xl font-bold mb-2" style={{ color: '#FF6B35' }}>ORDRE DE RÉPARATION</h1>
-            <p className="text-gray-600">Document généré le {new Date().toLocaleDateString('fr-FR')}</p>
+            <h1 className="text-3xl font-bold mb-2" style={{ color: '#FF6B35' }}>
+              ORDRE DE RÉPARATION
+            </h1>
+            <p className="text-gray-600">
+              Document généré le {new Date().toLocaleDateString('fr-FR')}
+            </p>
           </div>
 
           {includeContrevisite && (
-            <div className="mb-8 p-4 border-2 rounded-lg" style={{ backgroundColor: '#FFF5F0', borderColor: '#FF6B35' }}>
+            <div
+              className="mb-8 p-4 border-2 rounded-lg"
+              style={{ backgroundColor: '#FFF5F0', borderColor: '#FF6B35' }}
+            >
               <div className="flex items-center gap-3">
                 <span className="text-3xl">⚠️</span>
                 <div>
-                  <p className="text-lg font-bold" style={{ color: '#FF6B35' }}>CONTRE-VISITE REQUISE</p>
-                  <p className="text-sm text-gray-800">Le véhicule nécessite une contre-visite du contrôle technique</p>
+                  <p className="text-lg font-bold" style={{ color: '#FF6B35' }}>
+                    CONTRE-VISITE REQUISE
+                  </p>
+                  <p className="text-sm text-gray-800">
+                    Le véhicule nécessite une contre-visite du contrôle technique
+                  </p>
                 </div>
               </div>
             </div>
@@ -272,57 +273,64 @@ const OrdreReparation = ({
             <div className="flex flex-col md:flex-row gap-8">
               {/* Informations véhicule condensées */}
               <div className="flex-1 min-w-[250px] max-w-[370px]">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
+                <h2
+                  className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
+                  style={{ backgroundColor: '#FFF0E6' }}
+                >
                   Informations Véhicule
                 </h2>
                 <div className="grid grid-cols-1 gap-2 text-xs">
-                  {headerInfo.lead && (
+                  {headerInfo?.lead && (
                     <div className="flex">
                       <span className="font-bold w-28">Client:</span>
                       <span>{headerInfo.lead}</span>
                     </div>
                   )}
-                  {headerInfo.immatriculation && (
+                  {headerInfo?.immatriculation && (
                     <div className="flex">
                       <span className="font-bold w-28">Immatriculation:</span>
                       <span>{headerInfo.immatriculation}</span>
                     </div>
                   )}
-                  {headerInfo.vin && (
+                  {headerInfo?.vin && (
                     <div className="flex">
                       <span className="font-bold w-28">VIN:</span>
                       <span className="text-xs">{headerInfo.vin}</span>
                     </div>
                   )}
-                  {headerInfo.kilometres && (
+                  {headerInfo?.kilometres && (
                     <div className="flex">
                       <span className="font-bold w-28">Kilomètres:</span>
                       <span>{headerInfo.kilometres} km</span>
                     </div>
                   )}
-                  {headerInfo.dateVehicule && (
+                  {headerInfo?.dateVehicule && (
                     <div className="flex">
                       <span className="font-bold w-28">Âge véhicule:</span>
                       <span>{calculateVehicleAge(headerInfo.dateVehicule)}</span>
                     </div>
                   )}
-                  {headerInfo.dateVehicule && (
+                  {headerInfo?.dateVehicule && (
                     <div className="flex">
                       <span className="font-bold w-28">Mise en circ.:</span>
                       <span>{formatDateFr(headerInfo.dateVehicule)}</span>
                     </div>
                   )}
-                  {headerInfo.moteur && (
+                  {headerInfo?.moteur && (
                     <div className="flex">
                       <span className="font-bold w-28">Moteur:</span>
                       <span className="capitalize">{headerInfo.moteur}</span>
                     </div>
                   )}
-                  {headerInfo.boite && (
+                  {headerInfo?.boite && (
                     <div className="flex">
                       <span className="font-bold w-28">Boîte:</span>
                       <span className="capitalize">
-                        {headerInfo.boite === 'auto/cvt' ? 'Auto/CVT' : headerInfo.boite === 'dct' ? 'DCT' : headerInfo.boite}
+                        {headerInfo.boite === 'auto/cvt'
+                          ? 'Auto/CVT'
+                          : headerInfo.boite === 'dct'
+                          ? 'DCT'
+                          : headerInfo.boite}
                       </span>
                     </div>
                   )}
@@ -330,24 +338,42 @@ const OrdreReparation = ({
               </div>
               {/* Tableau ventilation comptable */}
               <div className="flex-1 min-w-[280px] max-w-[400px]">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
+                <h2
+                  className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
+                  style={{ backgroundColor: '#FFF0E6' }}
+                >
                   Ventilation comptable
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full border-2 border-gray-300 text-xs bg-white">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-2 text-left">Ventilation comptable</th>
-                        <th className="border border-gray-300 p-2 text-right">MO/H<br />ou Qté</th>
-                        <th className="border border-gray-300 p-2 text-right">Montant HT</th>
+                        <th className="border border-gray-300 p-2 text-left">
+                          Ventilation comptable
+                        </th>
+                        <th className="border border-gray-300 p-2 text-right">
+                          MO/H<br />
+                          ou Qté
+                        </th>
+                        <th className="border border-gray-300 p-2 text-right">
+                          Montant HT
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {VENTILATION_CATEGORIES.map(cat => (
                         <tr key={cat.key}>
                           <td className="border border-gray-300 p-2">{cat.label}</td>
-                          <td className="border border-gray-300 p-2 text-right">{ventilation[cat.key]?.qty || 0}</td>
-                          <td className="border border-gray-300 p-2 text-right">{ventilation[cat.key]?.ht ? ventilation[cat.key].ht.toFixed(2) : 0}</td>
+                          <td className="border border-gray-300 p-2 text-right">
+                            {ventilation?.[cat.key]?.qty !== undefined
+                              ? ventilation[cat.key].qty
+                              : 0}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-right">
+                            {ventilation?.[cat.key]?.ht !== undefined
+                              ? Number(ventilation[cat.key].ht).toFixed(2)
+                              : "0.00"}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -359,10 +385,13 @@ const OrdreReparation = ({
           {/* =============== FIN INFOS + VENTILATION =============== */}
 
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
+            <h2
+              className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
+              style={{ backgroundColor: '#FFF0E6' }}
+            >
               Détail des Opérations
             </h2>
-            
+
             <table className="w-full border-collapse border-2 border-gray-300 text-sm">
               <thead className="bg-gray-200">
                 <tr>
@@ -416,77 +445,128 @@ const OrdreReparation = ({
                 ))}
 
                 {/* === PRESTATIONS DYNAMIQUES EXISTANTES === */}
-                {pureActiveMecaniqueItems.map(item => {
-                  const forfait = forfaitData[item.id] || {};
-                  const defaults = getDefaultValues(item.id);
-                  
-                  const moQuantity = forfait.moQuantity !== undefined ? forfait.moQuantity : defaults.moQuantity;
-                  const pieceReference = forfait.pieceReference !== undefined ? forfait.pieceReference : defaults.pieceReference;
-                  const pieceQuantity = forfait.pieceQuantity !== undefined ? forfait.pieceQuantity : defaults.pieceQuantity;
-                  const piecePrix = forfait.piecePrix !== undefined ? forfait.piecePrix : defaults.piecePrix;
-                  
-                  const moCategory = forfait.moCategory || 'Mécanique';
-                  
-                  return (
-                    <React.Fragment key={item.id}>
-                      <tr style={{ backgroundColor: '#FFE4D6' }}>
-                        <td colSpan="7" className="border border-gray-300 p-2 font-bold">{item.label}</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-2">Main d'œuvre</td>
-                        <td className="border border-gray-300 p-2">-</td>
-                        <td className="border border-gray-300 p-2">{forfait.moDesignation || 'Temps de travail'}</td>
-                        <td className="border border-gray-300 p-2">{moCategory}</td>
-                        <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
-                        <td className="border border-gray-300 p-2 text-right">-</td>
-                        <td className="border border-gray-300 p-2 text-right">-</td>
-                      </tr>
-                      {item.id !== 'miseANiveau' && pieceReference && (
+                {Array.isArray(pureActiveMecaniqueItems) &&
+                  pureActiveMecaniqueItems.map(item => {
+                    const forfait = forfaitData?.[item.id] || {};
+                    const defaults = typeof getDefaultValues === "function" ? getDefaultValues(item.id) : {};
+                    const moQuantity =
+                      forfait.moQuantity !== undefined
+                        ? forfait.moQuantity
+                        : defaults.moQuantity || 0;
+                    const pieceReference =
+                      forfait.pieceReference !== undefined
+                        ? forfait.pieceReference
+                        : defaults.pieceReference || "-";
+                    const pieceQuantity =
+                      forfait.pieceQuantity !== undefined
+                        ? forfait.pieceQuantity
+                        : defaults.pieceQuantity || 0;
+                    const piecePrix =
+                      forfait.piecePrix !== undefined
+                        ? forfait.piecePrix
+                        : defaults.piecePrix || 0;
+                    const moCategory = forfait.moCategory || "Mécanique";
+
+                    return (
+                      <React.Fragment key={item.id}>
+                        <tr style={{ backgroundColor: "#FFE4D6" }}>
+                          <td colSpan="7" className="border border-gray-300 p-2 font-bold">
+                            {item.label}
+                          </td>
+                        </tr>
                         <tr>
-                          <td className="border border-gray-300 p-2">Pièce</td>
-                          <td className="border border-gray-300 p-2">{pieceReference}</td>
-                          <td className="border border-gray-300 p-2">{forfait.pieceDesignation || '-'}</td>
+                          <td className="border border-gray-300 p-2">Main d'œuvre</td>
                           <td className="border border-gray-300 p-2">-</td>
-                          <td className="border border-gray-300 p-2 text-right">{pieceQuantity}</td>
-                          <td className="border border-gray-300 p-2 text-right">{forfait.piecePrixUnitaire || '-'} €</td>
-                          <td className="border border-gray-300 p-2 text-right">{piecePrix} €</td>
+                          <td className="border border-gray-300 p-2">
+                            {forfait.moDesignation || "Temps de travail"}
+                          </td>
+                          <td className="border border-gray-300 p-2">{moCategory}</td>
+                          <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
                         </tr>
-                      )}
-                      {pieceLines[item.id]?.map((line, idx) => (
-                        <tr key={idx}>
-                          <td className="border border-gray-300 p-2">Pièce suppl.</td>
-                          <td className="border border-gray-300 p-2">{line.reference}</td>
-                          <td className="border border-gray-300 p-2">{line.designation || '-'}</td>
-                          <td className="border border-gray-300 p-2">-</td>
-                          <td className="border border-gray-300 p-2 text-right">{line.quantity}</td>
-                          <td className="border border-gray-300 p-2 text-right">{line.prixUnitaire || '-'} €</td>
-                          <td className="border border-gray-300 p-2 text-right">{line.prix} €</td>
-                        </tr>
-                      ))}
-                      {item.id === 'filtreHuile' && forfait.consommableReference && (
-                        <tr>
-                          <td className="border border-gray-300 p-2">Consommable</td>
-                          <td className="border border-gray-300 p-2">{forfait.consommableReference}</td>
-                          <td className="border border-gray-300 p-2">{forfait.consommableDesignation || 'Huile moteur'}</td>
-                          <td className="border border-gray-300 p-2">-</td>
-                          <td className="border border-gray-300 p-2 text-right">{forfait.consommableQuantity} L</td>
-                          <td className="border border-gray-300 p-2 text-right">{forfait.consommablePrixUnitaire || '-'} €</td>
-                          <td className="border border-gray-300 p-2 text-right">{forfait.consommablePrix} €</td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-                
+                        {item.id !== "miseANiveau" && pieceReference && (
+                          <tr>
+                            <td className="border border-gray-300 p-2">Pièce</td>
+                            <td className="border border-gray-300 p-2">{pieceReference}</td>
+                            <td className="border border-gray-300 p-2">
+                              {forfait.pieceDesignation || "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {pieceQuantity}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {forfait.piecePrixUnitaire !== undefined
+                                ? `${forfait.piecePrixUnitaire} €`
+                                : "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {piecePrix} €
+                            </td>
+                          </tr>
+                        )}
+                        {pieceLines?.[item.id]?.map((line, idx) => (
+                          <tr key={idx}>
+                            <td className="border border-gray-300 p-2">Pièce suppl.</td>
+                            <td className="border border-gray-300 p-2">{line.reference}</td>
+                            <td className="border border-gray-300 p-2">
+                              {line.designation || "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {line.quantity}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {line.prixUnitaire !== undefined ? `${line.prixUnitaire} €` : "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {line.prix} €
+                            </td>
+                          </tr>
+                        ))}
+                        {item.id === "filtreHuile" && forfait.consommableReference && (
+                          <tr>
+                            <td className="border border-gray-300 p-2">Consommable</td>
+                            <td className="border border-gray-300 p-2">
+                              {forfait.consommableReference}
+                            </td>
+                            <td className="border border-gray-300 p-2">
+                              {forfait.consommableDesignation || "Huile moteur"}
+                            </td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {forfait.consommableQuantity || 0} L
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {forfait.consommablePrixUnitaire !== undefined
+                                ? `${forfait.consommablePrixUnitaire} €`
+                                : "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {forfait.consommablePrix !== undefined
+                                ? `${forfait.consommablePrix} €`
+                                : "-"}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+
                 {includeControleTechnique && (
                   <>
-                    <tr style={{ backgroundColor: '#FFE4D6' }}>
-                      <td colSpan="7" className="border border-gray-300 p-2 font-bold">Contrôle Technique</td>
+                    <tr style={{ backgroundColor: "#FFE4D6" }}>
+                      <td colSpan="7" className="border border-gray-300 p-2 font-bold">
+                        Contrôle Technique
+                      </td>
                     </tr>
                     <tr>
                       <td className="border border-gray-300 p-2">Prestation extérieure</td>
                       <td className="border border-gray-300 p-2">-</td>
-                      <td className="border border-gray-300 p-2">Contrôle technique obligatoire</td>
+                      <td className="border border-gray-300 p-2">
+                        Contrôle technique obligatoire
+                      </td>
                       <td className="border border-gray-300 p-2">-</td>
                       <td className="border border-gray-300 p-2 text-right">1</td>
                       <td className="border border-gray-300 p-2 text-right">42.00 €</td>
@@ -498,33 +578,42 @@ const OrdreReparation = ({
                   <tr>
                     <td className="border border-gray-300 p-2">Prestation extérieure</td>
                     <td className="border border-gray-300 p-2">-</td>
-                    <td className="border border-gray-300 p-2 bg-orange-50 font-semibold">Contre-visite</td>
+                    <td className="border border-gray-300 p-2 bg-orange-50 font-semibold">
+                      Contre-visite
+                    </td>
                     <td className="border border-gray-300 p-2">-</td>
                     <td className="border border-gray-300 p-2 text-right">1</td>
                     <td className="border border-gray-300 p-2 text-right">10.00 €</td>
                     <td className="border border-gray-300 p-2 text-right">10.00 €</td>
                   </tr>
                 )}
-                
+
                 {/* Section DSP */}
-                {activeDSPItems.length > 0 && (
+                {Array.isArray(activeDSPItems) && activeDSPItems.length > 0 && (
                   <>
-                    <tr style={{ backgroundColor: '#DBEAFE' }}>
-                      <td colSpan="7" className="border border-gray-300 p-3 font-bold text-blue-600 text-lg">
+                    <tr style={{ backgroundColor: "#DBEAFE" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-3 font-bold text-blue-600 text-lg"
+                      >
                         SMART - DSP
                       </td>
                     </tr>
                     {activeDSPItems.map(dspItem => {
                       const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
                       if (!dspConfig) return null;
-                      
+
                       return (
                         <tr key={dspItem.id}>
                           <td className="border border-gray-300 p-2">Main d'œuvre DSP</td>
                           <td className="border border-gray-300 p-2">-</td>
-                          <td className="border border-gray-300 p-2">{dspConfig.label}</td>
+                          <td className="border border-gray-300 p-2">
+                            {dspConfig.label}
+                          </td>
                           <td className="border border-gray-300 p-2">DSP</td>
-                          <td className="border border-gray-300 p-2 text-right">{dspConfig.moQuantity} h</td>
+                          <td className="border border-gray-300 p-2 text-right">
+                            {dspConfig.moQuantity} h
+                          </td>
                           <td className="border border-gray-300 p-2 text-right">-</td>
                           <td className="border border-gray-300 p-2 text-right">-</td>
                         </tr>
@@ -532,45 +621,76 @@ const OrdreReparation = ({
                     })}
                   </>
                 )}
-                
+
                 {/* Section LUSTRAGE */}
-                {activeLustrageItems.length > 0 && (
+                {Array.isArray(activeLustrageItems) && activeLustrageItems.length > 0 && (
                   <>
-                    <tr style={{ backgroundColor: '#FEF3C7' }}>
-                      <td colSpan="7" className="border border-gray-300 p-3 font-bold text-amber-600 text-lg">
+                    <tr style={{ backgroundColor: "#FEF3C7" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-3 font-bold text-amber-600 text-lg"
+                      >
                         SMART - LUSTRAGE
                       </td>
                     </tr>
                     {activeLustrageItems.map(lustrageItem => {
-                      const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
+                      const lustrageConfig = LUSTRAGE_ITEMS.find(
+                        item => item.id === lustrageItem.id
+                      );
                       if (!lustrageConfig) return null;
-                      
-                      const forfait = forfaitData[lustrageItem.id] || {};
-                      const moQuantity = forfait.moQuantity !== undefined ? forfait.moQuantity : lustrageConfig.moQuantity;
-                      const consommableQuantity = forfait.consommableQuantity !== undefined ? forfait.consommableQuantity : lustrageConfig.consommable;
-                      const consommablePrixUnitaire = forfait.consommablePrixUnitaire || 1.00; // Prix unitaire par défaut
+
+                      const forfait = forfaitData?.[lustrageItem.id] || {};
+                      const moQuantity =
+                        forfait.moQuantity !== undefined
+                          ? forfait.moQuantity
+                          : lustrageConfig.moQuantity || 0;
+                      const consommableQuantity =
+                        forfait.consommableQuantity !== undefined
+                          ? forfait.consommableQuantity
+                          : lustrageConfig.consommable || 0;
+                      const consommablePrixUnitaire =
+                        forfait.consommablePrixUnitaire !== undefined
+                          ? forfait.consommablePrixUnitaire
+                          : 1.0;
                       const consommablePrix = consommableQuantity * consommablePrixUnitaire;
-                      
+
                       return (
                         <React.Fragment key={lustrageItem.id}>
                           <tr>
-                            <td className="border border-gray-300 p-2">Main d'œuvre Lustrage</td>
+                            <td className="border border-gray-300 p-2">
+                              Main d'œuvre Lustrage
+                            </td>
                             <td className="border border-gray-300 p-2">-</td>
-                            <td className="border border-gray-300 p-2">{lustrageConfig.label}</td>
+                            <td className="border border-gray-300 p-2">
+                              {lustrageConfig.label}
+                            </td>
                             <td className="border border-gray-300 p-2">Lustrage</td>
-                            <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {moQuantity} h
+                            </td>
                             <td className="border border-gray-300 p-2 text-right">-</td>
                             <td className="border border-gray-300 p-2 text-right">-</td>
                           </tr>
                           {consommableQuantity > 0 && (
                             <tr>
                               <td className="border border-gray-300 p-2">Consommable</td>
-                              <td className="border border-gray-300 p-2">{forfait.consommableReference || '-'}</td>
-                              <td className="border border-gray-300 p-2">{forfait.consommableDesignation || 'Consommable lustrage'}</td>
+                              <td className="border border-gray-300 p-2">
+                                {forfait.consommableReference || "-"}
+                              </td>
+                              <td className="border border-gray-300 p-2">
+                                {forfait.consommableDesignation ||
+                                  "Consommable lustrage"}
+                              </td>
                               <td className="border border-gray-300 p-2">-</td>
-                              <td className="border border-gray-300 p-2 text-right">{consommableQuantity}</td>
-                              <td className="border border-gray-300 p-2 text-right">{consommablePrixUnitaire.toFixed(2)} €</td>
-                              <td className="border border-gray-300 p-2 text-right">{consommablePrix.toFixed(2)} €</td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommableQuantity}
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommablePrixUnitaire.toFixed(2)} €
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommablePrix.toFixed(2)} €
+                              </td>
                             </tr>
                           )}
                         </React.Fragment>
@@ -583,27 +703,43 @@ const OrdreReparation = ({
           </div>
 
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
+            <h2
+              className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
+              style={{ backgroundColor: '#FFF0E6' }}
+            >
               Récapitulatif Financier
             </h2>
             <div className="bg-gray-50 p-6 rounded-lg border-2 border-gray-300">
               <div className="space-y-2 text-lg">
                 <div className="flex justify-between">
                   <span className="font-semibold">Total Main d'œuvre:</span>
-                  <span>{totals.totalMO} €</span>
+                  <span>{totals?.totalMO !== undefined ? totals.totalMO : "0.00"} €</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-semibold">Total Pièces:</span>
-                  <span>{totals.totalPieces} €</span>
+                  <span>{totals?.totalPieces !== undefined ? totals.totalPieces : "0.00"} €</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-semibold">Total Consommables:</span>
-                  <span>{totals.totalConsommables} €</span>
+                  <span>
+                    {totals?.totalConsommables !== undefined
+                      ? totals.totalConsommables
+                      : "0.00"}{" "}
+                    €
+                  </span>
                 </div>
                 <div className="border-t-2 border-gray-400 pt-2 mt-2"></div>
-                <div className="flex justify-between text-xl font-bold" style={{ color: '#FF6B35' }}>
+                <div
+                  className="flex justify-between text-xl font-bold"
+                  style={{ color: '#FF6B35' }}
+                >
                   <span>TOTAL HT (sans prestations ext.):</span>
-                  <span>{totals.totalHTSansPrestations} €</span>
+                  <span>
+                    {totals?.totalHTSansPrestations !== undefined
+                      ? totals.totalHTSansPrestations
+                      : "0.00"}{" "}
+                    €
+                  </span>
                 </div>
                 {includeControleTechnique && (
                   <div className="flex justify-between">
@@ -617,17 +753,25 @@ const OrdreReparation = ({
                     <span>10.00 €</span>
                   </div>
                 )}
-                <div className="border-t-2 pt-2 mt-2" style={{ borderColor: '#FF6B35' }}></div>
-                <div className="flex justify-between text-2xl font-bold" style={{ color: '#FF6B35' }}>
+                <div
+                  className="border-t-2 pt-2 mt-2"
+                  style={{ borderColor: '#FF6B35' }}
+                ></div>
+                <div
+                  className="flex justify-between text-2xl font-bold"
+                  style={{ color: '#FF6B35' }}
+                >
                   <span>TOTAL HT:</span>
-                  <span>{totals.totalHT} €</span>
+                  <span>
+                    {totals?.totalHT !== undefined ? totals.totalHT : "0.00"} €
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="mt-8 text-center">
-            <button 
+            <button
               onClick={printOrdreReparation}
               className="print-button px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
             >
