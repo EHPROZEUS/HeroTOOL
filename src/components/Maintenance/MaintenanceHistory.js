@@ -11,7 +11,7 @@ const maintenanceItems = [
   { field: 'liquideRefroidissement', label: 'Liquide refroid.' },
   { field: 'courroieDistribution', label: 'Courroie distrib.' },
   { field: 'courroieAccessoire', label: 'Courroie access.' }
-];
+  ];
 
 function timeSince(dateStr) {
   if (!dateStr) return '';
