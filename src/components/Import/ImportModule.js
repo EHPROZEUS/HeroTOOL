@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FOURNISSEURS } from '../../config/constants';
 
-const COMPACT_MODE = true; // mettre false pour revenir au style précédent
+const COMPACT_MODE = true; // si tu mets false tu retrouves le style large
 
 const IMPORT_FORMATS = [
   { id: 'auto', name: 'Détection automatique' },
@@ -35,6 +35,9 @@ const baseInput =
 const compactInput = COMPACT_MODE
   ? 'px-2 py-1 text-[11px] leading-tight'
   : 'px-3 py-2 text-sm';
+const designationInput = COMPACT_MODE
+  ? 'px-3 py-2 text-[12px] leading-snug'
+  : 'px-4 py-2 text-sm';
 const borderStyle = { borderColor: '#FF6B35' };
 
 const ImportModule = ({
@@ -184,7 +187,7 @@ const ImportModule = ({
             </div>
           </div>
 
-            {parsedPieces.length > 0 && (
+          {parsedPieces.length > 0 && (
             <div>
               <h3 className="text-lg font-bold text-gray-800 mb-3">
                 Étape 2: Vérifier et dispatcher ({parsedPieces.length} pièces)
@@ -243,7 +246,7 @@ const ImportModule = ({
                           Désignation
                         </label>
                         <textarea
-                          rows={1}
+                          rows={2}
                           value={piece.designation}
                           onChange={e =>
                             updateParsedPiece(
@@ -253,7 +256,7 @@ const ImportModule = ({
                             )
                           }
                           placeholder="Description..."
-                          className={`${baseInput} ${compactInput} w-full resize-y`}
+                          className={`${baseInput} ${designationInput} w-full resize-y min-h-[50px]`}
                           style={borderStyle}
                         />
                       </div>
