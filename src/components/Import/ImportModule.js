@@ -1,12 +1,26 @@
 import React, { useState } from 'react';
 import { FOURNISSEURS } from '../../config/constants';
 
+// Formats internes (optionnels si on force une source)
 const IMPORT_FORMATS = [
   { id: 'auto', name: 'Détection automatique' },
+  { id: 'ned', name: 'Forcer NED' },
+  { id: 'autossimo', name: 'Forcer AUTOSSIMO' },
+  { id: 'servicebox', name: 'Forcer SERVICEBOX' },
+  { id: 'partslink', name: 'Forcer PARTSLINK' },
+  { id: 'renault', name: 'Forcer RENAULT' },
   { id: 'xpr', name: 'XPR DISTRIBUTION' },
-  { id: 'standard', name: 'Format standard (Ref | Désignation | Qté | Prix)' },
-  { id: 'fournisseur', name: 'Format fournisseur complet' },
-  { id: 'or', name: 'Format ordre réparation' }
+  { id: 'standard', name: 'Format standard (Ref | Désignation | Qté | Prix)' }
+];
+
+// Sélecteur de provenance utilisateur
+const SOURCE_SYSTEMS = [
+  { id: 'auto', label: 'Provenance auto (détecter)' },
+  { id: 'NED', label: 'NED' },
+  { id: 'AUTOSSIMO', label: 'AUTOSSIMO' },
+  { id: 'SERVICEBOX', label: 'SERVICEBOX' },
+  { id: 'PARTSLINK', label: 'PARTSLINK' },
+  { id: 'RENAULT', label: 'RENAULT' }
 ];
 
 const ImportModule = ({ 
@@ -16,28 +30,26 @@ const ImportModule = ({
   setImportText,
   parsedPieces,
   setParsedPieces,
-  parsePiecesText,
+  parsePiecesText,   // (format, sourceSystem, defaultSupplier)
   updateParsedPiece,
   removeParsedPiece,
   dispatchPieces,
   activeItems
 }) => {
   const [selectedFormat, setSelectedFormat] = useState('auto');
+  const [sourceSystem, setSourceSystem] = useState('auto');
   const [defaultFournisseur, setDefaultFournisseur] = useState('');
   
-  // Fonction modifiée pour prendre en compte le format sélectionné
   const handleParsePieces = () => {
-    // On passe le format sélectionné à la fonction de parsing
-    parsePiecesText(selectedFormat, defaultFournisseur);
+    parsePiecesText(selectedFormat, sourceSystem, defaultFournisseur);
   };
   
-  // Fonction pour appliquer le fournisseur à toutes les pièces
   const applyFournisseurToAll = (fournisseur) => {
     setDefaultFournisseur(fournisseur);
     if (parsedPieces.length > 0) {
       const updatedPieces = parsedPieces.map(piece => ({
         ...piece,
-        fournisseur: fournisseur
+        fournisseur
       }));
       setParsedPieces(updatedPieces);
     }
@@ -61,11 +73,26 @@ const ImportModule = ({
           <div className="mb-6">
             <h3 className="text-lg font-bold text-gray-800 mb-3">Étape 1: Configurer l'importation</h3>
             
-            {/* Nouveaux sélecteurs de format et fournisseur */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Format des données
+                  Provenance (Source système)
+                </label>
+                <select
+                  value={sourceSystem}
+                  onChange={(e) => setSourceSystem(e.target.value)}
+                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  style={{ borderColor: '#FF6B35' }}
+                >
+                  {SOURCE_SYSTEMS.map(src => (
+                    <option key={src.id} value={src.id}>{src.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Format interne (optionnel)
                 </label>
                 <select
                   value={selectedFormat}
@@ -78,9 +105,10 @@ const ImportModule = ({
                   ))}
                 </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fournisseur par défaut (appliqué à toutes les pièces)
+                  Fournisseur par défaut
                 </label>
                 <select
                   value={defaultFournisseur}
@@ -88,27 +116,16 @@ const ImportModule = ({
                   className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   style={{ borderColor: '#FF6B35' }}
                 >
-                  <option value="">-- Sélectionner un fournisseur --</option>
+                  <option value="">-- Aucun --</option>
                   {FOURNISSEURS.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
               </div>
             </div>
-            
-            <div className="bg-blue-50 border border-blue-300 rounded-lg p-3 mb-3">
-              <p className="text-sm font-semibold text-blue-900 mb-2">Formats acceptés :</p>
-              <ul className="text-xs text-blue-800 space-y-1">
-                <li>✓ <strong>XPR DISTRIBUTION</strong> - Copiez directement les lignes du tableau de commande</li>
-                <li>✓ Tableaux copiés depuis un site web (avec tabulations)</li>
-                <li>✓ Format fournisseur : Ref | Fournisseur | Désignation | Délai | Qté | Prix unit. | Remises | Total</li>
-                <li>✓ Format ordre réparation : Ref | Désignation | Qté | PC/MO | Prix</li>
-                <li>✓ Format simple : Ref ; Désignation ; Qté ; Prix (séparés par ; , ou tabulation)</li>
-              </ul>
-              <p className="text-xs text-blue-700 mt-2 italic">Astuce: Sélectionnez les lignes dans votre tableau et collez-les directement !</p>
-            </div>
+
             <textarea
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
-              placeholder="Collez ici votre tableau de pièces...&#10;&#10;Format XPR DISTRIBUTION:&#10;1654515380    KIT COURROIE DISTRI COMPLET    W    1    V    ...    190.62 EUR    38.00%    118.1[...]"
+              placeholder="Collez ici vos lignes (NED, AUTOSSIMO, SERVICEBOX, PARTSLINK, RENAULT...)"
               className="w-full h-40 px-4 py-3 border-2 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-orange-500"
               style={{ borderColor: '#FF6B35' }}
             />
@@ -118,7 +135,7 @@ const ImportModule = ({
                 className="px-6 py-2 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
                 style={{ backgroundColor: '#FF6B35' }}
               >
-                📋 Parser les pièces ({importText.split('\n').filter(l => l.trim()).length} lignes)
+                📋 Parser ({importText.split('\n').filter(l => l.trim()).length} lignes)
               </button>
               <button
                 onClick={() => setImportText('')}
@@ -132,18 +149,9 @@ const ImportModule = ({
           {parsedPieces.length > 0 && (
             <div>
               <h3 className="text-lg font-bold text-gray-800 mb-3">
-                Étape 2: Vérifier et dispatcher ({parsedPieces.length} pièces détectées)
+                Étape 2: Vérifier et dispatcher ({parsedPieces.length} pièces)
               </h3>
               <div className="bg-white rounded-lg border-2 p-4 max-h-96 overflow-y-auto" style={{ borderColor: '#FF6B35' }}>
-                <div className="mb-3 p-3 bg-green-50 border border-green-300 rounded">
-                  <p className="text-sm font-semibold text-green-800">
-                    ✓ {parsedPieces.length} pièce(s) parsée(s) avec succès !
-                  </p>
-                  <p className="text-xs text-green-700 mt-1">
-                    Vérifiez les données ci-dessous, sélectionnez les fournisseurs et forfaits cibles, puis cliquez sur "Dispatcher".
-                  </p>
-                </div>
-                
                 {parsedPieces.map((piece, idx) => (
                   <div key={piece.id} className="mb-4 pb-4 border-b border-gray-200 last:border-b-0">
                     <div className="flex items-center gap-2 mb-2">
@@ -189,8 +197,8 @@ const ImportModule = ({
                         <label className="text-xs font-semibold text-gray-700">Prix Unit.</label>
                         <input
                           type="text"
-                          value={piece.unitPrice}
-                          onChange={(e) => updateParsedPiece(piece.id, 'unitPrice', e.target.value)}
+                          value={piece.prixUnitaire || piece.unitPrice || ''}
+                          onChange={(e) => updateParsedPiece(piece.id, 'prixUnitaire', e.target.value)}
                           className="w-full px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                           style={{ borderColor: '#FF6B35' }}
                         />
@@ -198,7 +206,7 @@ const ImportModule = ({
                       <div>
                         <label className="text-xs font-semibold text-gray-700">Fournisseur</label>
                         <select
-                          value={piece.fournisseur}
+                          value={piece.fournisseur || ''}
                           onChange={(e) => updateParsedPiece(piece.id, 'fournisseur', e.target.value)}
                           className="w-full px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                           style={{ borderColor: '#FF6B35' }}
@@ -209,26 +217,17 @@ const ImportModule = ({
                       </div>
                       <div>
                         <label className="text-xs font-semibold text-gray-700">Forfait cible *</label>
-                        <div className="flex gap-1">
-                          <select
-                            value={piece.targetForfait}
-                            onChange={(e) => updateParsedPiece(piece.id, 'targetForfait', e.target.value)}
-                            className="w-full px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            style={{ borderColor: '#FF6B35' }}
-                          >
-                            <option value="">Choisir...</option>
-                            {activeItems.map(item => (
-                              <option key={item.id} value={item.id}>{item.label}</option>
-                            ))}
-                          </select>
-                          <button
-                            onClick={() => removeParsedPiece(piece.id)}
-                            className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-all"
-                            title="Supprimer cette pièce"
-                          >
-                            ✕
-                          </button>
-                        </div>
+                        <select
+                          value={piece.targetForfait || ''}
+                          onChange={(e) => updateParsedPiece(piece.id, 'targetForfait', e.target.value)}
+                          className="w-full px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          style={{ borderColor: '#FF6B35' }}
+                        >
+                          <option value="">Choisir...</option>
+                          {activeItems.map(item => (
+                            <option key={item.id} value={item.id}>{item.label}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -240,16 +239,13 @@ const ImportModule = ({
                   onClick={dispatchPieces}
                   className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 shadow-lg transition-all"
                 >
-                  ✓ Dispatcher toutes les pièces dans les forfaits
+                  ✓ Dispatcher toutes les pièces
                 </button>
                 <button
-                  onClick={() => { 
-                    setImportText(''); 
-                    setParsedPieces([]); 
-                  }}
+                  onClick={() => { setImportText(''); setParsedPieces([]); }}
                   className="px-6 py-3 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition-all"
                 >
-                  ↺ Réinitialiser tout
+                  ↺ Réinitialiser
                 </button>
               </div>
             </div>
