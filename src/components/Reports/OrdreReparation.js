@@ -269,17 +269,14 @@ const OrdreReparation = ({
           )}
 
           {/* =============== INFOS VEHICULE + VENTILATION COMPTABLE =============== */}
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row gap-8">
+          <div className="mb-6">
+            <div className="flex flex-col md:flex-row gap-4">
               {/* Informations véhicule condensées */}
               <div className="flex-1 min-w-[250px] max-w-[370px]">
-                <h2
-                  className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
-                  style={{ backgroundColor: '#FFF0E6' }}
-                >
-                  Informations Véhicule
-                </h2>
-                <div className="grid grid-cols-1 gap-2 text-xs">
+                <div className="flex items-center mb-2 border-b border-gray-200 pb-1">
+                  <h2 className="text-base font-bold text-gray-800">Informations Véhicule</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-1 text-xs">
                   {headerInfo?.lead && (
                     <div className="flex">
                       <span className="font-bold w-28">Client:</span>
@@ -338,24 +335,21 @@ const OrdreReparation = ({
               </div>
               {/* Tableau ventilation comptable */}
               <div className="flex-1 min-w-[280px] max-w-[400px]">
-                <h2
-                  className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
-                  style={{ backgroundColor: '#FFF0E6' }}
-                >
-                  Ventilation comptable
-                </h2>
+                <div className="flex items-center mb-2 border-b border-gray-200 pb-1">
+                  <h2 className="text-base font-bold text-gray-800">Ventilation comptable</h2>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full border-2 border-gray-300 text-xs bg-white">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-2 text-left">
+                        <th className="border border-gray-300 p-1 text-left">
                           Ventilation comptable
                         </th>
-                        <th className="border border-gray-300 p-2 text-right">
+                        <th className="border border-gray-300 p-1 text-right">
                           MO/H<br />
                           ou Qté
                         </th>
-                        <th className="border border-gray-300 p-2 text-right">
+                        <th className="border border-gray-300 p-1 text-right">
                           Montant HT
                         </th>
                       </tr>
@@ -363,13 +357,13 @@ const OrdreReparation = ({
                     <tbody>
                       {VENTILATION_CATEGORIES.map(cat => (
                         <tr key={cat.key}>
-                          <td className="border border-gray-300 p-2">{cat.label}</td>
-                          <td className="border border-gray-300 p-2 text-right">
+                          <td className="border border-gray-300 p-1">{cat.label}</td>
+                          <td className="border border-gray-300 p-1 text-right">
                             {ventilation?.[cat.key]?.qty !== undefined
                               ? ventilation[cat.key].qty
                               : 0}
                           </td>
-                          <td className="border border-gray-300 p-2 text-right">
+                          <td className="border border-gray-300 p-1 text-right">
                             {ventilation?.[cat.key]?.ht !== undefined
                               ? Number(ventilation[cat.key].ht).toFixed(2)
                               : "0.00"}
