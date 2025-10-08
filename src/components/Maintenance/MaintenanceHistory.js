@@ -28,17 +28,19 @@ function timeSince(dateStr) {
   return `${days} j`;
 }
 
+// Legacy color object kept for compatibility with inline styles
+// New code should use CSS classes and variables from the token system
 const colors = {
-  brand: '#F7931E',
-  brandHover: '#e07d06',
-  text: '#1F2933',
-  textMuted: '#5A6572',
-  border: '#E2E8EE',
-  borderStrong: '#D1D7DE',
-  rowSelectedBg: '#FFF6EC',
-  rowHoverBg: '#F9FBFC',
-  page: '#F7F9FA',
-  focus: '#2563EB'
+  brand: 'var(--color-brand)',
+  brandHover: 'var(--color-brand-dark)',
+  text: 'var(--color-text)',
+  textMuted: 'var(--color-text-muted)',
+  border: 'var(--color-border)',
+  borderStrong: 'var(--color-border-strong)',
+  rowSelectedBg: 'var(--color-bg-selected)',
+  rowHoverBg: 'var(--color-bg-hover)',
+  page: 'var(--color-bg-page)',
+  focus: 'var(--color-focus)'
 };
 
 const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
@@ -106,10 +108,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
 
   return (
     <div className="space-y-8">
-      <section
-        className="rounded-lg border"
-        style={{ borderColor: colors.border, backgroundColor: '#FFFFFF' }}
-      >
+      <section className="card">
         <header className="px-6 pt-5 pb-4 border-b" style={{ borderColor: colors.border }}>
           <h2 className="text-[18px] font-semibold" style={{ color: colors.text }}>
             Derniers entretiens connus
@@ -156,34 +155,24 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
               <button
                 disabled={!canApply}
                 onClick={applyBatch}
-                className="px-4 py-2 rounded-md text-sm font-semibold focus:outline-none focus:ring-2 disabled:opacity-40"
-                style={{
-                  background: canApply ? colors.brand : '#F1F4F6',
-                  color: canApply ? '#FFFFFF' : colors.textMuted,
-                  border: '1px solid ' + (canApply ? colors.brand : colors.border)
-                }}
+                className="btn-brand disabled:opacity-40"
+                style={!canApply ? {
+                  background: '#F1F4F6',
+                  color: colors.textMuted,
+                  border: `1px solid ${colors.border}`
+                } : {}}
               >
                 Appliquer aux éléments cochés
               </button>
               <button
                 onClick={() => setSelected(new Set())}
-                className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2"
-                style={{
-                  background: '#FFFFFF',
-                  border: `1px solid ${colors.border}`,
-                  color: colors.text
-                }}
+                className="btn-secondary"
               >
                 Réinitialiser sélection
               </button>
               <button
                 onClick={toggleSelectAll}
-                className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2"
-                style={{
-                  background: '#FFFFFF',
-                  border: `1px solid ${colors.border}`,
-                  color: colors.text
-                }}
+                className="btn-secondary"
               >
                 {allSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
               </button>
@@ -247,12 +236,8 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                           data-row-action="true"
                           type="button"
                           onClick={() => startInlineEdit(field)}
-                          className="px-3 py-1.5 rounded-md text-xs font-medium focus:outline-none focus:ring-2"
-                          style={{
-                            background: '#FFFFFF',
-                            border: `1px solid ${colors.border}`,
-                            color: colors.brand
-                          }}
+                          className="btn-secondary px-3 py-1.5 text-xs"
+                          style={{ color: colors.brand }}
                         >
                           Éditer
                         </button>
@@ -314,24 +299,14 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                         <button
                           type="button"
                           onClick={saveInlineEdit}
-                          className="px-4 py-2 rounded-md text-sm font-semibold focus:outline-none focus:ring-2"
-                          style={{
-                            background: colors.brand,
-                            color: '#FFFFFF',
-                            border: `1px solid ${colors.brand}`
-                          }}
+                          className="btn-brand"
                         >
                           Sauver
                         </button>
                         <button
                           type="button"
                           onClick={cancelInlineEdit}
-                          className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2"
-                          style={{
-                            background: '#FFFFFF',
-                            color: colors.text,
-                            border: `1px solid ${colors.border}`
-                          }}
+                          className="btn-secondary"
                         >
                           Annuler
                         </button>

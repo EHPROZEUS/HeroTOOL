@@ -1,3 +1,6 @@
+/* Import theme tokens first for CSS variable support */
+@import './theme/tokens.css';
+
 /* Reset */
 * {
   margin: 0;
@@ -757,4 +760,71 @@ button[style*="background"]:hover {
   .p-8 {
     padding: 1.5rem;
   }
+}
+
+/* ===== Token-based Component Classes ===== */
+
+/* Card component */
+.card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+}
+
+/* Brand button */
+.btn-brand {
+  background-color: var(--color-brand);
+  color: #FFFFFF;
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-button);
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-brand:hover {
+  background-color: var(--color-brand-dark);
+  border-color: var(--color-brand-dark);
+}
+
+.btn-brand:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Secondary button */
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.btn-secondary:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus-blue);
+}
+
+/* Focus ring utilities */
+.focus-ring-brand:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.focus-ring-blue:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus-blue);
 }
