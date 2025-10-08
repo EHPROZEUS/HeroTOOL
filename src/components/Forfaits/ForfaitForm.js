@@ -9,6 +9,9 @@ const baseInput =
 const compactInput = COMPACT_MODE
   ? 'px-2 py-1 text-[11px] leading-tight'
   : 'px-3 py-2 text-sm';
+const designationInput = COMPACT_MODE
+  ? 'px-3 py-2 text-[12px] leading-snug'
+  : 'px-4 py-2 text-sm';
 const borderStyle = { borderColor: '#FF6B35' };
 
 const ForfaitForm = ({
@@ -70,13 +73,13 @@ const ForfaitForm = ({
           <div className="col-span-5">
             <label className="text-[10px] font-semibold">Désignation</label>
             <textarea
-              rows={1}
+              rows={2}
               value={forfait.moDesignation || ''}
               onChange={e =>
                 updateForfaitField(item.id, 'moDesignation', e.target.value)
               }
               placeholder="Temps de travail..."
-              className={`${baseInput} ${compactInput} w-full resize-y`}
+              className={`${baseInput} ${designationInput} w-full resize-y min-h-[54px]`}
               style={borderStyle}
             />
           </div>
@@ -155,7 +158,7 @@ const ForfaitForm = ({
               <div className="col-span-5">
                 <label className="text-[10px] font-semibold">Désignation</label>
                 <textarea
-                  rows={1}
+                  rows={2}
                   value={forfait.pieceDesignation || ''}
                   onChange={e =>
                     updateForfaitField(
@@ -165,7 +168,7 @@ const ForfaitForm = ({
                     )
                   }
                   placeholder="Description..."
-                  className={`${baseInput} ${compactInput} w-full resize-y`}
+                  className={`${baseInput} ${designationInput} w-full resize-y min-h-[54px]`}
                   style={borderStyle}
                 />
               </div>
@@ -239,7 +242,7 @@ const ForfaitForm = ({
                   style={borderStyle}
                 />
                 <textarea
-                  rows={1}
+                  rows={2}
                   value={line.designation || ''}
                   onChange={e =>
                     updatePieceLine(
@@ -250,7 +253,7 @@ const ForfaitForm = ({
                     )
                   }
                   placeholder="Description..."
-                  className={`${baseInput} ${compactInput} col-span-5 resize-y`}
+                  className={`${baseInput} ${designationInput} col-span-5 resize-y min-h-[54px]`}
                   style={borderStyle}
                 />
                 <input
@@ -341,7 +344,7 @@ const ForfaitForm = ({
                   className="col-span-2 px-2 py-1 border rounded text-[11px] bg-orange-50"
                 />
                 <textarea
-                  rows={1}
+                  rows={2}
                   value={forfait.consommableDesignation || ''}
                   onChange={e =>
                     updateForfaitField(
@@ -355,7 +358,7 @@ const ForfaitForm = ({
                       ? 'Huile moteur...'
                       : 'Produit lustrage...'
                   }
-                  className="col-span-5 px-2 py-1 border rounded text-[11px] resize-y bg-orange-50"
+                  className="col-span-5 px-3 py-2 border rounded text-[12px] resize-y bg-orange-50 leading-snug"
                 />
                 <input
                   type="text"
