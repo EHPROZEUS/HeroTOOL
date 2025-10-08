@@ -24,6 +24,46 @@ const ForfaitForm = ({
   
   // Check if the item is a lustrage item
   const isLustrageItem = LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id);
+
+  // Handler pour assurer une quantité minimum de 1 pour les pièces
+  const handleQuantityChange = (itemId, field, value) => {
+    // Si la valeur est vide, on ne fait rien encore
+    if (value === '') {
+      updateForfaitField(itemId, field, value);
+      return;
+    }
+    
+    // On convertit en nombre et on vérifie
+    const numValue = parseFloat(value);
+    // Si c'est un nombre et il est < 1, on le fixe à 1
+    if (!isNaN(numValue)) {
+      const finalValue = Math.max(1, numValue);
+      updateForfaitField(itemId, field, finalValue);
+    } else {
+      // Si ce n'est pas un nombre, on garde la valeur par défaut de 1
+      updateForfaitField(itemId, field, '1');
+    }
+  };
+
+  // Handler pour les pièces supplémentaires
+  const handleSupplementaryQuantityChange = (itemId, index, field, value) => {
+    // Si la valeur est vide, on ne fait rien encore
+    if (value === '') {
+      updatePieceLine(itemId, index, field, value);
+      return;
+    }
+    
+    // On convertit en nombre et on vérifie
+    const numValue = parseFloat(value);
+    // Si c'est un nombre et il est < 1, on le fixe à 1
+    if (!isNaN(numValue)) {
+      const finalValue = Math.max(1, numValue);
+      updatePieceLine(itemId, index, field, finalValue);
+    } else {
+      // Si ce n'est pas un nombre, on garde la valeur par défaut de 1
+      updatePieceLine(itemId, index, field, '1');
+    }
+  };
   
   return (
     <div className="bg-gray-50 rounded-xl border-2 border-gray-300 p-6 mb-6">
@@ -136,7 +176,13 @@ const ForfaitForm = ({
                 <input 
                   type="text" 
                   value={pieceQuantity} 
-                  onChange={(e) => updateForfaitField(item.id, 'pieceQuantity', e.target.value)}
+                  onChange={(e) => handleQuantityChange(item.id, 'pieceQuantity', e.target.value)}
+                  onBlur={(e) => {
+                    // Force minimum 1 on blur if empty or < 1
+                    if (e.target.value === '' || parseFloat(e.target.value) < 1) {
+                      updateForfaitField(item.id, 'pieceQuantity', '1');
+                    }
+                  }}
                   placeholder="1" 
                   className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
                   style={{ borderColor: '#FF6B35' }}
@@ -195,7 +241,13 @@ const ForfaitForm = ({
                 <input 
                   type="text" 
                   value={line.quantity} 
-                  onChange={(e) => updatePieceLine(item.id, index, 'quantity', e.target.value)}
+                  onChange={(e) => handleSupplementaryQuantityChange(item.id, index, 'quantity', e.target.value)}
+                  onBlur={(e) => {
+                    // Force minimum 1 on blur if empty or < 1
+                    if (e.target.value === '' || parseFloat(e.target.value) < 1) {
+                      updatePieceLine(item.id, index, 'quantity', '1');
+                    }
+                  }}
                   placeholder="1" 
                   className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
                   style={{ borderColor: '#FF6B35' }}
@@ -281,7 +333,13 @@ const ForfaitForm = ({
                   <input 
                     type="text" 
                     value={forfait.consommableQuantity || ''} 
-                    onChange={(e) => updateForfaitField(item.id, 'consommableQuantity', e.target.value)}
+                    onChange={(e) => handleQuantityChange(item.id, 'consommableQuantity', e.target.value)}
+                    onBlur={(e) => {
+                      // Force minimum 1 on blur if empty or < 1
+                      if (e.target.value === '' || parseFloat(e.target.value) < 1) {
+                        updateForfaitField(item.id, 'consommableQuantity', '1');
+                      }
+                    }}
                     placeholder={item.id === 'filtreHuile' ? "4.5" : "1"} 
                     className={`w-full px-3 py-2 border rounded-lg text-sm ${item.id === 'filtreHuile' ? 'bg-orange-50' : 'bg-amber-50'}`} 
                   />
