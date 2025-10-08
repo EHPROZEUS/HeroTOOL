@@ -25,18 +25,17 @@ function timeSince(dateStr) {
   const years = Math.floor(days / 365);
   const months = Math.floor((days % 365) / 30);
   if (years > 0) {
-    return `${years} an${years > 1 ? 's' : ''}${months > 0 ? ' ' + months + ' mois' : ''}`;
+    return `${years} an${years > 1 ? 's' : ''}${months > 0 ? ' ${months} mois' : ''}`;
   }
   if (months > 0) return `${months} mois`;
   return `${days} j`;
 }
 
 const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
-  // Valeurs batch
   const [batchDate, setBatchDate] = useState('');
   const [batchKm, setBatchKm] = useState('');
   const [selected, setSelected] = useState(() => new Set());
-  const [inlineEdit, setInlineEdit] = useState(null); // field en édition ponctuelle
+  const [inlineEdit, setInlineEdit] = useState(null);
   const [inlineDate, setInlineDate] = useState('');
   const [inlineKm, setInlineKm] = useState('');
 
@@ -67,7 +66,6 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
       const newKm = batchKm || oldKm;
       updateLastMaintenance(field, `${newDate}|${newKm}`);
     });
-    // On ne vide pas les champs batch pour pouvoir réappliquer si besoin
   };
 
   const canApply = selected.size > 0 && (batchDate || batchKm);
@@ -92,18 +90,31 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
     cancelInlineEdit();
   };
 
+  // Styles utilitaires partagés
+  const btnBase = 'inline-flex items-center justify-center rounded font-semibold transition border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-400 disabled:opacity-50 disabled:cursor-not-allowed';
+  const btnPrimary = `${btnBase} bg-orange-500 border-orange-500 text-white hover:bg-orange-600 active:bg-orange-700`;
+  const btnOutline = `${btnBase} bg-white border-orange-500 text-orange-600 hover:bg-orange-50 active:bg-orange-100`;
+  const btnGhost = 'text-orange-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 rounded';
+
   return (
-    <div className="mb-8 p-4 md:p-6 rounded-xl border-2"
-         style={{ backgroundColor: '#FFFAF5', borderColor: '#F7931E' }}>
+    <div
+      className="mb-8 p-4 md:p-6 rounded-xl border-2"
+      style={{ backgroundColor: '#FFFAF5', borderColor: '#F7931E' }}
+    >
       <h2 className="text-lg font-bold text-gray-800 mb-4">Derniers entretiens connus</h2>
 
-      {/* Zone d'application multiple */}
-      <div className="mb-6 border-2 rounded-lg p-4 bg-white"
-           style={{ borderColor: '#F7931E' }}>
-        <h3 className="font-semibold text-gray-800 mb-3 text-sm">Application groupée</h3>
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Date</label>
+      {/* Bloc application groupée */}
+      <div
+        className="mb-6 border-2 rounded-lg p-4 md:p-5 bg-white space-y-4"
+        style={{ borderColor: '#F7931E' }}
+      >
+        <h3 className="font-semibold text-gray-800 text-sm tracking-wide uppercase">
+          Application groupée
+        </h3>
+
+        <div className="flex flex-col lg:flex-row lg:items-end gap-4">
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-gray-700 mb-1">Date</label>
             <input
               type="date"
               value={batchDate}
@@ -112,8 +123,8 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
               style={{ borderColor: '#F7931E' }}
             />
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Kilométrage</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-gray-700 mb-1">Kilométrage</label>
             <input
               type="text"
               value={batchKm}
@@ -123,71 +134,75 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
               style={{ borderColor: '#F7931E' }}
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
               disabled={!canApply}
               onClick={applyBatch}
-              className={`px-4 py-2 rounded text-sm font-semibold border-2 transition ${
-                canApply
-                  ? 'bg-orange-500 text-white hover:bg-orange-600'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-              style={{ borderColor: '#F7931E' }}
+              className={`${btnPrimary} px-4 py-2 text-sm`}
             >
               Appliquer aux éléments cochés
             </button>
             <button
               type="button"
               onClick={() => setSelected(new Set())}
-              className="px-3 py-2 rounded text-sm font-medium border-2 bg-white hover:bg-orange-50"
-              style={{ borderColor: '#F7931E' }}
+              className={`${btnOutline} px-3 py-2 text-sm`}
             >
               Réinitialiser sélection
             </button>
           </div>
         </div>
-        <p className="text-xs text-gray-600 mt-2">
-          Laisser vide la date ou le kilométrage signifie : conserver la valeur existante pour ce champ.
+        <p className="text-xs text-gray-600">
+          Laisser vide la date ou le kilométrage conserve la valeur existante correspondante.
         </p>
       </div>
 
-      {/* Liste des éléments */}
-      <div className="overflow-x-auto">
+      {/* Tableau */}
+      <div className="overflow-x-auto rounded-lg border-2" style={{ borderColor: '#F7931E' }}>
         <table className="min-w-full text-xs md:text-sm">
-          <thead>
+          <thead className="bg-orange-50/60">
             <tr className="text-left text-gray-700">
-              <th className="py-2 pr-2">
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={toggleSelectAll}
-                  aria-label="Tout sélectionner"
-                />
+              <th className="py-2 pl-2 pr-2 align-middle">
+                <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 accent-[#F7931E] rounded-sm border border-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                    aria-label="Tout sélectionner"
+                  />
+                </label>
               </th>
-              <th className="py-2 pr-4 font-semibold">Élément</th>
-              <th className="py-2 pr-4 font-semibold">Date</th>
-              <th className="py-2 pr-4 font-semibold">Km</th>
-              <th className="py-2 pr-4 font-semibold">Âge</th>
-              <th className="py-2 pr-4 font-semibold">Actions</th>
+              <th className="py-2 pr-4 font-semibold tracking-wide">Élément</th>
+              <th className="py-2 pr-4 font-semibold tracking-wide">Date</th>
+              <th className="py-2 pr-4 font-semibold tracking-wide">Km</th>
+              <th className="py-2 pr-4 font-semibold tracking-wide">Âge</th>
+              <th className="py-2 pr-4 font-semibold tracking-wide">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {maintenanceItems.map(({ field, label }) => {
+            {maintenanceItems.map(({ field, label }, idx) => {
               const value = lastMaintenance[field] || '';
               const [d = '', k = ''] = value.split('|');
               const age = timeSince(d);
               const editing = inlineEdit === field;
+              const zebra = idx % 2 === 0 ? 'bg-white' : 'bg-orange-50/30';
 
               return (
-                <tr key={field} className="border-t border-orange-200">
-                  <td className="py-2 pr-2 align-top">
-                    <input
-                      type="checkbox"
-                      checked={selected.has(field)}
-                      onChange={() => toggleSelect(field)}
-                      aria-label={`Sélectionner ${label}`}
-                    />
+                <tr
+                  key={field}
+                  className={`${zebra} hover:bg-orange-50 transition-colors`}
+                >
+                  <td className="py-2 pl-2 pr-2 align-top">
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(field)}
+                        onChange={() => toggleSelect(field)}
+                        className="w-4 h-4 accent-[#F7931E] rounded-sm border border-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                        aria-label={`Sélectionner ${label}`}
+                      />
+                    </label>
                   </td>
                   <td className="py-2 pr-4 font-medium text-gray-800 align-top">
                     {label}
@@ -200,7 +215,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                         type="date"
                         value={inlineDate}
                         onChange={(e) => setInlineDate(e.target.value)}
-                        className="px-2 py-1 border-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="px-2 py-1 border-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs md:text-sm"
                         style={{ borderColor: '#F7931E' }}
                       />
                     )}
@@ -214,7 +229,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                         value={inlineKm}
                         placeholder="Km"
                         onChange={(e) => setInlineKm(e.target.value)}
-                        className="px-2 py-1 border-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="px-2 py-1 border-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs md:text-sm"
                         style={{ borderColor: '#F7931E' }}
                       />
                     )}
@@ -231,23 +246,23 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                       <button
                         type="button"
                         onClick={() => startInlineEdit(field)}
-                        className="text-orange-600 hover:underline text-xs"
+                        className={btnGhost + ' text-xs'}
                       >
                         ✏️ Éditer
                       </button>
                     ) : (
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
                           onClick={saveInlineEdit}
-                          className="text-green-600 hover:underline text-xs"
+                          className="text-green-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 rounded text-xs font-semibold"
                         >
                           Sauver
                         </button>
                         <button
                           type="button"
                           onClick={cancelInlineEdit}
-                          className="text-gray-500 hover:underline text-xs"
+                          className="text-gray-500 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded text-xs"
                         >
                           Annuler
                         </button>
@@ -257,10 +272,38 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                 </tr>
               );
             })}
+            {maintenanceItems.length === 0 && (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="py-6 text-center text-sm text-gray-500 italic"
+                >
+                  Aucun élément d’entretien configuré.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Footer d'action rapide (optionnel) */}
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          type="button"
+            onClick={applyBatch}
+            disabled={!canApply}
+            className={`${btnPrimary} px-3 py-2 text-xs md:text-sm`}
+        >
+          Appliquer (rappel)
+        </button>
+        <button
+          type="button"
+          onClick={toggleSelectAll}
+          className={`${btnOutline} px-3 py-2 text-xs md:text-sm`}
+        >
+          {allSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
+        </button>
+      </div>
     </div>
   );
 };
