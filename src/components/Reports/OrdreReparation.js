@@ -140,16 +140,16 @@ function computeVentilation({
   }
 
   // MO dynamiques
-  result.moMecanique.qty += moByCategory?.mecanique || 0;
-  result.moLustrage.qty += moByCategory?.lustrage || 0;
-  result.moDSP.qty += moByCategory?.dsp || 0;
-  result.moControlling.qty += moByCategory?.controlling || 0;
-  result.moForfaitaire.qty += moByCategory?.forfaitaire || 0;
-  result.moPeinture.qty += moByCategory?.peinture || 0;
-  result.moTolerie.qty += moByCategory?.tolerie || 0;
+  result.moMecanique.qty += moByCategory.mecanique || 0;
+  result.moLustrage.qty += moByCategory.lustrage || 0;
+  result.moDSP.qty += moByCategory.dsp || 0;
+  result.moControlling.qty += moByCategory.controlling || 0;
+  result.moForfaitaire.qty += moByCategory.forfaitaire || 0;
+  result.moPeinture.qty += moByCategory.peinture || 0;
+  result.moTolerie.qty += moByCategory.tolerie || 0;
 
   // PIECES MECANIQUE (somme totalPieces)
-  result.piecesMecanique.ht += totals?.totalPieces || 0;
+  result.piecesMecanique.ht += totals.totalPieces || 0;
 
   // PRES. SOUS-TRAITEES (contrôle technique)
   if (includeControleTechnique) {
@@ -270,61 +270,61 @@ const OrdreReparation = ({
 
           {/* =============== INFOS VEHICULE + VENTILATION COMPTABLE =============== */}
           <div className="mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-8">
               {/* Informations véhicule condensées */}
-              <div className="flex-1 min-w-[180px] max-w-[260px]">
+              <div className="flex-1 min-w-[250px] max-w-[370px]">
                 <h2
-                  className="text-sm font-bold text-gray-800 mb-2 p-2 rounded-lg"
+                  className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
                   style={{ backgroundColor: '#FFF0E6' }}
                 >
                   Informations Véhicule
                 </h2>
-                <div className="grid grid-cols-1 gap-1 text-[11px]">
+                <div className="grid grid-cols-1 gap-2 text-xs">
                   {headerInfo?.lead && (
                     <div className="flex">
-                      <span className="font-bold w-24">Client:</span>
+                      <span className="font-bold w-28">Client:</span>
                       <span>{headerInfo.lead}</span>
                     </div>
                   )}
                   {headerInfo?.immatriculation && (
                     <div className="flex">
-                      <span className="font-bold w-24">Immatriculation:</span>
+                      <span className="font-bold w-28">Immatriculation:</span>
                       <span>{headerInfo.immatriculation}</span>
                     </div>
                   )}
                   {headerInfo?.vin && (
                     <div className="flex">
-                      <span className="font-bold w-24">VIN:</span>
-                      <span className="text-[10px]">{headerInfo.vin}</span>
+                      <span className="font-bold w-28">VIN:</span>
+                      <span className="text-xs">{headerInfo.vin}</span>
                     </div>
                   )}
                   {headerInfo?.kilometres && (
                     <div className="flex">
-                      <span className="font-bold w-24">Kilomètres:</span>
+                      <span className="font-bold w-28">Kilomètres:</span>
                       <span>{headerInfo.kilometres} km</span>
                     </div>
                   )}
                   {headerInfo?.dateVehicule && (
                     <div className="flex">
-                      <span className="font-bold w-24">Âge véhicule:</span>
+                      <span className="font-bold w-28">Âge véhicule:</span>
                       <span>{calculateVehicleAge(headerInfo.dateVehicule)}</span>
                     </div>
                   )}
                   {headerInfo?.dateVehicule && (
                     <div className="flex">
-                      <span className="font-bold w-24">Mise en circ.:</span>
+                      <span className="font-bold w-28">Mise en circ.:</span>
                       <span>{formatDateFr(headerInfo.dateVehicule)}</span>
                     </div>
                   )}
                   {headerInfo?.moteur && (
                     <div className="flex">
-                      <span className="font-bold w-24">Moteur:</span>
+                      <span className="font-bold w-28">Moteur:</span>
                       <span className="capitalize">{headerInfo.moteur}</span>
                     </div>
                   )}
                   {headerInfo?.boite && (
                     <div className="flex">
-                      <span className="font-bold w-24">Boîte:</span>
+                      <span className="font-bold w-28">Boîte:</span>
                       <span className="capitalize">
                         {headerInfo.boite === 'auto/cvt'
                           ? 'Auto/CVT'
@@ -336,33 +336,40 @@ const OrdreReparation = ({
                   )}
                 </div>
               </div>
-              {/* Tableau ventilation comptable condensé */}
-              <div className="flex-1 min-w-[150px] max-w-[210px]">
+              {/* Tableau ventilation comptable */}
+              <div className="flex-1 min-w-[280px] max-w-[400px]">
                 <h2
-                  className="text-sm font-bold text-gray-800 mb-2 p-2 rounded-lg"
+                  className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
                   style={{ backgroundColor: '#FFF0E6' }}
                 >
                   Ventilation comptable
                 </h2>
                 <div className="overflow-x-auto">
-                  <table className="w-full border border-gray-300 text-[11px] bg-white">
+                  <table className="w-full border-2 border-gray-300 text-xs bg-white">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-semibold">Ventilation</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-right font-semibold">MO/H ou Qté</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-right font-semibold">HT</th>
+                        <th className="border border-gray-300 p-2 text-left">
+                          Ventilation comptable
+                        </th>
+                        <th className="border border-gray-300 p-2 text-right">
+                          MO/H<br />
+                          ou Qté
+                        </th>
+                        <th className="border border-gray-300 p-2 text-right">
+                          Montant HT
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {VENTILATION_CATEGORIES.map(cat => (
                         <tr key={cat.key}>
-                          <td className="border border-gray-300 px-1 py-0.5">{cat.label}</td>
-                          <td className="border border-gray-300 px-1 py-0.5 text-right w-10">
+                          <td className="border border-gray-300 p-2">{cat.label}</td>
+                          <td className="border border-gray-300 p-2 text-right">
                             {ventilation?.[cat.key]?.qty !== undefined
                               ? ventilation[cat.key].qty
                               : 0}
                           </td>
-                          <td className="border border-gray-300 px-1 py-0.5 text-right w-12">
+                          <td className="border border-gray-300 p-2 text-right">
                             {ventilation?.[cat.key]?.ht !== undefined
                               ? Number(ventilation[cat.key].ht).toFixed(2)
                               : "0.00"}
