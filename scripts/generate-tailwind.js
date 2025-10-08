@@ -1,6 +1,6 @@
 const fs = require('fs');
 const postcss = require('postcss');
-const tailwindcss = require('@tailwindcss/postcss');
+const tailwindcss = require('tailwindcss');
 const autoprefixer = require('autoprefixer');
 
 async function build() {
