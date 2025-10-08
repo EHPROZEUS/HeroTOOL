@@ -85,6 +85,99 @@ const OBLIGATORY_CLEANING = [
   },
 ];
 
+// Catégories pour la ventilation comptable (dans l'ordre et style de l'image)
+const VENTILATION_CATEGORIES = [
+  { key: 'moMecanique', label: 'MO MECANIQUE' },
+  { key: 'moPeinture', label: 'MO PEINTURE' },
+  { key: 'moTolerie', label: 'MO TOLERIE' },
+  { key: 'moLustrage', label: 'MO LUSTRAGE' },
+  { key: 'moDSP', label: 'MO DSP' },
+  { key: 'moControlling', label: 'MO CONTROLLING' },
+  { key: 'moForfaitaire', label: 'MO FORFAITAIRE' },
+  { key: 'ingredientPeinture', label: 'INGREDIENT PEINTURE' },
+  { key: 'fluides', label: 'FLUIDES' },
+  { key: 'piecesMecanique', label: 'PIECES MECANIQUE' },
+  { key: 'piecesRemploi', label: 'PIECES REMPLOI' },
+  { key: 'piecesTolerie', label: 'PIECES TOLERIE' },
+  { key: 'pneumatiques', label: 'PNEUMATIQUES' },
+  { key: 'presSousTraitees', label: 'PRES. SOUS-TRAITEES' },
+  { key: 'recyclageDechets', label: 'RECYCLAGE DECHETS' },
+];
+
+// Fonction pour ventiler les quantités et montants HT par catégorie
+function computeVentilation({
+  activeMecaniqueItems,
+  activeDSPItems,
+  forfaitData,
+  pieceLines,
+  moByCategory,
+  totals,
+  includeControleTechnique,
+}) {
+  // Initialisation des résultats
+  const result = {};
+  VENTILATION_CATEGORIES.forEach(cat => {
+    result[cat.key] = { qty: 0, ht: 0 };
+  });
+
+  // MO MECANIQUE (additionne tous les moByCategory.mecanique et les MO obligatoires)
+  // MO CONTROLLING (obligatoire + autres)
+  // MO LUSTRAGE (catégorie Lustrage)
+  // MO DSP (catégorie DSP)
+  // PIECES MECANIQUE (toutes pièces hors DSP/lustrage)
+  // PRES. SOUS-TRAITEES (contrôle technique si activé)
+  // FLUIDES (ex: huile moteur, à adapter selon données)
+  // RECYCLAGE DECHETS (à remplir si prestations associées)
+  // etc.
+
+  // MO OBLIGATOIRES
+  for (const ob of OBLIGATORY_PRESTATIONS) {
+    switch (ob.moCategory) {
+      case 'Mécanique':
+        result.moMecanique.qty += ob.moQuantity;
+        break;
+      case 'Controlling':
+        result.moControlling.qty += ob.moQuantity;
+        break;
+      default:
+        break;
+    }
+  }
+  // Nettoyage obligatoire
+  for (const ob of OBLIGATORY_CLEANING) {
+    result.moMecanique.qty += 0; // pas de MO mécanique
+    result.moControlling.qty += 0; // pas de MO controlling
+    result.piecesMecanique.ht += ob.consommable.totalPrice;
+    result.piecesMecanique.qty += ob.consommable.quantity;
+    result.moMecanique.qty += 0; // ou créer une ligne MO Nettoyage spécifique si besoin
+    // Ici, on ne ventile pas sur MO LUSTRAGE, MO DSP, etc.
+  }
+
+  // MO dynamiques
+  if (moByCategory && moByCategory.mecanique) result.moMecanique.qty += moByCategory.mecanique;
+  if (moByCategory && moByCategory.lustrage) result.moLustrage.qty += moByCategory.lustrage;
+  if (moByCategory && moByCategory.dsp) result.moDSP.qty += moByCategory.dsp;
+  if (moByCategory && moByCategory.controlling) result.moControlling.qty += moByCategory.controlling;
+  if (moByCategory && moByCategory.forfaitaire) result.moForfaitaire.qty += moByCategory.forfaitaire;
+  if (moByCategory && moByCategory.peinture) result.moPeinture.qty += moByCategory.peinture;
+  if (moByCategory && moByCategory.tolerie) result.moTolerie.qty += moByCategory.tolerie;
+
+  // PIECES MECANIQUE (somme totalPieces)
+  if (totals && totals.totalPieces) {
+    result.piecesMecanique.ht += totals.totalPieces;
+    // qty non calculée précisément ici (pour du détail, adapter)
+  }
+  // FLUIDES (exemple : huile moteur) : à adapter selon ton data model
+  // PRES. SOUS-TRAITEES (contrôle technique)
+  if (includeControleTechnique) {
+    result.presSousTraitees.qty += 1;
+    result.presSousTraitees.ht += 42;
+  }
+
+  // Tout le reste reste à 0 par défaut
+  return result;
+}
+
 const OrdreReparation = ({ 
   showOrdreReparation,
   setShowOrdreReparation,
@@ -110,6 +203,17 @@ const OrdreReparation = ({
   const pureActiveMecaniqueItems = activeMecaniqueItems.filter(item => 
     !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
   );
+
+  // Calcul ventilation comptable
+  const ventilation = computeVentilation({
+    activeMecaniqueItems,
+    activeDSPItems,
+    forfaitData,
+    pieceLines,
+    moByCategory,
+    totals,
+    includeControleTechnique,
+  });
 
   return (
     <div className="mt-8 border-t-2 border-gray-300 pt-8">
@@ -163,63 +267,96 @@ const OrdreReparation = ({
             </div>
           )}
 
+          {/* =============== INFOS VEHICULE + VENTILATION COMPTABLE =============== */}
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
-              Informations Véhicule
-            </h2>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              {headerInfo.lead && (
-                <div className="flex">
-                  <span className="font-bold w-40">Client:</span>
-                  <span>{headerInfo.lead}</span>
+            <div className="flex flex-col md:flex-row gap-8">
+              {/* Informations véhicule condensées */}
+              <div className="flex-1 min-w-[250px] max-w-[370px]">
+                <h2 className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
+                  Informations Véhicule
+                </h2>
+                <div className="grid grid-cols-1 gap-2 text-xs">
+                  {headerInfo.lead && (
+                    <div className="flex">
+                      <span className="font-bold w-28">Client:</span>
+                      <span>{headerInfo.lead}</span>
+                    </div>
+                  )}
+                  {headerInfo.immatriculation && (
+                    <div className="flex">
+                      <span className="font-bold w-28">Immatriculation:</span>
+                      <span>{headerInfo.immatriculation}</span>
+                    </div>
+                  )}
+                  {headerInfo.vin && (
+                    <div className="flex">
+                      <span className="font-bold w-28">VIN:</span>
+                      <span className="text-xs">{headerInfo.vin}</span>
+                    </div>
+                  )}
+                  {headerInfo.kilometres && (
+                    <div className="flex">
+                      <span className="font-bold w-28">Kilomètres:</span>
+                      <span>{headerInfo.kilometres} km</span>
+                    </div>
+                  )}
+                  {headerInfo.dateVehicule && (
+                    <div className="flex">
+                      <span className="font-bold w-28">Âge véhicule:</span>
+                      <span>{calculateVehicleAge(headerInfo.dateVehicule)}</span>
+                    </div>
+                  )}
+                  {headerInfo.dateVehicule && (
+                    <div className="flex">
+                      <span className="font-bold w-28">Mise en circ.:</span>
+                      <span>{formatDateFr(headerInfo.dateVehicule)}</span>
+                    </div>
+                  )}
+                  {headerInfo.moteur && (
+                    <div className="flex">
+                      <span className="font-bold w-28">Moteur:</span>
+                      <span className="capitalize">{headerInfo.moteur}</span>
+                    </div>
+                  )}
+                  {headerInfo.boite && (
+                    <div className="flex">
+                      <span className="font-bold w-28">Boîte:</span>
+                      <span className="capitalize">
+                        {headerInfo.boite === 'auto/cvt' ? 'Auto/CVT' : headerInfo.boite === 'dct' ? 'DCT' : headerInfo.boite}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-              {headerInfo.immatriculation && (
-                <div className="flex">
-                  <span className="font-bold w-40">Immatriculation:</span>
-                  <span>{headerInfo.immatriculation}</span>
+              </div>
+              {/* Tableau ventilation comptable */}
+              <div className="flex-1 min-w-[280px] max-w-[400px]">
+                <h2 className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
+                  Ventilation comptable
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-2 border-gray-300 text-xs bg-white">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 p-2 text-left">Ventilation comptable</th>
+                        <th className="border border-gray-300 p-2 text-right">MO/H<br />ou Qté</th>
+                        <th className="border border-gray-300 p-2 text-right">Montant HT</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {VENTILATION_CATEGORIES.map(cat => (
+                        <tr key={cat.key}>
+                          <td className="border border-gray-300 p-2">{cat.label}</td>
+                          <td className="border border-gray-300 p-2 text-right">{ventilation[cat.key]?.qty || 0}</td>
+                          <td className="border border-gray-300 p-2 text-right">{ventilation[cat.key]?.ht ? ventilation[cat.key].ht.toFixed(2) : 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-              {headerInfo.vin && (
-                <div className="flex">
-                  <span className="font-bold w-40">VIN:</span>
-                  <span className="text-xs">{headerInfo.vin}</span>
-                </div>
-              )}
-              {headerInfo.kilometres && (
-                <div className="flex">
-                  <span className="font-bold w-40">Kilomètres:</span>
-                  <span>{headerInfo.kilometres} km</span>
-                </div>
-              )}
-              {headerInfo.dateVehicule && (
-                <div className="flex">
-                  <span className="font-bold w-40">Âge du véhicule:</span>
-                  <span>{calculateVehicleAge(headerInfo.dateVehicule)}</span>
-                </div>
-              )}
-              {headerInfo.dateVehicule && (
-                <div className="flex">
-                  <span className="font-bold w-40">Mise en circulation:</span>
-                  <span>{formatDateFr(headerInfo.dateVehicule)}</span>
-                </div>
-              )}
-              {headerInfo.moteur && (
-                <div className="flex">
-                  <span className="font-bold w-40">Moteur:</span>
-                  <span className="capitalize">{headerInfo.moteur}</span>
-                </div>
-              )}
-              {headerInfo.boite && (
-                <div className="flex">
-                  <span className="font-bold w-40">Boîte:</span>
-                  <span className="capitalize">
-                    {headerInfo.boite === 'auto/cvt' ? 'Auto/CVT' : headerInfo.boite === 'dct' ? 'DCT' : headerInfo.boite}
-                  </span>
-                </div>
-              )}
+              </div>
             </div>
           </div>
+          {/* =============== FIN INFOS + VENTILATION =============== */}
 
           <div className="mb-8">
             <h2 className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
