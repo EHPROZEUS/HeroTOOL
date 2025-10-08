@@ -18,7 +18,7 @@ const OilInfoForm = ({ oilInfo, updateOilInfo }) => {
   return (
     <section
       className="rounded-lg border"
-      style={{ backgroundColor: '#FFF5F0', borderColor: '#FF6B35' }}
+      style={{ backgroundColor: '#E5E7EB', borderColor: '#FF6B35' }}
     >
       <header className="px-6 pt-5 pb-4 border-b" style={{ borderColor: colors.border }}>
         <h2 className="text-[18px] font-semibold" style={{ color: colors.text }}>
