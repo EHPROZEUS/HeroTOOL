@@ -25,7 +25,7 @@ function timeSince(dateStr) {
   const years = Math.floor(days / 365);
   const months = Math.floor((days % 365) / 30);
   if (years > 0) {
-    return `${years} an${years > 1 ? 's' : ''}${months > 0 ? ' ${months} mois' : ''}`;
+    return `${years} an${years > 1 ? 's' : ''}${months > 0 ? ` ${months} mois` : ''}`;
   }
   if (months > 0) return `${months} mois`;
   return `${days} j`;
@@ -91,23 +91,20 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
   };
 
   // Styles utilitaires partagés
-  const btnBase = 'inline-flex items-center justify-center rounded font-semibold transition border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-400 disabled:opacity-50 disabled:cursor-not-allowed';
+  const btnBase = 'inline-flex items-center justify-center rounded font-semibold transition border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-400';
   const btnPrimary = `${btnBase} bg-orange-500 border-orange-500 text-white hover:bg-orange-600 active:bg-orange-700`;
   const btnOutline = `${btnBase} bg-white border-orange-500 text-orange-600 hover:bg-orange-50 active:bg-orange-100`;
   const btnGhost = 'text-orange-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 rounded';
+  const inputStyle = 'px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500';
+  const orangeBorder = { borderColor: '#F7931E' };
+  const orangeBg = { backgroundColor: '#FFFAF5', borderColor: '#F7931E' };
 
   return (
-    <div
-      className="mb-8 p-4 md:p-6 rounded-xl border-2"
-      style={{ backgroundColor: '#FFFAF5', borderColor: '#F7931E' }}
-    >
+    <div className="mb-8 p-4 md:p-6 rounded-xl border-2" style={orangeBg}>
       <h2 className="text-lg font-bold text-gray-800 mb-4">Derniers entretiens connus</h2>
 
       {/* Bloc application groupée */}
-      <div
-        className="mb-6 border-2 rounded-lg p-4 md:p-5 bg-white space-y-4"
-        style={{ borderColor: '#F7931E' }}
-      >
+      <div className="mb-6 border-2 rounded-lg p-4 md:p-5 bg-white space-y-4" style={orangeBorder}>
         <h3 className="font-semibold text-gray-800 text-sm tracking-wide uppercase">
           Application groupée
         </h3>
@@ -119,8 +116,8 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
               type="date"
               value={batchDate}
               onChange={(e) => setBatchDate(e.target.value)}
-              className="px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-              style={{ borderColor: '#F7931E' }}
+              className={inputStyle}
+              style={orangeBorder}
             />
           </div>
           <div className="flex flex-col">
@@ -130,8 +127,8 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
               value={batchKm}
               placeholder="Ex: 15423"
               onChange={(e) => setBatchKm(e.target.value)}
-              className="px-2 py-1 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-              style={{ borderColor: '#F7931E' }}
+              className={inputStyle}
+              style={orangeBorder}
             />
           </div>
           <div className="flex flex-wrap gap-3">
@@ -139,7 +136,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
               type="button"
               disabled={!canApply}
               onClick={applyBatch}
-              className={`${btnPrimary} px-4 py-2 text-sm`}
+              className={`${btnPrimary} px-4 py-2 text-sm ${!canApply ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               Appliquer aux éléments cochés
             </button>
@@ -158,7 +155,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
       </div>
 
       {/* Tableau */}
-      <div className="overflow-x-auto rounded-lg border-2" style={{ borderColor: '#F7931E' }}>
+      <div className="overflow-x-auto rounded-lg border-2" style={orangeBorder}>
         <table className="min-w-full text-xs md:text-sm">
           <thead className="bg-orange-50/60">
             <tr className="text-left text-gray-700">
@@ -215,8 +212,8 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                         type="date"
                         value={inlineDate}
                         onChange={(e) => setInlineDate(e.target.value)}
-                        className="px-2 py-1 border-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs md:text-sm"
-                        style={{ borderColor: '#F7931E' }}
+                        className={`${inputStyle} w-full text-xs md:text-sm`}
+                        style={orangeBorder}
                       />
                     )}
                   </td>
@@ -229,8 +226,8 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                         value={inlineKm}
                         placeholder="Km"
                         onChange={(e) => setInlineKm(e.target.value)}
-                        className="px-2 py-1 border-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs md:text-sm"
-                        style={{ borderColor: '#F7931E' }}
+                        className={`${inputStyle} w-full text-xs md:text-sm`}
+                        style={orangeBorder}
                       />
                     )}
                   </td>
@@ -246,7 +243,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                       <button
                         type="button"
                         onClick={() => startInlineEdit(field)}
-                        className={btnGhost + ' text-xs'}
+                        className={`${btnGhost} text-xs`}
                       >
                         ✏️ Éditer
                       </button>
@@ -278,7 +275,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                   colSpan={6}
                   className="py-6 text-center text-sm text-gray-500 italic"
                 >
-                  Aucun élément d’entretien configuré.
+                  Aucun élément d'entretien configuré.
                 </td>
               </tr>
             )}
@@ -286,13 +283,13 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
         </table>
       </div>
 
-      {/* Footer d'action rapide (optionnel) */}
+      {/* Footer d'action rapide */}
       <div className="mt-4 flex flex-wrap gap-3">
         <button
           type="button"
-            onClick={applyBatch}
-            disabled={!canApply}
-            className={`${btnPrimary} px-3 py-2 text-xs md:text-sm`}
+          onClick={applyBatch}
+          disabled={!canApply}
+          className={`${btnPrimary} px-3 py-2 text-xs md:text-sm ${!canApply ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           Appliquer (rappel)
         </button>
