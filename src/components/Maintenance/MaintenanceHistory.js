@@ -13,15 +13,13 @@ const maintenanceItems = [
   { field: 'courroieAccessoire', label: 'Courroie access.' }
 ];
 
-// Couleurs centralisées (modifie ici si besoin)
 const color = {
   orange: '#F7931E',
-  orangeDark: '#e87700',
-  grayBg: '#E5E7EB',          // fond cartes (≈ Tailwind gray-200)
-  grayBorder: '#CBD0D6',      // bord neutre
+  grayBg: '#E5E7EB',
+  grayBorder: '#CBD0D6',
   grayText: '#374151',
   grayMuted: '#6B7280',
-  grayInputBg: '#F8F9FA',
+  grayInputBg: '#F8F9FA'
 };
 
 // Calcule "il y a ..."
@@ -35,9 +33,7 @@ function timeSince(dateStr) {
   const days = Math.floor(diffMs / 86400000);
   const years = Math.floor(days / 365);
   const months = Math.floor((days % 365) / 30);
-  if (years > 0) {
-    return `${years} an${years > 1 ? 's' : ''}${months > 0 ? ` ${months} mois` : ''}`;
-  }
+  if (years > 0) return `${years} an${years > 1 ? 's' : ''}${months ? ` ${months} mois` : ''}`;
   if (months > 0) return `${months} mois`;
   return `${days} j`;
 }
@@ -98,7 +94,6 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
     cancelInlineEdit();
   };
 
-  // Styles boutons
   const btnBase = 'inline-flex items-center justify-center rounded-lg font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-300 disabled:opacity-50 disabled:cursor-not-allowed';
   const btnPrimary = `${btnBase} px-4 py-2 text-sm text-white`;
   const btnOutline = `${btnBase} px-4 py-2 text-sm`;
@@ -112,7 +107,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
         Derniers entretiens connus
       </h2>
 
-      {/* Bloc application groupée */}
+      {/* Application groupée */}
       <div
         className="mb-8 rounded-2xl p-5 space-y-4"
         style={{
@@ -139,7 +134,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
               }}
             />
           </div>
-            <div className="flex flex-col">
+          <div className="flex flex-col">
             <label className="text-xs font-semibold mb-1" style={{ color: color.grayMuted }}>Kilométrage</label>
             <input
               type="text"
@@ -201,24 +196,23 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
         </p>
       </div>
 
-      {/* Grille des éléments (style cartes comme capture 2) */}
+      {/* Grille cartes */}
       <div className="grid gap-5 md:gap-6"
            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
         {maintenanceItems.map(({ field, label }) => {
           const value = lastMaintenance[field] || '';
-          const [d = '', k = ''] = value.split('|');
+            const [d = '', k = ''] = value.split('|');
           const age = timeSince(d);
           const isSelected = selected.has(field);
           const editing = inlineEdit === field;
 
           return (
-            <label
+            <div
               key={field}
-              className="relative cursor-pointer group"
+              className="relative group"
             >
-              {/* Carte */}
               <div
-                className="h-full flex flex-col gap-3 p-4 rounded-3xl transition shadow-sm"
+                className="h-full flex flex-col gap-3 p-4 rounded-3xl transition"
                 style={{
                   backgroundColor: color.grayBg,
                   border: `2px solid ${isSelected ? color.orange : color.grayBorder}`,
@@ -227,62 +221,57 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                     : '0 2px 4px rgba(0,0,0,0.06)'
                 }}
               >
-                {/* Ligne haut : checkbox + libellé */}
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggleSelect(field)}
-                    className="sr-only peer"
+                {/* Ligne du haut : Sélecteur arrondi + label */}
+                <div className="flex items-center gap-4">
+                  {/* CHANGED: suppression de la case carrée, ajout d'un cercle sélection */}
+                  <button
+                    type="button"
+                    onClick={() => toggleSelect(field)}
+                    aria-pressed={isSelected}
                     aria-label={`Sélectionner ${label}`}
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="flex items-center justify-center rounded-md w-6 h-6 text-xs font-bold transition
-                               border-2 peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2
-                               peer-focus-visible:ring-orange-300"
+                    className="relative inline-flex items-center justify-center transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
                     style={{
-                      backgroundColor: isSelected ? color.orange : '#D1D5DB',
-                      borderColor: isSelected ? color.orange : '#9CA3AF',
-                      color: isSelected ? '#FFFFFF' : 'transparent'
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '9999px',
+                      border: `2px solid ${isSelected ? color.orange : '#9CA3AF'}`,
+                      background: isSelected ? color.orange : '#FFFFFF',
+                      color: '#FFFFFF',
+                      boxShadow: isSelected ? '0 0 0 3px rgba(247,147,30,0.25)' : 'none'
                     }}
                   >
-                    ✓
-                  </span>
+                    {isSelected && (
+                      <span
+                        className="text-sm"
+                        style={{ fontWeight: 700, lineHeight: 1 }}
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </button>
+
                   <span
-                    className="font-semibold text-sm md:text-base truncate"
+                    className="font-semibold text-sm md:text-base leading-snug"
                     style={{ color: color.grayText }}
                   >
                     {label}
                   </span>
                 </div>
 
-                {/* Contenu infos / édition */}
+                {/* Contenu / édition */}
                 {!editing && (
-                  <div className="pl-9 space-y-1 text-xs md:text-sm">
-                    <div className="flex gap-2 flex-wrap">
-                      <span className="font-medium" style={{ color: color.grayMuted }}>
-                        Date :
-                      </span>
-                      <span style={{ color: color.grayText }}>
-                        {d || <span className="italic text-gray-500">—</span>}
-                      </span>
+                  <div className="pl-1 space-y-1 text-xs md:text-sm">
+                    <div className="flex gap-2">
+                      <span className="font-medium" style={{ color: color.grayMuted }}>Date :</span>
+                      <span style={{ color: color.grayText }}>{d || <span className="italic text-gray-500">—</span>}</span>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
-                      <span className="font-medium" style={{ color: color.grayMuted }}>
-                        Km :
-                      </span>
-                      <span style={{ color: color.grayText }}>
-                        {k || <span className="italic text-gray-500">—</span>}
-                      </span>
+                    <div className="flex gap-2">
+                      <span className="font-medium" style={{ color: color.grayMuted }}>Km :</span>
+                      <span style={{ color: color.grayText }}>{k || <span className="italic text-gray-500">—</span>}</span>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
-                      <span className="font-medium" style={{ color: color.grayMuted }}>
-                        Âge :
-                      </span>
-                      <span style={{ color: color.grayText }}>
-                        {age ? `il y a ${age}` : <span className="italic text-gray-500">—</span>}
-                      </span>
+                    <div className="flex gap-2">
+                      <span className="font-medium" style={{ color: color.grayMuted }}>Âge :</span>
+                      <span style={{ color: color.grayText }}>{age ? `il y a ${age}` : <span className="italic text-gray-500">—</span>}</span>
                     </div>
                   </div>
                 )}
@@ -290,9 +279,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                 {editing && (
                   <div className="pl-1 space-y-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium" style={{ color: color.grayMuted }}>
-                        Date
-                      </label>
+                      <label className="text-xs font-medium" style={{ color: color.grayMuted }}>Date</label>
                       <input
                         type="date"
                         value={inlineDate}
@@ -306,9 +293,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium" style={{ color: color.grayMuted }}>
-                        Kilométrage
-                      </label>
+                      <label className="text-xs font-medium" style={{ color: color.grayMuted }}>Kilométrage</label>
                       <input
                         type="text"
                         value={inlineKm}
@@ -326,7 +311,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                       <button
                         type="button"
                         onClick={saveInlineEdit}
-                        className="px-4 py-2 rounded-lg text-xs font-semibold"
+                        className="px-4 py-2 rounded-xl text-xs font-semibold"
                         style={{
                           backgroundColor: color.orange,
                           border: `2px solid ${color.orange}`,
@@ -338,7 +323,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                       <button
                         type="button"
                         onClick={cancelInlineEdit}
-                        className="px-4 py-2 rounded-lg text-xs font-semibold"
+                        className="px-4 py-2 rounded-xl text-xs font-semibold"
                         style={{
                           backgroundColor: '#FFFFFF',
                           border: `2px solid ${color.orange}`,
@@ -351,20 +336,17 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                   </div>
                 )}
 
-                {/* Bouton éditer inline (affiché si pas en mode édition) */}
+                {/* Bouton éditer */}
                 {!editing && (
                   <div className="flex justify-end pt-1">
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.preventDefault(); // éviter toggle sélection
-                        startInlineEdit(field);
-                      }}
-                      className="text-xs font-semibold flex items-center gap-1 px-3 py-1 rounded-lg transition"
+                      onClick={() => startInlineEdit(field)}
+                      className="text-xs font-semibold flex items-center gap-1 px-4 py-2 rounded-2xl transition"
                       style={{
                         color: color.orange,
                         backgroundColor: '#FFFFFF',
-                        border: `1px solid ${color.orange}`
+                        border: `2px solid ${color.orange}`
                       }}
                     >
                       ✏️ Éditer
@@ -372,7 +354,7 @@ const MaintenanceHistory = ({ lastMaintenance, updateLastMaintenance }) => {
                   </div>
                 )}
               </div>
-            </label>
+            </div>
           );
         })}
       </div>
