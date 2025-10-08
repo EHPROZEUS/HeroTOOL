@@ -240,22 +240,22 @@ const OrdreReparation = ({
           className="bg-white border-4 rounded-xl p-8 shadow-2xl"
           style={{ borderColor: '#FF6B35' }}
         >
-          <div className="text-center mb-8 pb-6 border-b-2 border-gray-300">
-            <h1 className="text-3xl font-bold mb-2" style={{ color: '#FF6B35' }}>
+          <div className="text-center mb-6 pb-4 border-b-2 border-gray-300">
+            <h1 className="text-2xl font-bold" style={{ color: '#FF6B35' }}>
               ORDRE DE RÉPARATION
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm text-gray-600">
               Document généré le {new Date().toLocaleDateString('fr-FR')}
             </p>
           </div>
 
           {includeContrevisite && (
             <div
-              className="mb-8 p-4 border-2 rounded-lg"
+              className="mb-6 p-3 border-2 rounded-lg"
               style={{ backgroundColor: '#FFF5F0', borderColor: '#FF6B35' }}
             >
               <div className="flex items-center gap-3">
-                <span className="text-3xl">⚠️</span>
+                <span className="text-2xl">⚠️</span>
                 <div>
                   <p className="text-lg font-bold" style={{ color: '#FF6B35' }}>
                     CONTRE-VISITE REQUISE
@@ -270,12 +270,15 @@ const OrdreReparation = ({
 
           {/* =============== INFOS VEHICULE + VENTILATION COMPTABLE =============== */}
           <div className="mb-6">
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-6">
               {/* Informations véhicule condensées */}
               <div className="flex-1 min-w-[250px] max-w-[370px]">
-                <div className="flex items-center mb-2 border-b border-gray-200 pb-1">
-                  <h2 className="text-base font-bold text-gray-800">Informations Véhicule</h2>
-                </div>
+                <h2
+                  className="text-lg font-bold text-gray-800 mb-3 p-2 rounded-lg"
+                  style={{ backgroundColor: '#FFF0E6' }}
+                >
+                  Informations Véhicule
+                </h2>
                 <div className="grid grid-cols-1 gap-1 text-xs">
                   {headerInfo?.lead && (
                     <div className="flex">
@@ -333,37 +336,40 @@ const OrdreReparation = ({
                   )}
                 </div>
               </div>
-              {/* Tableau ventilation comptable */}
+              {/* Tableau ventilation comptable - Style plus compact */}
               <div className="flex-1 min-w-[280px] max-w-[400px]">
-                <div className="flex items-center mb-2 border-b border-gray-200 pb-1">
-                  <h2 className="text-base font-bold text-gray-800">Ventilation comptable</h2>
-                </div>
+                <h2
+                  className="text-lg font-bold text-gray-800 mb-3 p-2 rounded-lg"
+                  style={{ backgroundColor: '#FFF0E6' }}
+                >
+                  Ventilation comptable
+                </h2>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-2 border-gray-300 text-xs bg-white">
+                  <table className="w-full border border-gray-200 text-xs bg-white">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-1 text-left">
-                          Ventilation comptable
+                        <th className="border border-gray-200 p-1 text-left">
+                          Ventilation
                         </th>
-                        <th className="border border-gray-300 p-1 text-right">
+                        <th className="border border-gray-200 p-1 text-right">
                           MO/H<br />
                           ou Qté
                         </th>
-                        <th className="border border-gray-300 p-1 text-right">
-                          Montant HT
+                        <th className="border border-gray-200 p-1 text-right">
+                          HT
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {VENTILATION_CATEGORIES.map(cat => (
                         <tr key={cat.key}>
-                          <td className="border border-gray-300 p-1">{cat.label}</td>
-                          <td className="border border-gray-300 p-1 text-right">
+                          <td className="border border-gray-200 p-1">{cat.label}</td>
+                          <td className="border border-gray-200 p-1 text-right">
                             {ventilation?.[cat.key]?.qty !== undefined
                               ? ventilation[cat.key].qty
                               : 0}
                           </td>
-                          <td className="border border-gray-300 p-1 text-right">
+                          <td className="border border-gray-200 p-1 text-right">
                             {ventilation?.[cat.key]?.ht !== undefined
                               ? Number(ventilation[cat.key].ht).toFixed(2)
                               : "0.00"}
@@ -378,9 +384,9 @@ const OrdreReparation = ({
           </div>
           {/* =============== FIN INFOS + VENTILATION =============== */}
 
-          <div className="mb-8">
+          <div className="mb-6">
             <h2
-              className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
+              className="text-lg font-bold text-gray-800 mb-3 p-2 rounded-lg"
               style={{ backgroundColor: '#FFF0E6' }}
             >
               Détail des Opérations
@@ -588,7 +594,7 @@ const OrdreReparation = ({
                     <tr style={{ backgroundColor: "#DBEAFE" }}>
                       <td
                         colSpan="7"
-                        className="border border-gray-300 p-3 font-bold text-blue-600 text-lg"
+                        className="border border-gray-300 p-2 font-bold text-blue-600"
                       >
                         SMART - DSP
                       </td>
@@ -622,7 +628,7 @@ const OrdreReparation = ({
                     <tr style={{ backgroundColor: "#FEF3C7" }}>
                       <td
                         colSpan="7"
-                        className="border border-gray-300 p-3 font-bold text-amber-600 text-lg"
+                        className="border border-gray-300 p-2 font-bold text-amber-600"
                       >
                         SMART - LUSTRAGE
                       </td>
@@ -696,15 +702,15 @@ const OrdreReparation = ({
             </table>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-6">
             <h2
-              className="text-xl font-bold text-gray-800 mb-4 p-3 rounded-lg"
+              className="text-lg font-bold text-gray-800 mb-3 p-2 rounded-lg"
               style={{ backgroundColor: '#FFF0E6' }}
             >
               Récapitulatif Financier
             </h2>
-            <div className="bg-gray-50 p-6 rounded-lg border-2 border-gray-300">
-              <div className="space-y-2 text-lg">
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-300">
+              <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="font-semibold">Total Main d'œuvre:</span>
                   <span>{totals?.totalMO !== undefined ? totals.totalMO : "0.00"} €</span>
@@ -722,9 +728,9 @@ const OrdreReparation = ({
                     €
                   </span>
                 </div>
-                <div className="border-t-2 border-gray-400 pt-2 mt-2"></div>
+                <div className="border-t border-gray-400 pt-1 mt-1"></div>
                 <div
-                  className="flex justify-between text-xl font-bold"
+                  className="flex justify-between text-lg font-bold"
                   style={{ color: '#FF6B35' }}
                 >
                   <span>TOTAL HT (sans prestations ext.):</span>
@@ -748,11 +754,11 @@ const OrdreReparation = ({
                   </div>
                 )}
                 <div
-                  className="border-t-2 pt-2 mt-2"
+                  className="border-t pt-1 mt-1"
                   style={{ borderColor: '#FF6B35' }}
                 ></div>
                 <div
-                  className="flex justify-between text-2xl font-bold"
+                  className="flex justify-between text-xl font-bold"
                   style={{ color: '#FF6B35' }}
                 >
                   <span>TOTAL HT:</span>
@@ -764,10 +770,10 @@ const OrdreReparation = ({
             </div>
           </div>
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <button
               onClick={printOrdreReparation}
-              className="print-button px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
+              className="print-button px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
             >
               🖨️ Imprimer l'ordre de réparation
             </button>
