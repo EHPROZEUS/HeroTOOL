@@ -20,24 +20,26 @@ const OilInfoForm = ({ oilInfo, updateOilInfo }) => {
       className="rounded-lg border"
       style={{ backgroundColor: '#E5E7EB', borderColor: '#FF6B35' }}
     >
-      <header className="px-6 pt-5 pb-4 border-b" style={{ borderColor: colors.border }}>
-        <h2 className="text-[18px] font-semibold" style={{ color: colors.text }}>
-          Informations huile moteur
-        </h2>
+      <header className="text-x3 font-bold text-gray-800 mb-4" style={{ borderColor: colors.border }}>
+        <div className="flex justify-end">
+          <h2 style={{ color: colors.text }}>
+            Informations huile moteur
+          </h2>
+        </div>
       </header>
 
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-1">
+      <div className="p-4 space-y-4">
+        <div className="grid grid-cols-4 md:grid-cols-4 gap-4">
+          <div className="flex flex-col gap-4 col-span-4 md:col-span-2">
             <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
               Viscosité
             </label>
             <select 
               value={oilInfo.viscosity || ''} 
               onChange={(e) => updateOilInfo('viscosity', e.target.value)}
-              className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2"
+              className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 w-1/2"
               style={{
-                border: `1px solid ${colors.border}`,
+                border: `1px solid #FF6B35`,
                 background: '#FFFFFF',
                 color: colors.text
               }}
@@ -62,7 +64,7 @@ const OilInfoForm = ({ oilInfo, updateOilInfo }) => {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
+            <label className="text-md font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
               Quantité nécessaire (litres)
             </label>
             <input 
@@ -70,9 +72,9 @@ const OilInfoForm = ({ oilInfo, updateOilInfo }) => {
               value={oilInfo.quantity || ''}
               onChange={(e) => updateOilInfo('quantity', e.target.value)}
               placeholder="Ex: 4.5"
-              className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2"
+              className="px-4 py-2 rounded-md text-sm focus:outline-none focus:ring-2"
               style={{
-                border: `1px solid ${colors.border}`,
+                border: `1px solid #FF6B35`,
                 background: '#FFFFFF',
                 color: colors.text
               }}
@@ -82,9 +84,9 @@ const OilInfoForm = ({ oilInfo, updateOilInfo }) => {
 
         {oilInfo.viscosity && oilInfo.quantity && (
           <div 
-            className="p-4 rounded-md space-y-2"
+            className="p-6 rounded-md space-y-2"
             style={{ 
-              backgroundColor: colors.rowSelectedBg,
+              backgroundColor: '#FFFFFF',
               border: `1px solid ${colors.brand}`
             }}
           >
@@ -92,7 +94,7 @@ const OilInfoForm = ({ oilInfo, updateOilInfo }) => {
               ✓ Prix automatiquement calculé dans le forfait "Filtre à huile"
             </p>
             {HUILES_CONFIG[oilInfo.viscosity]?.unite === 'bidon5L' && (
-              <p className="text-xs" style={{ color: colors.textMuted }}>
+              <p className="text-xs space-y-2" style={{ color: colors.textMuted }}>
                 Note: Huile en bidon de 5L - {Math.ceil(parseFloat(oilInfo.quantity) / 5)} bidon(s) nécessaire(s)
               </p>
             )}
