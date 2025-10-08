@@ -17,7 +17,6 @@ const ForfaitForm = ({
   const defaults = getDefaultValues(item.id);
   
   const moQuantity = forfait.moQuantity !== undefined ? forfait.moQuantity : defaults.moQuantity;
-  const moPrix = defaults.moPrix;
   const pieceReference = forfait.pieceReference !== undefined ? forfait.pieceReference : defaults.pieceReference;
   const pieceQuantity = forfait.pieceQuantity !== undefined ? forfait.pieceQuantity : defaults.pieceQuantity;
   const piecePrix = forfait.piecePrix !== undefined ? forfait.piecePrix : defaults.piecePrix;
@@ -117,7 +116,7 @@ const ForfaitForm = ({
             <span className="font-semibold block mb-4">Pièce principale</span>
             
             <div className="space-y-4">
-              <div>
+              <div className="w-full max-w-[180px]">
                 <label className="text-xs font-semibold block mb-1">Référence</label>
                 <input 
                   type="text" 
@@ -182,7 +181,7 @@ const ForfaitForm = ({
             {/* Pièces supplémentaires */}
             {pieceLines[item.id]?.map((line, index) => (
               <div key={index} className="mt-6 p-4 border rounded-lg bg-white space-y-4">
-                <div>
+                <div className="w-full max-w-[180px]">
                   <label className="text-xs font-semibold block mb-1">Référence</label>
                   <input 
                     type="text" 
@@ -270,13 +269,13 @@ const ForfaitForm = ({
               <span className="font-semibold block mb-2">
                 {item.id === 'filtreHuile' ? 'Consommable (Huile)' : 'Consommable (Lustrage)'}
               </span>
-              <div>
+              <div className="w-full max-w-[180px]">
                 <label className="text-xs font-semibold block mb-1">Référence</label>
                 <input 
                   type="text" 
                   value={forfait.consommableReference || ''} 
                   onChange={(e) => updateForfaitField(item.id, 'consommableReference', e.target.value)}
-                  placeholder={item.id === 'filtreHuile' ? "Huile 5W-30" : "Référence produit"} 
+                  placeholder={item.id === 'filtreHuile' ? "Huile 5W-30" : "Réf produit"} 
                   className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50" 
                 />
               </div>
