@@ -1,9 +1,15 @@
-// ForfaitForm avec champs Désignation élargis (textarea + grid 12 colonnes).
-
 import React from 'react';
 import { FOURNISSEURS } from '../../config/constants';
 import { getDefaultValues } from '../../utils/calculations';
 import { LUSTRAGE_ITEMS } from '../../config/constants';
+
+const COMPACT_MODE = true;
+const baseInput =
+  'border-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 transition';
+const compactInput = COMPACT_MODE
+  ? 'px-2 py-1 text-[11px] leading-tight'
+  : 'px-3 py-2 text-sm';
+const borderStyle = { borderColor: '#FF6B35' };
 
 const ForfaitForm = ({
   item,
@@ -39,11 +45,7 @@ const ForfaitForm = ({
       return;
     }
     const num = parseFloat(value);
-    if (!isNaN(num)) {
-      updateForfaitField(itemId, field, Math.max(1, num));
-    } else {
-      updateForfaitField(itemId, field, '1');
-    }
+    updateForfaitField(itemId, field, !isNaN(num) ? Math.max(1, num) : '1');
   };
 
   const handleSupplementaryQuantityChange = (itemId, index, field, value) => {
@@ -52,38 +54,34 @@ const ForfaitForm = ({
       return;
     }
     const num = parseFloat(value);
-    if (!isNaN(num)) {
-      updatePieceLine(itemId, index, field, Math.max(1, num));
-    } else {
-      updatePieceLine(itemId, index, field, '1');
-    }
+    updatePieceLine(itemId, index, field, !isNaN(num) ? Math.max(1, num) : '1');
   };
 
   return (
-    <div className="bg-gray-50 rounded-xl border-2 border-gray-300 p-6 mb-6">
-      <h3 className="text-xl font-bold mb-4" style={{ color: '#FF6B35' }}>
+    <div className="bg-gray-50 rounded-xl border-2 border-gray-300 p-5 mb-6">
+      <h3 className="text-lg font-bold mb-3" style={{ color: '#FF6B35' }}>
         {item.label}
       </h3>
 
-      {/* Main d'œuvre */}
-      <div className="mb-4 pb-4 border-b border-gray-300">
-        <span className="font-semibold block mb-2">Main d'œuvre</span>
-        <div className="grid grid-cols-12 gap-4">
+      {/* MO */}
+      <div className="mb-4 pb-3 border-b border-gray-300">
+        <span className="font-semibold block mb-2 text-sm">Main d'œuvre</span>
+        <div className="grid grid-cols-12 gap-3 items-start">
           <div className="col-span-5">
-            <label className="text-xs">Désignation</label>
+            <label className="text-[10px] font-semibold">Désignation</label>
             <textarea
-              rows={2}
+              rows={1}
               value={forfait.moDesignation || ''}
               onChange={e =>
                 updateForfaitField(item.id, 'moDesignation', e.target.value)
               }
               placeholder="Temps de travail..."
-              className="w-full px-3 py-2 border-2 rounded-lg text-sm resize-y focus:outline-none focus:ring-2 focus:ring-orange-500"
-              style={{ borderColor: '#FF6B35' }}
+              className={`${baseInput} ${compactInput} w-full resize-y`}
+              style={borderStyle}
             />
           </div>
           <div className="col-span-2">
-            <label className="text-xs">Catégorie</label>
+            <label className="text-[10px] font-semibold">Catégorie</label>
             <select
               value={
                 forfait.moCategory ||
@@ -92,8 +90,8 @@ const ForfaitForm = ({
               onChange={e =>
                 updateForfaitField(item.id, 'moCategory', e.target.value)
               }
-              className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-              style={{ borderColor: '#FF6B35' }}
+              className={`${baseInput} ${compactInput} w-full`}
+              style={borderStyle}
             >
               <option value="Mécanique">Mécanique</option>
               <option value="Carrosserie">Carrosserie</option>
@@ -103,34 +101,33 @@ const ForfaitForm = ({
             </select>
           </div>
           <div className="col-span-2">
-            <label className="text-xs">Quantité (h)</label>
+            <label className="text-[10px] font-semibold">Quantité (h)</label>
             <input
               type="text"
               value={moQuantity}
               onChange={e =>
                 updateForfaitField(item.id, 'moQuantity', e.target.value)
               }
-              placeholder={defaults.moQuantity}
-              className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-              style={{ borderColor: '#FF6B35' }}
+              className={`${baseInput} ${compactInput} w-full`}
+              style={borderStyle}
             />
           </div>
           <div className="col-span-1">
-            <label className="text-xs block">PU HT</label>
+            <label className="text-[10px] font-semibold block">PU HT</label>
             <input
               type="text"
               value="35.80"
               readOnly
-              className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
+              className="w-full px-2 py-1 border rounded text-[11px] bg-gray-100 font-semibold"
             />
           </div>
-            <div className="col-span-2">
-            <label className="text-xs block">Total HT</label>
+          <div className="col-span-2">
+            <label className="text-[10px] font-semibold block">Total HT</label>
             <input
               type="text"
               value={((parseFloat(moQuantity) || 0) * 35.8).toFixed(2)}
               readOnly
-              className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
+              className="w-full px-2 py-1 border rounded text-[11px] bg-gray-100 font-semibold"
             />
           </div>
         </div>
@@ -139,26 +136,26 @@ const ForfaitForm = ({
       {/* Pièce principale */}
       {item.id !== 'miseANiveau' && (
         <>
-          <div className="mb-4 pb-4 border-b border-gray-300">
-            <span className="font-semibold block mb-2">Pièce</span>
-            <div className="grid grid-cols-12 gap-4 mb-2">
+          <div className="mb-4 pb-3 border-b border-gray-300">
+            <span className="font-semibold block mb-2 text-sm">Pièce</span>
+            <div className="grid grid-cols-12 gap-3 mb-2 items-start">
               <div className="col-span-2">
-                <label className="text-xs">Référence</label>
+                <label className="text-[10px] font-semibold">Référence</label>
                 <input
                   type="text"
                   value={pieceReference}
                   onChange={e =>
                     updateForfaitField(item.id, 'pieceReference', e.target.value)
                   }
-                  placeholder="Référence..."
-                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  style={{ borderColor: '#FF6B35' }}
+                  className={`${baseInput} ${compactInput} w-full max-w-[130px]`}
+                  style={borderStyle}
+                  placeholder="Réf."
                 />
               </div>
               <div className="col-span-5">
-                <label className="text-xs">Désignation</label>
+                <label className="text-[10px] font-semibold">Désignation</label>
                 <textarea
-                  rows={2}
+                  rows={1}
                   value={forfait.pieceDesignation || ''}
                   onChange={e =>
                     updateForfaitField(
@@ -167,13 +164,13 @@ const ForfaitForm = ({
                       e.target.value
                     )
                   }
-                  placeholder="Description détaillée..."
-                  className="w-full px-3 py-2 border-2 rounded-lg text-sm resize-y focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  style={{ borderColor: '#FF6B35' }}
+                  placeholder="Description..."
+                  className={`${baseInput} ${compactInput} w-full resize-y`}
+                  style={borderStyle}
                 />
               </div>
               <div className="col-span-1">
-                <label className="text-xs">Qté</label>
+                <label className="text-[10px] font-semibold">Qté</label>
                 <input
                   type="text"
                   value={pieceQuantity}
@@ -192,13 +189,13 @@ const ForfaitForm = ({
                       updateForfaitField(item.id, 'pieceQuantity', '1');
                     }
                   }}
+                  className={`${baseInput} ${compactInput} w-full max-w-[70px]`}
+                  style={borderStyle}
                   placeholder="1"
-                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  style={{ borderColor: '#FF6B35' }}
                 />
               </div>
               <div className="col-span-2">
-                <label className="text-xs">Prix unitaire HT</label>
+                <label className="text-[10px] font-semibold">PU HT</label>
                 <input
                   type="text"
                   value={forfait.piecePrixUnitaire || ''}
@@ -209,18 +206,18 @@ const ForfaitForm = ({
                       e.target.value
                     )
                   }
+                  className={`${baseInput} ${compactInput} w-full`}
+                  style={borderStyle}
                   placeholder="45.00"
-                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  style={{ borderColor: '#FF6B35' }}
                 />
               </div>
               <div className="col-span-2">
-                <label className="text-xs">Total HT</label>
+                <label className="text-[10px] font-semibold">Total HT</label>
                 <input
                   type="text"
                   value={piecePrix}
                   readOnly
-                  className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
+                  className="w-full px-2 py-1 border rounded text-[11px] bg-gray-100 font-semibold"
                 />
               </div>
             </div>
@@ -229,7 +226,7 @@ const ForfaitForm = ({
             {pieceLines[item.id]?.map((line, index) => (
               <div
                 key={index}
-                className="grid grid-cols-12 gap-4 mb-2 items-start"
+                className="grid grid-cols-12 gap-3 mb-2 items-start"
               >
                 <input
                   type="text"
@@ -237,12 +234,12 @@ const ForfaitForm = ({
                   onChange={e =>
                     updatePieceLine(item.id, index, 'reference', e.target.value)
                   }
-                  placeholder="Référence..."
-                  className="col-span-2 w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  style={{ borderColor: '#FF6B35' }}
+                  placeholder="Réf."
+                  className={`${baseInput} ${compactInput} col-span-2 max-w-[130px]`}
+                  style={borderStyle}
                 />
                 <textarea
-                  rows={2}
+                  rows={1}
                   value={line.designation || ''}
                   onChange={e =>
                     updatePieceLine(
@@ -253,8 +250,8 @@ const ForfaitForm = ({
                     )
                   }
                   placeholder="Description..."
-                  className="col-span-5 w-full px-3 py-2 border-2 rounded-lg text-sm resize-y focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  style={{ borderColor: '#FF6B35' }}
+                  className={`${baseInput} ${compactInput} col-span-5 resize-y`}
+                  style={borderStyle}
                 />
                 <input
                   type="text"
@@ -275,9 +272,9 @@ const ForfaitForm = ({
                       updatePieceLine(item.id, index, 'quantity', '1');
                     }
                   }}
+                  className={`${baseInput} ${compactInput} col-span-1 max-w-[70px]`}
+                  style={borderStyle}
                   placeholder="1"
-                  className="col-span-1 w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  style={{ borderColor: '#FF6B35' }}
                 />
                 <input
                   type="text"
@@ -291,19 +288,19 @@ const ForfaitForm = ({
                     )
                   }
                   placeholder="45.00"
-                  className="col-span-2 w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  style={{ borderColor: '#FF6B35' }}
+                  className={`${baseInput} ${compactInput} col-span-2`}
+                  style={borderStyle}
                 />
                 <div className="col-span-2 flex gap-2">
                   <input
                     type="text"
                     value={line.prix}
                     readOnly
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
+                    className="w-full px-2 py-1 border rounded text-[11px] bg-gray-100 font-semibold"
                   />
                   <button
                     onClick={() => removePieceLine(item.id, index)}
-                    className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-all"
+                    className="px-3 py-1 bg-red-500 text-white rounded text-[11px] hover:bg-red-600 transition"
                   >
                     -
                   </button>
@@ -314,7 +311,7 @@ const ForfaitForm = ({
             {canHaveMultiplePieces(item.id) && (
               <button
                 onClick={() => addPieceLine(item.id)}
-                className="mt-2 px-4 py-2 text-white rounded-lg text-sm hover:opacity-90 transition-all"
+                className="mt-1 px-3 py-1 text-white rounded text-[11px] hover:opacity-90 transition"
                 style={{ background: '#FF6B35' }}
               >
                 + Ajouter une pièce
@@ -322,15 +319,14 @@ const ForfaitForm = ({
             )}
           </div>
 
-          {/* Consommables */}
           {(item.id === 'filtreHuile' || isLustrageItem) && (
             <div>
-              <span className="font-semibold block mb-2">
+              <span className="font-semibold block mb-2 text-sm">
                 {item.id === 'filtreHuile'
                   ? 'Consommable (Huile)'
                   : 'Consommable (Lustrage)'}
               </span>
-              <div className="grid grid-cols-12 gap-4">
+              <div className="grid grid-cols-12 gap-3 items-start">
                 <input
                   type="text"
                   value={forfait.consommableReference || ''}
@@ -341,13 +337,11 @@ const ForfaitForm = ({
                       e.target.value
                     )
                   }
-                  placeholder={
-                    item.id === 'filtreHuile' ? 'Huile 5W-30' : 'Réf produit'
-                  }
-                  className="col-span-2 w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
+                  placeholder={item.id === 'filtreHuile' ? 'Huile 5W-30' : 'Réf'}
+                  className="col-span-2 px-2 py-1 border rounded text-[11px] bg-orange-50"
                 />
                 <textarea
-                  rows={2}
+                  rows={1}
                   value={forfait.consommableDesignation || ''}
                   onChange={e =>
                     updateForfaitField(
@@ -361,7 +355,7 @@ const ForfaitForm = ({
                       ? 'Huile moteur...'
                       : 'Produit lustrage...'
                   }
-                  className="col-span-5 w-full px-3 py-2 border rounded-lg text-sm resize-y bg-orange-50"
+                  className="col-span-5 px-2 py-1 border rounded text-[11px] resize-y bg-orange-50"
                 />
                 <input
                   type="text"
@@ -378,11 +372,15 @@ const ForfaitForm = ({
                       e.target.value === '' ||
                       parseFloat(e.target.value) < 1
                     ) {
-                      updateForfaitField(item.id, 'consommableQuantity', '1');
+                      updateForfaitField(
+                        item.id,
+                        'consommableQuantity',
+                        '1'
+                      );
                     }
                   }}
                   placeholder={item.id === 'filtreHuile' ? '4.5' : '1'}
-                  className="col-span-1 w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
+                  className="col-span-1 px-2 py-1 border rounded text-[11px] bg-orange-50"
                 />
                 <input
                   type="text"
@@ -395,13 +393,13 @@ const ForfaitForm = ({
                     )
                   }
                   placeholder="7.50"
-                  className="col-span-2 w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
+                  className="col-span-2 px-2 py-1 border rounded text-[11px] bg-orange-50"
                 />
                 <input
                   type="text"
                   value={forfait.consommablePrix || ''}
                   readOnly
-                  className="col-span-2 w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
+                  className="col-span-2 px-2 py-1 border rounded text-[11px] bg-gray-100 font-semibold"
                 />
               </div>
             </div>
