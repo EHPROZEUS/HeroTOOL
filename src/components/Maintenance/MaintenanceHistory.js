@@ -11,7 +11,7 @@ const maintenanceItems = [
   { field: 'liquideRefroidissement', label: 'Liquide refroid.' },
   { field: 'courroieDistribution', label: 'Courroie distrib.' },
   { field: 'courroieAccessoire', label: 'Courroie access.' }
-  ];
+];
 
 function timeSince(dateStr) {
   if (!dateStr) return '';
@@ -110,8 +110,8 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
   return (
     <div className="space-y-8">
       <section
-        className="rounded-lg border shadow-sm"
-        style={{ borderColor: colors.border, backgroundColor: '#FFFFFF' }}
+        className="rounded-lg border shadow-sm p-6"
+        style={{ borderColor: '#FF6B35', borderWidth: '2px', backgroundColor: '#F5F5F5' }}
       >
         <header className="px-6 pt-5 pb-4 border-b" style={{ borderColor: colors.border }}>
           <h2 className="text-[18px] font-semibold" style={{ color: colors.text }}>
@@ -119,47 +119,40 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
           </h2>
         </header>
 
-        {/* Application groupée */}
-        <div className="px-6 pt-6 pb-4 space-y-5">
-          <div className="flex flex-col md:flex-row md:items-end gap-6">
-            <div className="flex flex-col gap-1 flex-1">
-              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
-                Date
-              </label>
-              <input
-                type="date"
-                value={batchDate || ''}
-                onChange={(e) => setBatchDate(e.target.value)}
-                className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
-                style={{
-                  border: `1px solid ${colors.border}`,
-                  background: '#FFFFFF',
-                  color: colors.text
-                }}
-              />
+        <div className="px-6 pt-4 pb-3 space-y-4">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row md:items-end gap-3">
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={batchDate || ''}
+                  onChange={(e) => setBatchDate(e.target.value)}
+                  className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
+                  style={{ border: `1px solid ${colors.border}`, background: '#FFFFFF', color: colors.text }}
+                />
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
+                  Kilométrage
+                </label>
+                <input
+                  type="text"
+                  value={batchKm || ''}
+                  onChange={(e) => setBatchKm(e.target.value)}
+                  placeholder="Ex: 15423"
+                  className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
+                  style={{ border: `1px solid ${colors.border}`, background: '#FFFFFF', color: colors.text }}
+                />
+              </div>
             </div>
-            <div className="flex flex-col gap-1 flex-1">
-              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
-                Kilométrage
-              </label>
-              <input
-                type="text"
-                value={batchKm || ''}
-                onChange={(e) => setBatchKm(e.target.value)}
-                placeholder="Ex: 15423"
-                className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
-                style={{
-                  border: `1px solid ${colors.border}`,
-                  background: '#FFFFFF',
-                  color: colors.text
-                }}
-              />
-            </div>
-            <div className="flex flex-wrap gap-3">
+            <div>
               <button
                 disabled={!canApply}
                 onClick={applyBatch}
-                className="px-4 py-2 rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-opacity-90 disabled:opacity-40"
+                className="px-4 py-2 rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-opacity-90 disabled:opacity-40 w-full"
                 style={{
                   background: canApply ? colors.brand : '#F1F4F6',
                   color: canApply ? '#FFFFFF' : colors.textMuted,
@@ -168,28 +161,22 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
               >
                 Appliquer aux éléments cochés
               </button>
-              <button
-                onClick={() => setSelected(new Set())}
-                className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
-                style={{
-                  background: '#FFFFFF',
-                  border: `1px solid ${colors.border}`,
-                  color: colors.text
-                }}
-              >
-                Réinitialiser sélection
-              </button>
-              <button
-                onClick={toggleSelectAll}
-                className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
-                style={{
-                  background: '#FFFFFF',
-                  border: `1px solid ${colors.border}`,
-                  color: colors.text
-                }}
-              >
-                {allSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
-              </button>
+              <div className="flex flex-wrap gap-3 mt-2">
+                <button
+                  onClick={() => setSelected(new Set())}
+                  className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
+                  style={{ background: '#FFFFFF', border: `1px solid ${colors.border}`, color: colors.text }}
+                >
+                  Réinitialiser sélection
+                </button>
+                <button
+                  onClick={toggleSelectAll}
+                  className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
+                  style={{ background: '#FFFFFF', border: `1px solid ${colors.border}`, color: colors.text }}
+                >
+                  {allSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
+                </button>
+              </div>
             </div>
           </div>
           <p className="text-xs" style={{ color: colors.textMuted }}>
@@ -197,10 +184,9 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
           </p>
         </div>
 
-        {/* Liste */}
-        <div className="px-0">
+        <div className="px-6">
           <div className="border-t" style={{ borderColor: colors.border }} />
-          <ul className="divide-y" style={{ borderColor: colors.border }}>
+          <ul className="grid grid-cols-2 gap-3 pt-4">
             {maintenanceItems.map(({ field, label }) => {
               const raw = lastMaintenance[field] || '';
               const [d = '', k = ''] = raw.split('|');
@@ -220,10 +206,11 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                     if (e.target.closest('[data-row-action="true"]')) return;
                     toggleSelect(field);
                   }}
-                  className="px-6 py-4 text-sm relative cursor-pointer focus:outline-none transition-colors duration-150 hover:bg-gray-50"
+                  className="p-4 text-sm relative cursor-pointer focus:outline-none transition-colors duration-150 hover:bg-gray-50 rounded-lg"
                   style={{
-                    background: isSelected ? colors.rowSelectedBg : '#FFFFFF',
-                    borderLeft: `4px solid ${isSelected ? colors.brand : 'transparent'}`
+                    background: isSelected ? colors.rowSelectedBg : '#E5E7EB',
+                    borderLeft: `4px solid ${isSelected ? colors.brand : 'transparent'}`,
+                    border: `1px solid ${colors.border}`
                   }}
                 >
                   {!isEditing && (
@@ -250,11 +237,7 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                           type="button"
                           onClick={() => startInlineEdit(field)}
                           className="px-3 py-1.5 rounded-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
-                          style={{
-                            background: '#FFFFFF',
-                            border: `1px solid ${colors.border}`,
-                            color: colors.brand
-                          }}
+                          style={{ background: '#FFFFFF', border: `1px solid ${colors.border}`, color: colors.brand }}
                         >
                           Éditer
                         </button>
@@ -273,12 +256,8 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                             type="date"
                             value={inlineDate || ''}
                             onChange={(e) => setInlineDate(e.target.value)}
-                            className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
-                            style={{
-                              border: `1px solid ${colors.borderStrong}`,
-                              background: '#FFFFFF',
-                              color: colors.text
-                            }}
+                            className="px-2 py-1 rounded-sm text-xs focus:outline-none focus:ring-1 focus:ring-offset-1"
+                            style={{ border: `1px solid ${colors.borderStrong}`, background: '#FFFFFF', color: colors.text, }}
                           />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -290,12 +269,8 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                             value={inlineKm || ''}
                             onChange={(e) => setInlineKm(e.target.value)}
                             placeholder="Km"
-                            className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
-                            style={{
-                              border: `1px solid ${colors.borderStrong}`,
-                              background: '#FFFFFF',
-                              color: colors.text
-                            }}
+                            className="px-2 py-1 rounded-sm text-xs focus:outline-none focus:ring-1 focus:ring-offset-1"
+                            style={{ border: `1px solid ${colors.borderStrong}`, background: '#FFFFFF', color: colors.text }}
                           />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -304,11 +279,7 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                           </span>
                           <div 
                             className="px-3 py-2 rounded-md text-sm"
-                            style={{
-                              border: `1px solid ${colors.borderStrong}`,
-                              background: '#FAFAFA',
-                              color: colors.text
-                            }}
+                            style={{ border: `1px solid ${colors.borderStrong}`, background: '#FAFAFA', color: colors.text }}
                           >
                             {inlineDate ? `il y a ${timeSince(inlineDate)}` : '—'}
                           </div>
@@ -319,11 +290,7 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                           type="button"
                           onClick={saveInlineEdit}
                           className="px-4 py-2 rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-opacity-90"
-                          style={{
-                            background: colors.brand,
-                            color: '#FFFFFF',
-                            border: `1px solid ${colors.brand}`
-                          }}
+                          style={{ background: colors.brand, color: '#FFFFFF', border: `1px solid ${colors.brand}` }}
                         >
                           Sauver
                         </button>
@@ -331,11 +298,7 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                           type="button"
                           onClick={cancelInlineEdit}
                           className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
-                          style={{
-                            background: '#FFFFFF',
-                            color: colors.text,
-                            border: `1px solid ${colors.border}`
-                          }}
+                          style={{ background: '#FFFFFF', color: colors.text, border: `1px solid ${colors.border}` }}
                         >
                           Annuler
                         </button>
