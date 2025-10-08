@@ -3,6 +3,88 @@ import { calculateVehicleAge, formatDateFr } from '../../utils/formatters';
 import { getDefaultValues } from '../../utils/calculations';
 import { DSP_ITEMS, LUSTRAGE_ITEMS } from '../../config/constants';
 
+// Lignes obligatoires à afficher en haut du tableau des prestations
+const OBLIGATORY_PRESTATIONS = [
+  {
+    id: 'plaque-imt',
+    type: "MO MECANIQUE PLAQUE IMT",
+    reference: "-",
+    designation: "POSE DE PLAQUE ET FOURNITURE",
+    moCategory: "Mécanique",
+    moQuantity: 0.10,
+  },
+  {
+    id: 'essai',
+    type: "MO MECANIQUE ESSAI",
+    reference: "-",
+    designation: "ESSAI+ 70 POINTS DE CONTROLE",
+    moCategory: "Mécanique",
+    moQuantity: 0.10,
+  },
+  {
+    id: 'pec',
+    type: "MO MECANIQUE PEC",
+    reference: "-",
+    designation: "PRISE EN CHARGE",
+    moCategory: "Mécanique",
+    moQuantity: 0.10,
+  },
+  {
+    id: 'lg',
+    type: "MO MECANIQUE LG",
+    reference: "-",
+    designation: "MISE A NIVEAU LAVE GLACE",
+    moCategory: "Mécanique",
+    moQuantity: 0.10,
+  },
+  {
+    id: 'photos',
+    type: "MO CONTROLLING PHOTOS",
+    reference: "-",
+    designation: "PHOTOS",
+    moCategory: "Controlling",
+    moQuantity: 0.50,
+  },
+];
+
+// Lignes obligatoires de nettoyage (avec consommables + MO)
+const OBLIGATORY_CLEANING = [
+  {
+    id: 'nettoyage-interieur',
+    type: "NETTOYAGE INTERIEUR",
+    consommable: {
+      reference: "CONSO",
+      designation: "Consommables",
+      quantity: 1.00,
+      unitPrice: 3.70,
+      totalPrice: 3.70,
+    },
+    mo: {
+      type: "MO",
+      designation: "Main d'oeuvre",
+      moCategory: "Nettoyage",
+      moQuantity: 0.75,
+    },
+  },
+  {
+    id: 'nettoyage-exterieur',
+    type: "NETTOYAGE EXTERIEUR",
+    consommable: {
+      reference: "CONSO",
+      designation: "Consommables",
+      quantity: 2.00,
+      unitPrice: 1.85,
+      totalPrice: 3.70,
+    },
+    mo: {
+      type: "MO",
+      designation: "Main d'oeuvre",
+      moCategory: "Nettoyage",
+      moQuantity: 0.42,
+    },
+  },
+];
+
 const OrdreReparation = ({ 
   showOrdreReparation,
   setShowOrdreReparation,
@@ -157,6 +239,46 @@ const OrdreReparation = ({
                 </tr>
               </thead>
               <tbody>
+                {/* === PRESTATIONS OBLIGATOIRES === */}
+                {OBLIGATORY_PRESTATIONS.map(item => (
+                  <tr key={item.id}>
+                    <td className="border border-gray-300 p-2">{item.type}</td>
+                    <td className="border border-gray-300 p-2">{item.reference}</td>
+                    <td className="border border-gray-300 p-2">{item.designation}</td>
+                    <td className="border border-gray-300 p-2">{item.moCategory}</td>
+                    <td className="border border-gray-300 p-2 text-right">{item.moQuantity} h</td>
+                    <td className="border border-gray-300 p-2 text-right">-</td>
+                    <td className="border border-gray-300 p-2 text-right">-</td>
+                  </tr>
+                ))}
+
+                {/* === NETTOYAGE INTERIEUR/EXTERIEUR : Consommable + MO === */}
+                {OBLIGATORY_CLEANING.map(item => (
+                  <React.Fragment key={item.id}>
+                    {/* Consommable */}
+                    <tr>
+                      <td className="border border-gray-300 p-2">{item.type}</td>
+                      <td className="border border-gray-300 p-2">{item.consommable.reference}</td>
+                      <td className="border border-gray-300 p-2">{item.consommable.designation}</td>
+                      <td className="border border-gray-300 p-2">-</td>
+                      <td className="border border-gray-300 p-2 text-right">{item.consommable.quantity}</td>
+                      <td className="border border-gray-300 p-2 text-right">{item.consommable.unitPrice.toFixed(2)} €</td>
+                      <td className="border border-gray-300 p-2 text-right">{item.consommable.totalPrice.toFixed(2)} €</td>
+                    </tr>
+                    {/* Main d'oeuvre */}
+                    <tr>
+                      <td className="border border-gray-300 p-2">{item.type}</td>
+                      <td className="border border-gray-300 p-2">-</td>
+                      <td className="border border-gray-300 p-2">{item.mo.designation}</td>
+                      <td className="border border-gray-300 p-2">{item.mo.moCategory}</td>
+                      <td className="border border-gray-300 p-2 text-right">{item.mo.moQuantity} h</td>
+                      <td className="border border-gray-300 p-2 text-right">-</td>
+                      <td className="border border-gray-300 p-2 text-right">-</td>
+                    </tr>
+                  </React.Fragment>
+                ))}
+
+                {/* === PRESTATIONS DYNAMIQUES EXISTANTES === */}
                 {pureActiveMecaniqueItems.map(item => {
                   const forfait = forfaitData[item.id] || {};
                   const defaults = getDefaultValues(item.id);
