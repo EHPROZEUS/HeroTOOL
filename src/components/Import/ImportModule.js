@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { FOURNISSEURS } from '../../config/constants';
 
-const COMPACT_MODE = true; // si tu mets false tu retrouves le style large
-
 const IMPORT_FORMATS = [
   { id: 'auto', name: 'Détection automatique' },
   { id: 'ned', name: 'Forcer NED' },
@@ -11,7 +9,7 @@ const IMPORT_FORMATS = [
   { id: 'partslink', name: 'Forcer PARTSLINK' },
   { id: 'renault', name: 'Forcer RENAULT' },
   { id: 'xpr', name: 'XPR DISTRIBUTION' },
-  { id: 'standard', name: 'Standard (Ref|Désig|Qté|Prix)' }
+  { id: 'standard', name: 'Format standard (Ref | Désignation | Qté | Prix)' }
 ];
 
 const SOURCE_SYSTEMS = [
@@ -30,17 +28,7 @@ const SOURCE_FORCED_SUPPLIERS = {
   AUTOSSIMO: 'AUTOSSIMO'
 };
 
-const baseInput =
-  'border-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 transition';
-const compactInput = COMPACT_MODE
-  ? 'px-2 py-1 text-[11px] leading-tight'
-  : 'px-3 py-2 text-sm';
-const designationInput = COMPACT_MODE
-  ? 'px-3 py-2 text-[12px] leading-snug'
-  : 'px-4 py-2 text-sm';
-const borderStyle = { borderColor: '#FF6B35' };
-
-const ImportModule = ({
+const ImportModule = ({ 
   showImportModule,
   setShowImportModule,
   importText,
@@ -61,11 +49,11 @@ const ImportModule = ({
   const handleParsePieces = () => {
     parsePiecesText(selectedFormat, sourceSystem, defaultFournisseur);
   };
-
-  const applyFournisseurToAll = fournisseur => {
+  
+  const applyFournisseurToAll = (fournisseur) => {
     if (forcedSupplier) return;
     setDefaultFournisseur(fournisseur);
-    if (parsedPieces.length) {
+    if (parsedPieces.length > 0) {
       setParsedPieces(parsedPieces.map(p => ({ ...p, fournisseur })));
     }
   };
@@ -73,90 +61,72 @@ const ImportModule = ({
   return (
     <div className="mt-8 border-t-2 border-gray-300 pt-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Module d'Importation de Pièces
-        </h2>
-        <button
+        <h2 className="text-2xl font-bold text-gray-800">Module d'Importation de Pièces</h2>
+        <button 
           onClick={() => setShowImportModule(!showImportModule)}
           className="px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
-          style={{ background: '#FF6B35' }}
+          style={{ backgroundColor: '#FF6B35' }}
         >
           {showImportModule ? 'Masquer' : 'Ouvrir'} le module
         </button>
       </div>
 
       {showImportModule && (
-        <div
-          className="rounded-xl border-2 p-6 mb-8"
-          style={{ background: '#FFF8F0', borderColor: '#FF6B35' }}
-        >
+        <div className="rounded-xl border-2 p-6 mb-8" style={{ backgroundColor: '#FFF8F0', borderColor: '#FF6B35' }}>
+          {/* Étape 1 */}
           <div className="mb-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-3">
-              Étape 1: Configurer l'importation
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-semibold mb-1">
+            <h3 className="text-lg font-bold text-gray-800 mb-3">Étape 1: Configurer l'importation</h3>
+            
+            <div className="flex flex-col md:flex-row md:items-end gap-4 mb-4">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Provenance
                 </label>
                 <select
                   value={sourceSystem}
-                  onChange={e => setSourceSystem(e.target.value)}
-                  className={`${baseInput} ${compactInput} w-full`}
-                  style={borderStyle}
+                  onChange={(e) => setSourceSystem(e.target.value)}
+                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  style={{ borderColor: '#FF6B35' }}
                 >
-                  {SOURCE_SYSTEMS.map(s => (
-                    <option key={s.id} value={s.id}>
-                      {s.label}
-                    </option>
-                  ))}
+                  {SOURCE_SYSTEMS.map(src => <option key={src.id} value={src.id}>{src.label}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-xs font-semibold mb-1">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Format interne
                 </label>
                 <select
                   value={selectedFormat}
-                  onChange={e => setSelectedFormat(e.target.value)}
-                  className={`${baseInput} ${compactInput} w-full`}
-                  style={borderStyle}
+                  onChange={(e) => setSelectedFormat(e.target.value)}
+                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  style={{ borderColor: '#FF6B35' }}
                 >
-                  {IMPORT_FORMATS.map(f => (
-                    <option key={f.id} value={f.id}>
-                      {f.name}
-                    </option>
-                  ))}
+                  {IMPORT_FORMATS.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-xs font-semibold mb-1">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Fournisseur par défaut {forcedSupplier && '(forcé)'}
                 </label>
                 <select
                   value={forcedSupplier || defaultFournisseur}
                   disabled={!!forcedSupplier}
-                  onChange={e => applyFournisseurToAll(e.target.value)}
-                  className={`${baseInput} ${compactInput} w-full disabled:bg-gray-100`}
-                  style={borderStyle}
+                  onChange={(e) => applyFournisseurToAll(e.target.value)}
+                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none disabled:bg-gray-100 focus:ring-2 focus:ring-orange-500"
+                  style={{ borderColor: '#FF6B35' }}
                 >
                   {forcedSupplier ? (
                     <option value={forcedSupplier}>{forcedSupplier}</option>
                   ) : (
                     <>
                       <option value="">-- Aucun --</option>
-                      {FOURNISSEURS.map(f => (
-                        <option key={f} value={f}>
-                          {f}
-                        </option>
-                      ))}
+                      {FOURNISSEURS.map(f => <option key={f} value={f}>{f}</option>)}
                     </>
                   )}
                 </select>
                 {forcedSupplier && (
                   <p className="text-[11px] mt-1 text-orange-700 font-semibold">
-                    Fournisseur imposé.
+                    Fournisseur imposé par la source.
                   </p>
                 )}
               </div>
@@ -164,19 +134,18 @@ const ImportModule = ({
 
             <textarea
               value={importText}
-              onChange={e => setImportText(e.target.value)}
-              placeholder="Collez ici vos lignes..."
-              className={`w-full h-40 font-mono ${baseInput} ${compactInput} resize-y`}
-              style={borderStyle}
+              onChange={(e) => setImportText(e.target.value)}
+              placeholder="Collez ici vos lignes (multi-sources)..."
+              className="w-full h-40 px-4 py-3 border-2 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
+              style={{ borderColor: '#FF6B35' }}
             />
-            <div className="flex flex-wrap gap-3 mt-3">
+            <div className="flex gap-3 mt-3 flex-wrap">
               <button
                 onClick={handleParsePieces}
-                className="px-5 py-2 text-white rounded-lg font-semibold hover:opacity-90 transition-all text-sm"
-                style={{ background: '#FF6B35' }}
+                className="px-6 py-2 text-white rounded-lg font-semibold hover:opacity-90 transition-all text-sm"
+                style={{ backgroundColor: '#FF6B35' }}
               >
-                📋 Parser ({importText.split('\n').filter(l => l.trim()).length}{' '}
-                lignes)
+                📋 Parser ({importText.split('\n').filter(l => l.trim()).length} lignes)
               </button>
               <button
                 onClick={() => setImportText('')}
@@ -187,155 +156,110 @@ const ImportModule = ({
             </div>
           </div>
 
+          {/* Étape 2 */}
           {parsedPieces.length > 0 && (
             <div>
               <h3 className="text-lg font-bold text-gray-800 mb-3">
                 Étape 2: Vérifier et dispatcher ({parsedPieces.length} pièces)
               </h3>
-              <div
-                className="bg-white rounded-lg border-2 p-3 max-h-96 overflow-y-auto"
-                style={{ borderColor: '#FF6B35' }}
-              >
+              <div className="bg-white rounded-lg border-2 p-4 max-h-96 overflow-y-auto" style={{ borderColor: '#FF6B35' }}>
                 {parsedPieces.map((piece, idx) => (
-                  <div
-                    key={piece.id}
-                    className="mb-4 pb-3 border-b border-gray-200 last:border-b-0"
-                  >
+                  <div key={piece.id} className="mb-5 pb-4 border-b border-gray-200 last:border-b-0">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span
-                          className="text-white px-2 py-[2px] rounded text-[10px] font-bold"
-                          style={{ background: '#FF6B35' }}
+                        <span 
+                          className="text-white px-2 py-1 rounded text-xs font-bold"
+                          style={{ backgroundColor: '#FF6B35' }}
                         >
                           #{idx + 1}
                         </span>
-                        <span className="text-[11px] text-gray-500">
+                        <span className="text-xs text-gray-500">
                           {piece.reference || '(sans réf)'}
                         </span>
                       </div>
                       <button
                         onClick={() => removeParsedPiece(piece.id)}
-                        className="px-2 py-1 bg-red-500 text-white rounded text-[11px] hover:bg-red-600 transition"
+                        className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition"
                         title="Supprimer"
                       >
                         ✕
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-12 gap-2 items-start">
-                      <div className="col-span-2">
-                        <label className="text-[10px] font-semibold">
-                          Référence *
-                        </label>
+                    {/* Lignes simples verticales */}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold mb-1">Référence *</label>
                         <input
                           type="text"
                           value={piece.reference}
-                          onChange={e =>
-                            updateParsedPiece(
-                              piece.id,
-                              'reference',
-                              e.target.value
-                            )
-                          }
-                          className={`${baseInput} ${compactInput} w-full max-w-[130px]`}
-                          style={borderStyle}
+                          onChange={(e) => updateParsedPiece(piece.id, 'reference', e.target.value)}
+                          className="w-full px-3 py-2 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          style={{ borderColor: '#FF6B35' }}
                         />
                       </div>
-                      <div className="col-span-5">
-                        <label className="text-[10px] font-semibold">
-                          Désignation
-                        </label>
+                      <div>
+                        <label className="block text-[11px] font-semibold mb-1">Désignation (agrandie)</label>
                         <textarea
                           rows={2}
                           value={piece.designation}
-                          onChange={e =>
-                            updateParsedPiece(
-                              piece.id,
-                              'designation',
-                              e.target.value
-                            )
-                          }
-                          placeholder="Description..."
-                          className={`${baseInput} ${designationInput} w-full resize-y min-h-[50px]`}
-                          style={borderStyle}
+                          onChange={(e) => updateParsedPiece(piece.id, 'designation', e.target.value)}
+                          placeholder="Description détaillée..."
+                          className="w-full px-3 py-2 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
+                          style={{ borderColor: '#FF6B35' }}
                         />
                       </div>
-                      <div className="col-span-1">
-                        <label className="text-[10px] font-semibold">Qté</label>
-                        <input
-                          type="text"
-                          value={piece.quantity}
-                          onChange={e =>
-                            updateParsedPiece(
-                              piece.id,
-                              'quantity',
-                              e.target.value
-                            )
-                          }
-                          className={`${baseInput} ${compactInput} w-full max-w-[70px]`}
-                          style={borderStyle}
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="text-[10px] font-semibold">
-                          PU HT
-                        </label>
-                        <input
-                          type="text"
-                          value={piece.prixUnitaire || piece.unitPrice || ''}
-                          onChange={e =>
-                            updateParsedPiece(
-                              piece.id,
-                              'prixUnitaire',
-                              e.target.value
-                            )
-                          }
-                          className={`${baseInput} ${compactInput} w-full`}
-                          style={borderStyle}
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="text-[10px] font-semibold">
-                          Forfait *
-                        </label>
-                        <select
-                          value={piece.targetForfait}
-                          onChange={e =>
-                            updateParsedPiece(
-                              piece.id,
-                              'targetForfait',
-                              e.target.value
-                            )
-                          }
-                          className={`${baseInput} ${compactInput} w-full`}
-                          style={borderStyle}
-                        >
-                          <option value="">-</option>
-                          {activeItems.map(it => (
-                            <option key={it.id} value={it.id}>
-                              {it.label}
-                            </option>
-                          ))}
-                        </select>
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex-1">
+                          <label className="block text-[11px] font-semibold mb-1">Quantité</label>
+                          <input
+                            type="text"
+                            value={piece.quantity}
+                            onChange={(e) => updateParsedPiece(piece.id, 'quantity', e.target.value)}
+                            className="w-full px-3 py-2 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            style={{ borderColor: '#FF6B35' }}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-[11px] font-semibold mb-1">Prix Unit. HT</label>
+                          <input
+                            type="text"
+                            value={piece.prixUnitaire || piece.unitPrice || ''}
+                            onChange={(e) => updateParsedPiece(piece.id, 'prixUnitaire', e.target.value)}
+                            className="w-full px-3 py-2 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            style={{ borderColor: '#FF6B35' }}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-[11px] font-semibold mb-1">Forfait cible *</label>
+                          <select
+                            value={piece.targetForfait}
+                            onChange={(e) => updateParsedPiece(piece.id, 'targetForfait', e.target.value)}
+                            className="w-full px-3 py-2 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            style={{ borderColor: '#FF6B35' }}
+                          >
+                            <option value="">Choisir...</option>
+                            {activeItems.map(it => (
+                              <option key={it.id} value={it.id}>{it.label}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-3">
+              <div className="mt-4 flex gap-3 flex-wrap">
                 <button
                   onClick={dispatchPieces}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 shadow text-sm"
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 shadow-lg transition-all text-sm"
                 >
                   ✓ Dispatcher (pièces principales)
                 </button>
                 <button
-                  onClick={() => {
-                    setImportText('');
-                    setParsedPieces([]);
-                  }}
-                  className="px-5 py-2 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition text-sm"
+                  onClick={() => { setImportText(''); setParsedPieces([]); }}
+                  className="px-5 py-3 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition-all text-sm"
                 >
                   ↺ Réinitialiser
                 </button>
