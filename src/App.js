@@ -646,6 +646,8 @@ function App() {
           )}
         </div>
 
+        <div className="border-t-2 border-orange-400 my-8" />
+            
         {/* SMART LUSTRAGE */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
