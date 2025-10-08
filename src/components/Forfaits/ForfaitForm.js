@@ -20,7 +20,8 @@ const ForfaitForm = ({
   const pieceReference = forfait.pieceReference !== undefined ? forfait.pieceReference : defaults.pieceReference;
   const pieceQuantity = forfait.pieceQuantity !== undefined ? forfait.pieceQuantity : defaults.pieceQuantity;
   const piecePrix = forfait.piecePrix !== undefined ? forfait.piecePrix : defaults.piecePrix;
-  
+  const pieceFournisseur = forfait.pieceFournisseur !== undefined ? forfait.pieceFournisseur : (defaults.pieceFournisseur || '');
+
   const isLustrageItem = LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id);
 
   const handleQuantityChange = (itemId, field, value) => {
@@ -127,6 +128,23 @@ const ForfaitForm = ({
                   style={{ borderColor: '#FF6B35' }}
                 />
               </div>
+
+              {/* Fournisseur principal ajouté */}
+              <div className="w-full max-w-[220px]">
+                <label className="text-xs font-semibold block mb-1">Fournisseur</label>
+                <select
+                  value={pieceFournisseur}
+                  onChange={(e) => updateForfaitField(item.id, 'pieceFournisseur', e.target.value)}
+                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  style={{ borderColor: '#FF6B35' }}
+                >
+                  <option value="">-</option>
+                  {FOURNISSEURS.map(f => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="text-xs font-semibold block mb-1">Désignation (agrandie)</label>
                 <textarea 
@@ -192,6 +210,22 @@ const ForfaitForm = ({
                     style={{ borderColor: '#FF6B35' }}
                   />
                 </div>
+
+                <div className="w-full max-w-[220px]">
+                  <label className="text-xs font-semibold block mb-1">Fournisseur</label>
+                  <select
+                    value={line.fournisseur || ''}
+                    onChange={(e) => updatePieceLine(item.id, index, 'fournisseur', e.target.value)}
+                    className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    style={{ borderColor: '#FF6B35' }}
+                  >
+                    <option value="">-</option>
+                    {FOURNISSEURS.map(f => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="text-xs font-semibold block mb-1">Désignation (agrandie)</label>
                   <textarea 
