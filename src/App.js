@@ -1,3 +1,4 @@
+```javascript
 import React, { useState, useEffect, useCallback } from 'react';
 import { gapi } from 'gapi-script';
 import VehicleInfoForm from './components/Header/VehicleInfoForm';
@@ -7,6 +8,7 @@ import VehicleSummary from './components/Summary/VehicleSummary';
 import TaskSummary from './components/Summary/TaskSummary';
 import ChecklistSection from './components/Checklist/ChecklistSection';
 import ForfaitForm from './components/Forfaits/ForfaitForm';
+import ForfaitPeintureForm from './components/Forfaits/ForfaitPeintureForm'; // AJOUT
 import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
@@ -26,7 +28,8 @@ import {
   TEXT_ITEMS_4,
   EXCLUDED_MULTI_PIECES,
   DSP_ITEMS,
-  LUSTRAGE_ITEMS
+  LUSTRAGE_ITEMS,
+  PEINTURE_FORFAITS // AJOUT : Renommé pour refléter les forfaits Peinture
 } from './config/constants';
 
 import { formatTireSize } from './utils/formatters';
@@ -50,7 +53,7 @@ const SOURCE_FORCED_SUPPLIERS = {
 };
 
 // Component for Carrosserie sub-menus
-const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
+const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates, forfaitData, updateForfaitField }) => {
   return (
     <div className="section-carrosserie mb-6 flex justify-end">
       <div className="sous-menus space-y-4">
@@ -81,12 +84,14 @@ const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
           </button>
           {subMenuStates['peinture'] && (
             <div className="submenu-content mt-2 space-y-2 flex flex-col items-end">
-              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
-                Option 1
-              </button>
-              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
-                Option 2
-              </button>
+              {PEINTURE_FORFAITS.map(forfait => (
+                <ForfaitPeintureForm
+                  key={forfait.id}
+                  forfait={forfait}
+                  forfaitData={forfaitData}
+                  updateForfaitField={updateForfaitField}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -671,7 +676,7 @@ function App() {
     ...TEXT_ITEMS_1.map(i => i.id),
     ...TEXT_ITEMS_2.map(i => i.id),
   ]);
-  const isLustrageId = (id) => LUSTRAGE_ITEMS.some(l => l.id === id);
+  const isLustrageId = (id) => LUSTRAGE_ITEMS.some(l => l.id === i);
   const defaultCategoryForItem = (item) => {
     if (isLustrageId(item.id)) return 'Lustrage';
     if (CARROSSERIE_IDS.has(item.id)) return 'Carrosserie';
@@ -852,7 +857,7 @@ function App() {
                   <div
                     key={item.id}
                     onClick={() => cycleState(item.id)}
-                    className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-center text-center`}
+                    className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-content text-center`}
                   >
                     <span className={`text-sm font-medium ${txt}`}>{item.label}</span>
                   </div>
@@ -887,7 +892,7 @@ function App() {
                   <div
                     key={item.id}
                     onClick={() => cycleState(item.id)}
-                    className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-center text-center`}
+                    className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-content text-center`}
                   >
                     <span className={`text-sm font-medium ${txt}`}>{item.label}</span>
                   </div>
@@ -916,6 +921,8 @@ function App() {
               <CarrosserieSubMenus
                 toggleSubMenu={toggleSubMenu}
                 subMenuStates={subMenuStates}
+                forfaitData={forfaitData}
+                updateForfaitField={updateForfaitField}
               />
               <div className="main-menu flex justify-end space-x-4 mb-6">
                 <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
@@ -1052,3 +1059,4 @@ function App() {
 }
 
 export default App;
+```
