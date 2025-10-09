@@ -665,15 +665,28 @@ function App() {
     forfaitData,
     pieceLines
   );
+
+  // Marquage des items Carrosserie et catégorie par défaut
+  const CARROSSERIE_IDS = new Set([
+    ...TEXT_ITEMS_1.map(i => i.id),
+    ...TEXT_ITEMS_2.map(i => i.id),
+  ]);
+  const isLustrageId = (id) => LUSTRAGE_ITEMS.some(l => l.id === id);
+  const defaultCategoryForItem = (item) => {
+    if (isLustrageId(item.id)) return 'Lustrage';
+    if (CARROSSERIE_IDS.has(item.id)) return 'Carrosserie';
+    return 'Mécanique';
+  };
+
   const mecaForfaitItems = activeMecaniqueItems
     .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
-    .filter(i => (forfaitData[i.id]?.moCategory || 'Mécanique') === 'Mécanique');
+    .filter(i => (forfaitData[i.id]?.moCategory || defaultCategoryForItem(i)) === 'Mécanique');
 
   // Carrosserie regroupe Carrosserie + Peinture (toujours sans Lustrage)
   const carrosserieForfaitItems = activeMecaniqueItems
     .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
     .filter(i => {
-      const cat = forfaitData[i.id]?.moCategory || 'Mécanique';
+      const cat = forfaitData[i.id]?.moCategory || defaultCategoryForItem(i);
       return cat === 'Carrosserie' || cat === 'Peinture';
     });
 
@@ -955,13 +968,13 @@ function App() {
               cycleState={cycleState}
             />
 
-            {/* Forfaits (Mécanique + Carrosserie uniquement) */}
+            {/* Forfaits (Mécanique + Carrosserie) */}
             <div className="mt-8 border-t-2 border-gray-300 pt-8">
               <h2 className="text-2xl font-bold mb-6">Forfaits</h2>
 
               {/* Mécanique */}
               {mecaForfaitItems && mecaForfaitItems.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
                   {mecaForfaitItems.map(item => (
                     <ForfaitForm
@@ -974,16 +987,20 @@ function App() {
                       removePieceLine={removePieceLine}
                       updatePieceLine={updatePieceLine}
                       canHaveMultiplePieces={canHaveMultiplePieces}
+                      moDefaultCategory={defaultCategoryForItem(item)}
                     />
                   ))}
                 </div>
               )}
 
+              {/* Séparateur visuel */}
+              <div className="border-t border-gray-200 my-4" />
+
               {/* Carrosserie */}
-              {carrosserieForfaitItems && carrosserieForfaitItems.length > 0 && (
-                <div className="mb-2">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
-                  {carrosserieForfaitItems.map(item => (
+              <div className="mb-2">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
+                {carrosserieForfaitItems && carrosserieForfaitItems.length > 0 ? (
+                  carrosserieForfaitItems.map(item => (
                     <ForfaitForm
                       key={item.id}
                       item={item}
@@ -994,10 +1011,13 @@ function App() {
                       removePieceLine={removePieceLine}
                       updatePieceLine={updatePieceLine}
                       canHaveMultiplePieces={canHaveMultiplePieces}
+                      moDefaultCategory={defaultCategoryForItem(item)}
                     />
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">Aucun forfait Carrosserie actif</p>
+                )}
+              </div>
             </div>
 
             <OrdreReparation
