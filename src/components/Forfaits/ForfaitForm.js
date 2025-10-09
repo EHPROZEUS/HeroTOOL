@@ -11,12 +11,20 @@ const ForfaitForm = ({
   addPieceLine, 
   removePieceLine, 
   updatePieceLine,
-  canHaveMultiplePieces 
+  canHaveMultiplePieces,
+  moDefaultCategory
 }) => {
   const forfait = forfaitData[item.id] || {};
   const defaults = getDefaultValues(item.id);
 
   const isLustrageItem = LUSTRAGE_ITEMS.some(l => l.id === item.id);
+
+  // Initialiser la catégorie par défaut si absente
+  React.useEffect(() => {
+    if (!forfait.moCategory && moDefaultCategory) {
+      updateForfaitField(item.id, 'moCategory', moDefaultCategory);
+    }
+  }, [item.id, forfait.moCategory, moDefaultCategory, updateForfaitField]);
 
   // Valeurs brutes
   const moQuantityRaw = forfait.moQuantity ?? defaults.moQuantity;
@@ -67,7 +75,7 @@ const ForfaitForm = ({
             <div className="flex-1">
               <label className="text-xs font-semibold block mb-1">Catégorie</label>
               <select
-                value={forfait.moCategory || (isLustrageItem ? 'Lustrage' : 'Mécanique')}
+                value={forfait.moCategory || moDefaultCategory || (isLustrageItem ? 'Lustrage' : 'Mécanique')}
                 onChange={(e) => updateForfaitField(item.id, 'moCategory', e.target.value)}
                 className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 style={{ borderColor: '#FF6B35' }}
