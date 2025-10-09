@@ -675,7 +675,7 @@ function App() {
   .filter(i => {
     const cat = forfaitData[i.id]?.moCategory || 'Mécanique';
     return cat === 'Carrosserie' || cat === 'Peinture';
-    );
+    });
   const statusDisplay = (() => {
     if (googleApiState.error) {
       return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
