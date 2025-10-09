@@ -1,4 +1,4 @@
-```javascript
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { gapi } from 'gapi-script';
 import VehicleInfoForm from './components/Header/VehicleInfoForm';
