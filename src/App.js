@@ -608,7 +608,7 @@ function App() {
     }
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Ordre</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print[...]
+    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
     w.document.write('</head><body>');
     w.document.write(el.innerHTML);
     w.document.write('</body></html>');
@@ -627,7 +627,7 @@ function App() {
     }
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Pièces</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print[...]
+    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
     w.document.write('</head><body>');
     w.document.write(el.innerHTML);
     w.document.write('</body></html>');
