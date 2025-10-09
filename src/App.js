@@ -62,11 +62,11 @@ const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
             Réparation peinture {subMenuStates['reparation-peinture'] ? '▲' : '▼'}
           </button>
           {subMenuStates['reparation-peinture'] && (
-            <div className="submenu-content mt-2 space-y-2 flex flex-col items-end">
-              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+            <div className="submenu-content mt-2 space-y-2 w-48">
+              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
                 Option 1
               </button>
-              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
                 Option 2
               </button>
             </div>
@@ -80,11 +80,11 @@ const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
             Peinture {subMenuStates['peinture'] ? '▲' : '▼'}
           </button>
           {subMenuStates['peinture'] && (
-            <div className="submenu-content mt-2 space-y-2 flex flex-col items-end">
-              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+            <div className="submenu-content mt-2 space-y-2 w-48">
+              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
                 Option 1
               </button>
-              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
                 Option 2
               </button>
             </div>
@@ -98,16 +98,8 @@ const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
 function App() {
   // États principaux
   const [headerInfo, setHeaderInfo] = useState({
-    lead: '',
-    immatriculation: '',
-    vin: '',
-    moteur: '',
-    boite: '',
-    dateVehicule: '',
-    kilometres: '',
-    clim: '',
-    freinParking: '',
-    startStop: false
+    lead: '', immatriculation: '', vin: '', moteur: '', boite: '',
+    dateVehicule: '', kilometres: '', clim: '', freinParking: '', startStop: false
   });
   const [itemStates, setItemStates] = useState(
     Object.fromEntries(ALL_ITEMS.map(i => [i.id, 0]))
@@ -125,41 +117,30 @@ function App() {
   const [lastMaintenance, setLastMaintenance] = useState({});
   const [oilInfo, setOilInfo] = useState({ viscosity: '', quantity: '' });
   const [googleApiState, setGoogleApiState] = useState({
-    loaded: false,
-    initialized: false,
-    signedIn: false,
-    error: null
+    loaded: false, initialized: false, signedIn: false, error: null
   });
   const [expandedCategories, setExpandedCategories] = useState({
-    mecanique: false,
-    pneusFreins: false,
-    dsp: false,
-    lustrage: false,
-    carrosserie: false
+    mecanique: false, pneusFreins: false, dsp: false, lustrage: false, carrosserie: false
   });
   const [subMenuStates, setSubMenuStates] = useState({
     'reparation-peinture': false,
     'peinture': false
   });
 
-  // Google API init
+  // Google API init (inchangé)
   useEffect(() => {
     const initGoogleApi = async () => {
       try {
-        if (!CLIENT_ID || !API_KEY) {
-          throw new Error('Credentials Google manquants.');
-        }
+        if (!CLIENT_ID || !API_KEY) throw new Error('Credentials Google manquants.');
         let attempts = 0;
         while (!window.gapi && attempts < 50) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(r => setTimeout(r, 100));
           attempts++;
         }
-        if (!window.gapi) {
-          throw new Error('Google API script non chargé');
-        }
-        setGoogleApiState(prev => ({ ...prev, loaded: true }));
-        await new Promise((resolve, reject) => {
-          window.gapi.load('client:auth2', { callback: resolve, onerror: reject });
+        if (!window.gapi) throw new Error('Google API script non chargé');
+        setGoogleApiState(s => ({ ...s, loaded: true }));
+        await new Promise((res, rej) => {
+          window.gapi.load('client:auth2', { callback: res, onerror: rej });
         });
         await window.gapi.client.init({
           apiKey: API_KEY,
@@ -168,9 +149,7 @@ function App() {
           discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
         });
         const auth2 = window.gapi.auth2.getAuthInstance();
-        if (!auth2) {
-          throw new Error('Instance auth2 introuvable');
-        }
+        if (!auth2) throw new Error('Instance auth2 introuvable');
         setGoogleApiState({
           loaded: true,
           initialized: true,
@@ -178,105 +157,56 @@ function App() {
           error: null
         });
         auth2.isSignedIn.listen(isSignedIn =>
-          setGoogleApiState(prev => ({ ...prev, signedIn: isSignedIn }))
+          setGoogleApiState(s => ({ ...s, signedIn: isSignedIn }))
         );
       } catch (e) {
         setGoogleApiState({
-          loaded: false,
-          initialized: false,
-          signedIn: false,
-          error: e.message
+          loaded: false, initialized: false, signedIn: false, error: e.message
         });
       }
     };
     initGoogleApi();
   }, []);
 
-  // Auto-save
+  // Auto-save (inchangé)
   useEffect(() => {
     const interval = setInterval(() => {
       if (headerInfo.lead.trim()) {
         const data = {
-          headerInfo,
-          itemStates,
-          itemNotes,
-          forfaitData,
-          pieceLines,
-          lastMaintenance,
-          oilInfo,
-          includeControleTechnique,
-          includeContrevisite,
+          headerInfo, itemStates, itemNotes, forfaitData,
+          pieceLines, lastMaintenance, oilInfo,
+          includeControleTechnique, includeContrevisite,
           savedAt: new Date().toISOString()
         };
         localStorage.setItem(`herotool_quote_${headerInfo.lead}`, JSON.stringify(data));
       }
     }, 10000);
     return () => clearInterval(interval);
-  }, [
-    headerInfo,
-    itemStates,
-    itemNotes,
-    forfaitData,
-    pieceLines,
-    lastMaintenance,
-    oilInfo,
-    includeControleTechnique,
-    includeContrevisite
-  ]);
+  }, [headerInfo, itemStates, itemNotes, forfaitData, pieceLines, lastMaintenance, oilInfo, includeControleTechnique, includeContrevisite]);
 
   // Helpers
-  const toggleCategory = useCallback(cat => {
-    setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
-  }, []);
+  const toggleCategory = cat =>
+    setExpandedCategories(p => ({ ...p, [cat]: !p[cat] }));
+  const updateHeaderInfo = (f, v) => setHeaderInfo(p => ({ ...p, [f]: v }));
+  const toggleMoteur = t => setHeaderInfo(p => ({ ...p, moteur: p.moteur === t ? '' : t }));
+  const toggleBoite = t => setHeaderInfo(p => ({ ...p, boite: p.boite === t ? '' : t }));
+  const toggleClim = t => setHeaderInfo(p => ({ ...p, clim: p.clim === t ? '' : t }));
+  const toggleFreinParking = t => setHeaderInfo(p => ({ ...p, freinParking: p.freinParking === t ? '' : t }));
+  const toggleStartStop = () => setHeaderInfo(p => ({ ...p, startStop: !p.startStop }));
+  const cycleState = id => setItemStates(p => ({ ...p, [id]: (p[id] + 1) % 3 }));
 
-  const toggleSubMenu = useCallback(id => {
-    setSubMenuStates(prev => ({ ...prev, [id]: !prev[id] }));
-  }, []);
-
-  const updateHeaderInfo = useCallback((field, value) => {
-    setHeaderInfo(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-  const toggleMoteur = useCallback(type => {
-    setHeaderInfo(prev => ({ ...prev, moteur: prev.moteur === type ? '' : type }));
-  }, []);
-
-  const toggleBoite = useCallback(type => {
-    setHeaderInfo(prev => ({ ...prev, boite: prev.boite === type ? '' : type }));
-  }, []);
-
-  const toggleClim = useCallback(type => {
-    setHeaderInfo(prev => ({ ...prev, clim: prev.clim === type ? '' : type }));
-  }, []);
-
-  const toggleFreinParking = useCallback(type => {
-    setHeaderInfo(prev => ({
-      ...prev,
-      freinParking: prev.freinParking === type ? '' : type
-    }));
-  }, []);
-
-  const toggleStartStop = useCallback(() => {
-    setHeaderInfo(prev => ({ ...prev, startStop: !prev.startStop }));
-  }, []);
-
-  const cycleState = useCallback(id => {
-    setItemStates(prev => ({ ...prev, [id]: (prev[id] + 1) % 3 }));
-  }, []);
-
-  const updateNote = useCallback((id, value) => {
-    if (['pneusAvant', 'pneusArriere', 'pneus4'].includes(id)) {
-      setItemNotes(prev => ({ ...prev, [id]: formatTireSize(value) }));
+  const updateNote = (id, v) => {
+    if (['pneusAvant','pneusArriere','pneus4'].includes(id)) {
+      setItemNotes(p => ({ ...p, [id]: formatTireSize(v) }));
     } else {
-      setItemNotes(prev => ({ ...prev, [id]: value }));
+      setItemNotes(p => ({ ...p, [id]: v }));
     }
-  }, []);
+  };
 
-  const updateLastMaintenance = useCallback((field, value) => {
-    setLastMaintenance(prev => ({ ...prev, [field]: value }));
-  }, []);
+  const updateLastMaintenance = (f, v) =>
+    setLastMaintenance(p => ({ ...p, [f]: v }));
 
-  const updateOilInfo = useCallback((field, value) => {
+  const updateOilInfo = (field, value) => {
     setOilInfo(prev => {
       const next = { ...prev, [field]: value };
       if (next.viscosity && next.quantity) {
@@ -292,10 +222,10 @@ function App() {
           } else {
             total = q * cfg.prixUnitaire;
           }
-          setForfaitData(prevForfait => ({
-            ...prevForfait,
+          setForfaitData(f => ({
+            ...f,
             filtreHuile: {
-              ...prevForfait.filtreHuile,
+              ...f.filtreHuile,
               consommableReference: `Huile ${next.viscosity}`,
               consommableDesignation: cfg.unite === 'bidon5L' ? 'Huile moteur (bidon 5L)' : 'Huile moteur',
               consommableQuantity: qCalc.toString(),
@@ -307,12 +237,12 @@ function App() {
       }
       return next;
     });
-  }, []);
+  };
 
-  const updateForfaitField = useCallback((itemId, field, value) => {
+  const updateForfaitField = (itemId, field, value) => {
     setForfaitData(prev => {
-      const nextForfait = { ...prev, [itemId]: { ...prev[itemId], [field]: value } };
-      const fd = nextForfait[itemId];
+      const nf = { ...prev, [itemId]: { ...prev[itemId], [field]: value } };
+      const fd = nf[itemId];
       if (field === 'pieceQuantity' || field === 'piecePrixUnitaire') {
         const qty = parseFloat(fd.pieceQuantity || 0);
         const pu = parseFloat(fd.piecePrixUnitaire || 0);
@@ -323,55 +253,48 @@ function App() {
         const pu = parseFloat(fd.consommablePrixUnitaire || 0);
         fd.consommablePrix = (qty * pu).toFixed(2);
       }
-      return nextForfait;
+      return nf;
     });
-  }, []);
+  };
 
   // Pièces supplémentaires
-  const addPieceLine = useCallback(itemId => {
+  const addPieceLine = itemId => {
     setPieceLines(prev => ({
       ...prev,
       [itemId]: [...(prev[itemId] || []), {
-        reference: '',
-        designation: '',
-        fournisseur: '',
-        quantity: '1',
-        prixUnitaire: '',
-        prix: ''
+        reference: '', designation: '', fournisseur: '',
+        quantity: '1', prixUnitaire: '', prix: ''
       }]
     }));
-  }, []);
-
-  const removePieceLine = useCallback((itemId, index) => {
+  };
+  const removePieceLine = (itemId, index) => {
     setPieceLines(prev => ({
       ...prev,
-      [itemId]: prev[itemId]?.filter((_, i) => i !== index) || []
+      [itemId]: prev[itemId].filter((_, i) => i !== index)
     }));
-  }, []);
-
-  const updatePieceLine = useCallback((itemId, index, field, value) => {
+  };
+  const updatePieceLine = (itemId, index, field, value) => {
     setPieceLines(prev => ({
       ...prev,
-      [itemId]: prev[itemId]?.map((line, i) => {
+      [itemId]: prev[itemId].map((line, i) => {
         if (i === index) {
-          const newLine = { ...line, [field]: value };
+          const nl = { ...line, [field]: value };
           if (field === 'quantity' || field === 'prixUnitaire') {
-            const q = parseFloat(newLine.quantity || 0);
-            const pu = parseFloat(newLine.prixUnitaire || 0);
-            newLine.prix = (q * pu).toFixed(2);
+            const q = parseFloat(nl.quantity || 0);
+            const pu = parseFloat(nl.prixUnitaire || 0);
+            nl.prix = (q * pu).toFixed(2);
           }
-          return newLine;
+          return nl;
         }
         return line;
-      }) || prev[itemId]
+      })
     }));
-  }, []);
+  };
+  const canHaveMultiplePieces = itemId =>
+    !EXCLUDED_MULTI_PIECES.includes(itemId);
 
-  const canHaveMultiplePieces = useCallback(itemId => {
-    return !EXCLUDED_MULTI_PIECES.includes(itemId);
-  }, []);
-
-  const parsePiecesText = useCallback((
+  // --- parsePiecesText : attribue fournisseur auto + conserve pour la modification ultérieure ---
+  const parsePiecesText = (
     selectedFormat = 'auto',
     sourceSystem = 'auto',
     defaultSupplier = ''
@@ -401,9 +324,9 @@ function App() {
       };
     });
     setParsedPieces(enriched);
-  }, [importText]);
+  };
 
-  const updateParsedPiece = useCallback((id, field, value) => {
+  const updateParsedPiece = (id, field, value) => {
     setParsedPieces(prev =>
       prev.map(p =>
         p.id === id
@@ -411,13 +334,12 @@ function App() {
           : p
       )
     );
-  }, []);
-
-  const removeParsedPiece = useCallback(id => {
+  };
+  const removeParsedPiece = id =>
     setParsedPieces(prev => prev.filter(p => p.id !== id));
-  }, []);
 
-  const dispatchPieces = useCallback(() => {
+  // --- dispatchPieces : copie fournisseur auto dans pieceFournisseur MAIS laisse edit ensuite ---
+  const dispatchPieces = () => {
     if (!parsedPieces.length) {
       alert('Aucune pièce à dispatcher.');
       return;
@@ -431,48 +353,43 @@ function App() {
     }
 
     setForfaitData(prev => {
-      const nextData = { ...prev };
+      const nd = { ...prev };
       parsedPieces.forEach(piece => {
         if (!piece.targetForfait || !piece.reference) return;
         const qty = parseFloat(piece.quantity) || 0;
         const pu = parseFloat(piece.prixUnitaire || piece.unitPrice || 0) || 0;
         const prix = (qty * pu).toFixed(2);
-        const existing = nextData[piece.targetForfait] || {};
-        nextData[piece.targetForfait] = {
+        const existing = nd[piece.targetForfait] || {};
+        nd[piece.targetForfait] = {
           ...existing,
           pieceReference: piece.reference,
           pieceDesignation: piece.designation || existing.pieceDesignation || '',
           pieceQuantity: qty.toString(),
           piecePrixUnitaire: pu.toFixed(2),
           piecePrix: prix,
-          pieceFournisseur: piece.fournisseur || existing.pieceFournisseur || ''
+          pieceFournisseur: piece.fournisseur || existing.pieceFournisseur || '' // <-- auto + modifiable ensuite
         };
-      });
-      return nextData;
+      };
+      return nd;
     });
 
     setImportText('');
     setParsedPieces([]);
     setShowImportModule(false);
     alert('✓ Pièces importées (fournisseur attribué et modifiable dans le forfait).');
-  }, [parsedPieces]);
+  };
 
-  const saveQuote = useCallback(() => {
+  // Sauvegarde / chargement / Drive / impression (inchangés)
+  const saveQuote = () => {
     if (!headerInfo.lead.trim()) {
       alert('⚠️ Lead requis');
       return;
     }
     try {
       const data = {
-        headerInfo,
-        itemStates,
-        itemNotes,
-        forfaitData,
-        pieceLines,
-        lastMaintenance,
-        oilInfo,
-        includeControleTechnique,
-        includeContrevisite,
+        headerInfo, itemStates, itemNotes, forfaitData,
+        pieceLines, lastMaintenance, oilInfo,
+        includeControleTechnique, includeContrevisite,
         savedAt: new Date().toISOString()
       };
       localStorage.setItem(`herotool_quote_${headerInfo.lead}`, JSON.stringify(data));
@@ -480,20 +397,10 @@ function App() {
     } catch (e) {
       alert('❌ ' + e.message);
     }
-  }, [
-    headerInfo,
-    itemStates,
-    itemNotes,
-    forfaitData,
-    pieceLines,
-    lastMaintenance,
-    oilInfo,
-    includeControleTechnique,
-    includeContrevisite
-  ]);
+  };
 
-  const loadQuote = useCallback(lead => {
-    if (!lead?.trim()) {
+  const loadQuote = lead => {
+    if (!lead.trim()) {
       alert('⚠️ Nom requis');
       return;
     }
@@ -504,66 +411,50 @@ function App() {
     }
     try {
       const data = JSON.parse(raw);
-      setHeaderInfo(data.headerInfo || {});
-      setItemStates(data.itemStates || {});
-      setItemNotes(data.itemNotes || {});
-      setForfaitData(data.forfaitData || {});
-      setPieceLines(data.pieceLines || {});
-      setLastMaintenance(data.lastMaintenance || {});
-      setOilInfo(data.oilInfo || { viscosity: '', quantity: '' });
-      setIncludeControleTechnique(data.includeControleTechnique ?? true);
-      setIncludeContrevisite(data.includeContrevisite ?? false);
+      setHeaderInfo(data.headerInfo);
+      setItemStates(data.itemStates);
+      setItemNotes(data.itemNotes);
+      setForfaitData(data.forfaitData);
+      setPieceLines(data.pieceLines);
+      setLastMaintenance(data.lastMaintenance);
+      setOilInfo(data.oilInfo);
+      setIncludeControleTechnique(data.includeControleTechnique);
+      setIncludeContrevisite(data.includeContrevisite);
       alert('✅ Chargé');
     } catch (e) {
       alert('❌ ' + e.message);
     }
-  }, []);
+  };
 
-  const handleGoogleSignIn = useCallback(async () => {
+  const handleGoogleSignIn = async () => {
     try {
       if (!googleApiState.initialized) {
         alert('API non prête');
         return;
       }
       const auth2 = window.gapi?.auth2?.getAuthInstance();
-      if (!auth2) {
-        throw new Error('Auth2 indisponible');
-      }
+      if (!auth2) throw new Error('Auth2 indisponible');
       await auth2.signIn();
     } catch (e) {
       alert('❌ ' + e.message);
     }
-  }, [googleApiState.initialized]);
+  };
 
-  const uploadToDrive = useCallback(async () => {
+  const uploadToDrive = async () => {
     if (!headerInfo.lead.trim()) {
       alert('⚠️ Lead requis');
       return;
     }
     try {
-      if (!googleApiState.initialized) {
-        throw new Error('API non initialisée');
-      }
+      if (!googleApiState.initialized) throw new Error('API non initialisée');
       const auth2 = window.gapi?.auth2?.getAuthInstance();
-      if (!auth2) {
-        throw new Error('Auth2 indisponible');
-      }
-      if (!auth2.isSignedIn.get()) {
-        await auth2.signIn();
-      }
-      if (!auth2.isSignedIn.get()) {
-        throw new Error('Connexion refusée');
-      }
+      if (!auth2) throw new Error('Auth2 indisponible');
+      if (!auth2.isSignedIn.get()) await auth2.signIn();
+      if (!auth2.isSignedIn.get()) throw new Error('Connexion refusée');
       const payload = {
-        headerInfo,
-        itemStates,
-        itemNotes,
-        forfaitData,
-        pieceLines,
-        lastMaintenance,
-        oilInfo,
-        includeControleTechnique,
-        includeContrevisite,
+        headerInfo, itemStates, itemNotes, forfaitData,
+        pieceLines, lastMaintenance, oilInfo,
+        includeControleTechnique, includeContrevisite,
         savedAt: new Date().toISOString()
       };
       const fileContent = JSON.stringify(payload, null, 2);
@@ -581,63 +472,38 @@ function App() {
         headers: new Headers({ Authorization: `Bearer ${accessToken}` }),
         body: form
       });
-      if (!resp.ok) {
-        throw new Error('HTTP ' + resp.status);
-      }
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
       alert('✅ Export Drive OK');
     } catch (e) {
       alert('❌ ' + e.message);
     }
-  }, [
-    googleApiState.initialized,
-    headerInfo,
-    itemStates,
-    itemNotes,
-    forfaitData,
-    pieceLines,
-    lastMaintenance,
-    oilInfo,
-    includeControleTechnique,
-    includeContrevisite
-  ]);
+  };
 
-  const printOrdreReparation = useCallback(() => {
+  const printOrdreReparation = () => {
     const el = document.getElementById('ordre-reparation-content');
-    if (!el) {
-      return;
-    }
+    if (!el) return;
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Ordre</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
+    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print{.print-button{display:none}}</style>');
     w.document.write('</head><body>');
     w.document.write(el.innerHTML);
     w.document.write('</body></html>');
-    w.document.close();
-    w.focus();
-    setTimeout(() => {
-      w.print();
-      w.close();
-    }, 200);
-  }, []);
+    w.document.close(); w.focus();
+    setTimeout(()=>{ w.print(); w.close(); },200);
+  };
 
-  const printListePieces = useCallback(() => {
+  const printListePieces = () => {
     const el = document.getElementById('liste-pieces-content');
-    if (!el) {
-      return;
-    }
+    if (!el) return;
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Pièces</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
+    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print{.print-button{display:none}}</style>');
     w.document.write('</head><body>');
     w.document.write(el.innerHTML);
     w.document.write('</body></html>');
-    w.document.close();
-    w.focus();
-    setTimeout(() => {
-      w.print();
-      w.close();
-    }, 200);
-  }, []);
+    w.document.close(); w.focus();
+    setTimeout(()=>{ w.print(); w.close(); },200);
+  };
 
   // Dérivés
   const activeItemsList = ALL_ITEMS.filter(i => itemStates[i.id] === 1 || itemStates[i.id] === 2);
@@ -648,37 +514,21 @@ function App() {
   const allCompleted = totalActive > 0 && totalActive === totalCompleted;
 
   const totals = calculateTotals(
-    activeMecaniqueItems,
-    forfaitData,
-    pieceLines,
-    includeControleTechnique,
-    includeContrevisite,
-    activeDSPItems
+    activeMecaniqueItems, forfaitData, pieceLines,
+    includeControleTechnique, includeContrevisite, activeDSPItems
   );
   const moByCategory = calculateMOByCategory(
-    activeMecaniqueItems,
-    forfaitData,
-    activeDSPItems
+    activeMecaniqueItems, forfaitData, activeDSPItems
   );
   const piecesBySupplier = getPiecesListBySupplier(
-    activeMecaniqueItems,
-    forfaitData,
-    pieceLines
+    activeMecaniqueItems, forfaitData, pieceLines
   );
 
   const statusDisplay = (() => {
-    if (googleApiState.error) {
-      return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
-    }
-    if (!googleApiState.loaded) {
-      return { text: '⏳ Chargement Google API...', color: 'text-orange-600' };
-    }
-    if (!googleApiState.initialized) {
-      return { text: '⏳ Initialisation Google API...', color: 'text-orange-600' };
-    }
-    if (googleApiState.signedIn) {
-      return { text: '✅ Connecté à Google Drive', color: 'text-green-600' };
-    }
+    if (googleApiState.error) return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
+    if (!googleApiState.loaded) return { text: '⏳ Chargement Google API...', color: 'text-orange-600' };
+    if (!googleApiState.initialized) return { text: '⏳ Initialisation Google API...', color: 'text-orange-600' };
+    if (googleApiState.signedIn) return { text: '✅ Connecté à Google Drive', color: 'text-green-600' };
     return { text: '🔓 Google API prête (non connecté)', color: 'text-blue-600' };
   })();
 
@@ -688,11 +538,11 @@ function App() {
         {/* En-tête */}
         <div className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center justify-center mb-3">
-            <div style={{ width: 60, height: 60, background: '#FF6B35', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 15 }}>
-              <span style={{ fontSize: 32, color: '#fff', fontWeight: 'bold' }}>H</span>
+            <div style={{ width:60, height:60, background:'#FF6B35', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', marginRight:15 }}>
+              <span style={{ fontSize:32, color:'#fff', fontWeight:'bold' }}>H</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold">
-              <span style={{ color: '#FF6B35' }}>Hero</span><span style={{ color: '#002F6C' }}>TOOL</span>
+              <span style={{ color:'#FF6B35' }}>Hero</span><span style={{ color:'#002F6C' }}>TOOL</span>
             </h1>
           </div>
           <p className="text-sm font-bold text-gray-500 italic">
@@ -704,35 +554,13 @@ function App() {
         <div className="mb-8 p-6 rounded-xl border-2 border-green-200 bg-green-50">
           <h2 className="text-lg font-bold text-gray-800 mb-4">Sauvegardez votre progression</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              onClick={saveQuote}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
-            >
-              💾 Sauvegarder
-            </button>
-            <button
-              onClick={() => {
-                const lead = prompt('Nom du Lead à charger:');
-                if (lead) loadQuote(lead);
-              }}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-            >
-              📂 Charger
-            </button>
-            <button
-              onClick={handleGoogleSignIn}
-              disabled={!googleApiState.initialized}
-              className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 disabled:opacity-50"
-            >
-              🔐 Google Drive
-            </button>
-            <button
-              onClick={uploadToDrive}
-              disabled={!googleApiState.initialized}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50"
-            >
-              ☁️ Export Drive
-            </button>
+            <button onClick={saveQuote} className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">💾 Sauvegarder</button>
+            <button onClick={() => {
+              const lead = prompt('Nom du Lead à charger:');
+              if (lead) loadQuote(lead);
+            }} className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">📂 Charger</button>
+            <button onClick={handleGoogleSignIn} disabled={!googleApiState.initialized} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 disabled:opacity-50">🔐 Google Drive</button>
+            <button onClick={uploadToDrive} disabled={!googleApiState.initialized} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50">☁️ Export Drive</button>
           </div>
           <div className="mt-4 text-sm">
             <span className={statusDisplay.color}>{statusDisplay.text}</span>
@@ -748,20 +576,10 @@ function App() {
           toggleFreinParking={toggleFreinParking}
           toggleStartStop={toggleStartStop}
         />
-        <MaintenanceHistory
-          lastMaintenance={lastMaintenance}
-          updateLastMaintenance={updateLastMaintenance}
-        />
-        <VehicleSummary
-          headerInfo={headerInfo}
-          oilInfo={oilInfo}
-          lastMaintenance={lastMaintenance}
-        />
+        <MaintenanceHistory lastMaintenance={lastMaintenance} updateLastMaintenance={updateLastMaintenance} />
+        <VehicleSummary headerInfo={headerInfo} oilInfo={oilInfo} lastMaintenance={lastMaintenance} />
         <div className="mb-8">
-          <OilInfoForm
-            oilInfo={oilInfo}
-            updateOilInfo={updateOilInfo}
-          />
+          <OilInfoForm oilInfo={oilInfo} updateOilInfo={updateOilInfo} />
         </div>
 
         {/* Entretien */}
@@ -786,7 +604,7 @@ function App() {
             <button
               onClick={() => toggleCategory('mecanique')}
               className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
+              style={{ backgroundColor:'#FF6B35' }}
             >
               {expandedCategories.mecanique ? 'Fermer' : 'Ouvrir'}
             </button>
@@ -822,7 +640,7 @@ function App() {
             <button
               onClick={() => toggleCategory('pneusFreins')}
               className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
+              style={{ backgroundColor:'#FF6B35' }}
             >
               {expandedCategories.pneusFreins ? 'Fermer' : 'Ouvrir'}
             </button>
@@ -848,7 +666,7 @@ function App() {
             <button
               onClick={() => toggleCategory('dsp')}
               className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
+              style={{ backgroundColor:'#FF6B35' }}
             >
               {expandedCategories.dsp ? 'Fermer' : 'Ouvrir'}
             </button>
@@ -856,7 +674,7 @@ function App() {
           {expandedCategories.dsp && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {DSP_ITEMS.map(item => {
-                const state = itemStates[item.id] ?? 0;
+                const state = itemStates[item.id];
                 const bg = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
                 const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
                 const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
@@ -875,7 +693,7 @@ function App() {
         </div>
 
         <div className="border-t-2 border-orange-400 my-8" />
-
+            
         {/* SMART LUSTRAGE */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -883,7 +701,7 @@ function App() {
             <button
               onClick={() => toggleCategory('lustrage')}
               className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
+              style={{ backgroundColor:'#FF6B35' }}
             >
               {expandedCategories.lustrage ? 'Fermer' : 'Ouvrir'}
             </button>
@@ -891,7 +709,7 @@ function App() {
           {expandedCategories.lustrage && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {LUSTRAGE_ITEMS.map(item => {
-                const state = itemStates[item.id] ?? 0;
+                const state = itemStates[item.id];
                 const bg = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
                 const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
                 const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
@@ -913,39 +731,21 @@ function App() {
 
         {/* Carrosserie */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 ">
             <h2 className="text-2xl font-bold text-orange-800">Carrosserie</h2>
             <button
               onClick={() => toggleCategory('carrosserie')}
               className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
+              style={{ backgroundColor:'#FF6B35' }}
             >
               {expandedCategories.carrosserie ? 'Fermer' : 'Ouvrir'}
             </button>
           </div>
           {expandedCategories.carrosserie && (
-            <>
-              <CarrosserieSubMenus
-                toggleSubMenu={toggleSubMenu}
-                subMenuStates={subMenuStates}
-              />
-              <div className="main-menu flex justify-end space-x-4 mb-6">
-                <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
-                  REP
-                </button>
-                <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
-                  REMP
-                </button>
-              </div>
-              <ChecklistSection
-                leftItems={TEXT_ITEMS_1}
-                rightItems={TEXT_ITEMS_2}
-                itemStates={itemStates}
-                itemNotes={itemNotes}
-                onCycleState={cycleState}
-                onUpdateNote={updateNote}
-              />
-            </>
+            <CarrosserieSubMenus
+              toggleSubMenu={toggleSubMenu}
+              subMenuStates={subMenuStates}
+            />
           )}
         </div>
 
