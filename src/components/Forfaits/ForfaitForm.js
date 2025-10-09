@@ -1,5 +1,6 @@
+```javascript
 import React from 'react';
-import { FOURNISSEURS } from '../../config/constants';
+import { FOURNISSEURS, TEXT_ITEMS_1, TEXT_ITEMS_2 } from '../../config/constants';
 import { getDefaultValues } from '../../utils/calculations';
 import { LUSTRAGE_ITEMS } from '../../config/constants';
 
@@ -17,24 +18,37 @@ const ForfaitForm = ({
   const defaults = getDefaultValues(item.id);
 
   const isLustrageItem = LUSTRAGE_ITEMS.some(l => l.id === item.id);
+  const isCarrosserieItem = [...TEXT_ITEMS_1, ...TEXT_ITEMS_2].some(t => t.id === item.id);
 
   // Valeurs brutes
   const moQuantityRaw = forfait.moQuantity ?? defaults.moQuantity;
+  const moPeintureQuantityRaw = forfait.moPeintureQuantity ?? defaults.moPeintureQuantity;
   const pieceReference = forfait.pieceReference ?? defaults.pieceReference;
   const pieceQuantityRaw = forfait.pieceQuantity ?? defaults.pieceQuantity;
   const piecePUraw = forfait.piecePrixUnitaire ?? '';
   const storedPiecePrix = forfait.piecePrix ?? defaults.piecePrix;
   const pieceFournisseur = forfait.pieceFournisseur ?? (defaults.pieceFournisseur || '');
+  const consommableReference = forfait.consommableReference ?? defaults.consommableReference;
+  const consommableQuantityRaw = forfait.consommableQuantity ?? defaults.consommableQuantity;
+  const consommablePUraw = forfait.consommablePrixUnitaire ?? defaults.consommablePrixUnitaire;
+  const storedConsommablePrix = forfait.consommablePrix ?? defaults.consommablePrix;
 
   // Parsing pour affichage dynamique
   const qtyNum = parseFloat(pieceQuantityRaw);
   const puNum = parseFloat(piecePUraw);
   const moQtyNum = parseFloat(moQuantityRaw);
+  const moPeintureQtyNum = parseFloat(moPeintureQuantityRaw);
+  const consommableQtyNum = parseFloat(consommableQuantityRaw);
+  const consommablePUNum = parseFloat(consommablePUraw);
   const computedPieceTotal = (!isNaN(qtyNum) && qtyNum > 0 && !isNaN(puNum) && puNum >= 0)
     ? (qtyNum * puNum).toFixed(2)
     : '';
+  const computedConsommableTotal = (!isNaN(consommableQtyNum) && consommableQtyNum > 0 && !isNaN(consommablePUNum) && consommablePUNum >= 0)
+    ? (consommableQtyNum * consommablePUNum).toFixed(2)
+    : '';
 
   const displayPieceTotal = computedPieceTotal || (storedPiecePrix || '');
+  const displayConsommableTotal = computedConsommableTotal || (storedConsommablePrix || '');
 
   const handleQuantityChange = (itemId, field, value) => {
     updateForfaitField(itemId, field, value);
@@ -48,15 +62,15 @@ const ForfaitForm = ({
     <div className="bg-gray-50 rounded-xl border-2 border-gray-300 p-6 mb-6">
       <h3 className="text-xl font-bold mb-4" style={{ color: '#FF6B35' }}>{item.label}</h3>
 
-      {/* Main d'œuvre */}
+      {/* Main d'œuvre Réparation */}
       <div className="mb-6 pb-6 border-b border-gray-300">
-        <span className="font-semibold block mb-4">Main d'œuvre</span>
+        <span className="font-semibold block mb-4">Main d'œuvre Réparation</span>
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold block mb-1">Désignation</label>
             <textarea
               rows={2}
-              value={forfait.moDesignation || ''}
+              value={forfait.moDesignation || defaults.moDesignation || ''}
               onChange={(e) => updateForfaitField(item.id, 'moDesignation', e.target.value)}
               placeholder="Temps de travail..."
               className="w-full px-3 py-2 border-2 rounded-lg text-sm resize-y focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -67,7 +81,7 @@ const ForfaitForm = ({
             <div className="flex-1">
               <label className="text-xs font-semibold block mb-1">Catégorie</label>
               <select
-                value={forfait.moCategory || (isLustrageItem ? 'Lustrage' : 'Mécanique')}
+                value={forfait.moCategory || (isLustrageItem ? 'Lustrage' : isCarrosserieItem ? 'Carrosserie' : 'Mécanique')}
                 onChange={(e) => updateForfaitField(item.id, 'moCategory', e.target.value)}
                 className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 style={{ borderColor: '#FF6B35' }}
@@ -110,6 +124,67 @@ const ForfaitForm = ({
           </div>
         </div>
       </div>
+
+      {/* Main d'œuvre Peinture */}
+      {isCarrosserieItem && forfait.moPeintureQuantity && (
+        <div className="mb-6 pb-6 border-b border-gray-300">
+          <span className="font-semibold block mb-4">Main d'œuvre Peinture</span>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold block mb-1">Désignation</label>
+              <textarea
+                rows={2}
+                value={forfait.moPeintureDesignation || defaults.moPeintureDesignation || ''}
+                onChange={(e) => updateForfaitField(item.id, 'moPeintureDesignation', e.target.value)}
+                placeholder="Peinture..."
+                className="w-full px-3 py-2 border-2 rounded-lg text-sm resize-y focus:outline-none focus:ring-2 focus:ring-orange-500"
+                style={{ borderColor: '#FF6B35' }}
+              />
+            </div>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <label className="text-xs font-semibold block mb-1">Catégorie</label>
+                <select
+                  value={forfait.moPeintureCategory || 'Peinture'}
+                  onChange={(e) => updateForfaitField(item.id, 'moPeintureCategory', e.target.value)}
+                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  style={{ borderColor: '#FF6B35' }}
+                >
+                  <option value="Peinture">Peinture</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="text-xs font-semibold block mb-1">Quantité (heures)</label>
+                <input
+                  type="text"
+                  value={moPeintureQuantityRaw}
+                  onChange={(e) => updateForfaitField(item.id, 'moPeintureQuantity', e.target.value)}
+                  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  style={{ borderColor: '#FF6B35' }}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs font-semibold block mb-1">Prix unitaire HT</label>
+                <input
+                  type="text"
+                  value="35.80"
+                  readOnly
+                  className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs font-semibold block mb-1">Total HT</label>
+                <input
+                  type="text"
+                  value={((!isNaN(moPeintureQtyNum) ? moPeintureQtyNum : 0) * 35.8).toFixed(2)}
+                  readOnly
+                  className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pièce principale */}
       {item.id !== 'miseANiveau' && (
@@ -298,18 +373,18 @@ const ForfaitForm = ({
           </div>
 
           {/* Consommables */}
-          {(item.id === 'filtreHuile' || isLustrageItem) && (
+          {(item.id === 'filtreHuile' || isLustrageItem || isCarrosserieItem) && (
             <div className="space-y-4">
               <span className="font-semibold block mb-2">
-                {item.id === 'filtreHuile' ? 'Consommable (Huile)' : 'Consommable (Lustrage)'}
+                {item.id === 'filtreHuile' ? 'Consommable (Huile)' : isLustrageItem ? 'Consommable (Lustrage)' : 'Consommable (Carrosserie)'}
               </span>
               <div className="w-full max-w-[180px]">
                 <label className="text-xs font-semibold block mb-1">Référence</label>
                 <input
                   type="text"
-                  value={forfait.consommableReference || ''}
+                  value={consommableReference || ''}
                   onChange={(e) => updateForfaitField(item.id, 'consommableReference', e.target.value)}
-                  placeholder={item.id === 'filtreHuile' ? 'Huile 5W-30' : 'Réf produit'}
+                  placeholder={item.id === 'filtreHuile' ? 'Huile 5W-30' : isLustrageItem ? 'Réf produit' : 'IGP'}
                   className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
                 />
               </div>
@@ -317,9 +392,9 @@ const ForfaitForm = ({
                 <label className="text-xs font-semibold block mb-1">Désignation</label>
                 <textarea
                   rows={2}
-                  value={forfait.consommableDesignation || ''}
+                  value={forfait.consommableDesignation || defaults.consommableDesignation || ''}
                   onChange={(e) => updateForfaitField(item.id, 'consommableDesignation', e.target.value)}
-                  placeholder={item.id === 'filtreHuile' ? 'Huile moteur...' : 'Produit lustrage...'}
+                  placeholder={item.id === 'filtreHuile' ? 'Huile moteur...' : isLustrageItem ? 'Produit lustrage...' : 'Ingrédient peinture...'}
                   className="w-full px-3 py-2 border rounded-lg text-sm resize-y bg-orange-50"
                 />
               </div>
@@ -330,7 +405,7 @@ const ForfaitForm = ({
                   </label>
                   <input
                     type="text"
-                    value={forfait.consommableQuantity || ''}
+                    value={consommableQuantityRaw || ''}
                     onChange={(e) => updateForfaitField(item.id, 'consommableQuantity', e.target.value)}
                     placeholder={item.id === 'filtreHuile' ? '4.5' : '1'}
                     className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
@@ -340,9 +415,9 @@ const ForfaitForm = ({
                   <label className="text-xs font-semibold block mb-1">Prix unitaire HT</label>
                   <input
                     type="text"
-                    value={forfait.consommablePrixUnitaire || ''}
+                    value={consommablePUraw || ''}
                     onChange={(e) => updateForfaitField(item.id, 'consommablePrixUnitaire', e.target.value)}
-                    placeholder={item.id === 'filtreHuile' ? '7.50' : '15.00'}
+                    placeholder={item.id === 'filtreHuile' ? '7.50' : isLustrageItem ? '15.00' : '10.00'}
                     className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
                   />
                 </div>
@@ -350,7 +425,7 @@ const ForfaitForm = ({
                   <label className="text-xs font-semibold block mb-1">Total HT</label>
                   <input
                     type="text"
-                    value={forfait.consommablePrix || ''}
+                    value={displayConsommableTotal}
                     readOnly
                     className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
                   />
@@ -365,3 +440,4 @@ const ForfaitForm = ({
 };
 
 export default ForfaitForm;
+```
