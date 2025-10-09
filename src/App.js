@@ -27,8 +27,6 @@ import {
   TEXT_ITEMS_4,
   EXCLUDED_MULTI_PIECES,
   DSP_ITEMS,
-  DSP_LEFT_ITEMS,
-  DSP_RIGHT_ITEMS,
   LUSTRAGE_ITEMS
 } from './config/constants';
 
@@ -431,7 +429,6 @@ function App() {
     const forced = SOURCE_FORCED_SUPPLIERS[sourceSystem] || '';
     const supplier = forced || defaultSupplier;
     const results = parsePieces(importText, selectedFormat, sourceSystem, supplier);
-
     const enriched = results.map((p, idx) => {
       const pu = p.prixUnitaire || p.unitPrice || '';
       const q = p.quantity || '1';
