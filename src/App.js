@@ -62,11 +62,11 @@ const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
             Réparation peinture {subMenuStates['reparation-peinture'] ? '▲' : '▼'}
           </button>
           {subMenuStates['reparation-peinture'] && (
-            <div className="submenu-content mt-2 space-y-2 w-48">
-              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
+            <div className="submenu-content mt-2 space-y-2 flex flex-col items-end">
+              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
                 Option 1
               </button>
-              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
+              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
                 Option 2
               </button>
             </div>
@@ -80,11 +80,11 @@ const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
             Peinture {subMenuStates['peinture'] ? '▲' : '▼'}
           </button>
           {subMenuStates['peinture'] && (
-            <div className="submenu-content mt-2 space-y-2 w-48">
-              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
+            <div className="submenu-content mt-2 space-y-2 flex flex-col items-end">
+              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
                 Option 1
               </button>
-              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
+              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
                 Option 2
               </button>
             </div>
@@ -608,7 +608,7 @@ function App() {
     }
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Ordre</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print{.print-button{display:none}}</style>');
+    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print[...]
     w.document.write('</head><body>');
     w.document.write(el.innerHTML);
     w.document.write('</body></html>');
@@ -627,7 +627,7 @@ function App() {
     }
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Pièces</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print{.print-button{display:none}}</style>');
+    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print[...]
     w.document.write('</head><body>');
     w.document.write(el.innerHTML);
     w.document.write('</body></html>');
