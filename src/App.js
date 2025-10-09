@@ -777,41 +777,49 @@ function App() {
           />
         </div>
 
-        <div className="border-t-2 border-orange-400 my-8" />
+       <div className="mt-8 border-t-2 border-gray-300 pt-8">
+              <h2 className="text-2xl font-bold mb-6">Forfaits</h2>
 
-        {/* Mécanique */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Mécanique</h2>
-            <button
-              onClick={() => toggleCategory('mecanique')}
-              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
-            >
-              {expandedCategories.mecanique ? 'Fermer' : 'Ouvrir'}
-            </button>
-          </div>
-          {expandedCategories.mecanique && (
-            <>
-              <ChecklistSection
-                leftItems={LEFT_ITEMS_2}
-                rightItems={RIGHT_ITEMS_2}
-                itemStates={itemStates}
-                itemNotes={itemNotes}
-                onCycleState={cycleState}
-                onUpdateNote={updateNote}
-              />
-              <ChecklistSection
-                leftItems={TEXT_ITEMS_3}
-                rightItems={TEXT_ITEMS_4}
-                itemStates={itemStates}
-                itemNotes={itemNotes}
-                onCycleState={cycleState}
-                onUpdateNote={updateNote}
-              />
-            </>
-          )}
-        </div>
+              {/* Mécanique */}
+              {mecaForfaitItems.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
+                  {mecaForfaitItems.map(item => (
+                    <ForfaitForm
+                      key={item.id}
+                      item={item}
+                      forfaitData={forfaitData}
+                      pieceLines={pieceLines}
+                      updateForfaitField={updateForfaitField}
+                      addPieceLine={addPieceLine}
+                      removePieceLine={removePieceLine}
+                      updatePieceLine={updatePieceLine}
+                      canHaveMultiplePieces={canHaveMultiplePieces}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Carrosserie */}
+              {carrosserieForfaitItems.length > 0 && (
+                <div className="mb-2">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
+                  {carrosserieForfaitItems.map(item => (
+                    <ForfaitForm
+                      key={item.id}
+                      item={item}
+                      forfaitData={forfaitData}
+                      pieceLines={pieceLines}
+                      updateForfaitField={updateForfaitField}
+                      addPieceLine={addPieceLine}
+                      removePieceLine={removePieceLine}
+                      updatePieceLine={updatePieceLine}
+                      canHaveMultiplePieces={canHaveMultiplePieces}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
         <div className="border-t-2 border-orange-400 my-8" />
 
