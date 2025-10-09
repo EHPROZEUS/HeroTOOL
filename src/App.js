@@ -1,7 +1,3 @@
-// App.js (extrait complet réécrit pour inclure fournisseur auto + modifiable)
-// NOTE : Si tu avais déjà d'autres ajustements visuels, conserve-les et remplace
-// surtout parsePiecesText et dispatchPieces.
-
 import React, { useState, useEffect } from 'react';
 import { gapi } from 'gapi-script';
 import VehicleInfoForm from './components/Header/VehicleInfoForm';
@@ -53,6 +49,52 @@ const SOURCE_FORCED_SUPPLIERS = {
   AUTOSSIMO: 'AUTOSSIMO'
 };
 
+// New component for Carrosserie sub-menus
+const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
+  return (
+    <div className="section-carrosserie mb-6">
+      <div className="sous-menus space-y-4">
+        <div className="submenu">
+          <button
+            className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
+            onClick={() => toggleSubMenu('reparation-peinture')}
+          >
+            Réparation peinture {subMenuStates['reparation-peinture'] ? '▲' : '▼'}
+          </button>
+          {subMenuStates['reparation-peinture'] && (
+            <div className="submenu-content ml-5 mt-2 space-y-2">
+              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
+                Option 1
+              </button>
+              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
+                Option 2
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="submenu">
+          <button
+            className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
+            onClick={() => toggleSubMenu('peinture')}
+          >
+            Peinture {subMenuStates['peinture'] ? '▲' : '▼'}
+          </button>
+          {subMenuStates['peinture'] && (
+            <div className="submenu-content ml-5 mt-2 space-y-2">
+              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
+                Option 1
+              </button>
+              <button className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left">
+                Option 2
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   // États principaux
   const [headerInfo, setHeaderInfo] = useState({
@@ -79,6 +121,11 @@ function App() {
   });
   const [expandedCategories, setExpandedCategories] = useState({
     mecanique: false, pneusFreins: false, dsp: false, lustrage: false, carrosserie: false
+  });
+  // New state for sub-menu toggles
+  const [subMenuStates, setSubMenuStates] = useState({
+    'reparation-peinture': false,
+    'peinture': false
   });
 
   // Google API init (inchangé)
@@ -141,6 +188,8 @@ function App() {
   // Helpers
   const toggleCategory = cat =>
     setExpandedCategories(p => ({ ...p, [cat]: !p[cat] }));
+  const toggleSubMenu = id =>
+    setSubMenuStates(p => ({ ...p, [id]: !p[id] }));
   const updateHeaderInfo = (f, v) => setHeaderInfo(p => ({ ...p, [f]: v }));
   const toggleMoteur = t => setHeaderInfo(p => ({ ...p, moteur: p.moteur === t ? '' : t }));
   const toggleBoite = t => setHeaderInfo(p => ({ ...p, boite: p.boite === t ? '' : t }));
@@ -333,7 +382,7 @@ function App() {
     alert('✓ Pièces importées (fournisseur attribué et modifiable dans le forfait).');
   };
 
-  // Sauvegarde / chargement / Drive / impression (inchangés pour cette réponse)
+  // Sauvegarde / chargement / Drive / impression (inchangés)
   const saveQuote = () => {
     if (!headerInfo.lead.trim()) {
       alert('⚠️ Lead requis');
@@ -427,7 +476,7 @@ function App() {
         body: form
       });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      alert('✅ Export Drive OK');
+      alert('✅ Export confeDrive OK');
     } catch (e) {
       alert('❌ ' + e.message);
     }
@@ -685,25 +734,39 @@ function App() {
 
         {/* Carrosserie */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6 ">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-orange-800">Carrosserie</h2>
             <button
               onClick={() => toggleCategory('carrosserie')}
               className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor:'#FF6B35' }}
+              style={{ backgroundColor: '#FF6B35' }}
             >
               {expandedCategories.carrosserie ? 'Fermer' : 'Ouvrir'}
             </button>
           </div>
           {expandedCategories.carrosserie && (
-            <ChecklistSection
-              leftItems={TEXT_ITEMS_1}
-              rightItems={TEXT_ITEMS_2}
-              itemStates={itemStates}
-              itemNotes={itemNotes}
-              onCycleState={cycleState}
-              onUpdateNote={updateNote}
-            />
+            <>
+              <CarrosserieSubMenus
+                toggleSubMenu={toggleSubMenu}
+                subMenuStates={subMenuStates}
+              />
+              <div className="main-menu flex space-x-4 mb-6">
+                <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+                  REP
+                </button>
+                <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+                  REMP
+                </button>
+              </div>
+              <ChecklistSection
+                leftItems={TEXT_ITEMS_1}
+                rightItems={TEXT_ITEMS_2}
+                itemStates={itemStates}
+                itemNotes={itemNotes}
+                onCycleState={cycleState}
+                onUpdateNote={updateNote}
+              />
+            </>
           )}
         </div>
 
