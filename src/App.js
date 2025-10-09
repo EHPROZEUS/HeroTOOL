@@ -1,4 +1,3 @@
-```javascript
 import React, { useState, useEffect, useCallback } from 'react';
 import { gapi } from 'gapi-script';
 import VehicleInfoForm from './components/Header/VehicleInfoForm';
@@ -51,42 +50,25 @@ const SOURCE_FORCED_SUPPLIERS = {
 };
 
 // Component for Carrosserie sub-menus
-const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates, addCarrosserieIntervention, activateAllRep, activateRemp }) => {
+const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates }) => {
   return (
     <div className="section-carrosserie mb-6 flex justify-end">
       <div className="sous-menus space-y-4">
         <div className="submenu flex flex-col items-end">
-          <div className="flex gap-2">
-            <button
-              className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
-              onClick={activateAllRep}
-            >
-              REP
-            </button>
-            <button
-              className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
-              onClick={activateRemp}
-            >
-              REMP
-            </button>
-            <button
-              className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
-              onClick={() => toggleSubMenu('reparation-peinture')}
-            >
-              Réparation peinture {subMenuStates['reparation-peinture'] ? '▲' : '▼'}
-            </button>
-          </div>
+          <button
+            className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
+            onClick={() => toggleSubMenu('reparation-peinture')}
+          >
+            Réparation peinture {subMenuStates['reparation-peinture'] ? '▲' : '▼'}
+          </button>
           {subMenuStates['reparation-peinture'] && (
-            <div className="submenu-content mt-2 space-y-2 w-64">
-              {TEXT_ITEMS_1.map(intervention => (
-                <button
-                  key={intervention.id}
-                  className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left"
-                  onClick={() => addCarrosserieIntervention(intervention)}
-                >
-                  {intervention.label}
-                </button>
-              ))}
+            <div className="submenu-content mt-2 space-y-2 flex flex-col items-end">
+              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+                Option 1
+              </button>
+              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+                Option 2
+              </button>
             </div>
           )}
         </div>
@@ -98,16 +80,13 @@ const CarrosserieSubMenus = ({ toggleSubMenu, subMenuStates, addCarrosserieInter
             Peinture {subMenuStates['peinture'] ? '▲' : '▼'}
           </button>
           {subMenuStates['peinture'] && (
-            <div className="submenu-content mt-2 space-y-2 w-64">
-              {TEXT_ITEMS_2.map(intervention => (
-                <button
-                  key={intervention.id}
-                  className="px-4 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 w-full text-left"
-                  onClick={() => addCarrosserieIntervention(intervention)}
-                >
-                  {intervention.label}
-                </button>
-              ))}
+            <div className="submenu-content mt-2 space-y-2 flex flex-col items-end">
+              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+                Option 1
+              </button>
+              <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+                Option 2
+              </button>
             </div>
           )}
         </div>
@@ -392,31 +371,6 @@ function App() {
     return !EXCLUDED_MULTI_PIECES.includes(itemId);
   }, []);
 
-  // Gestion des interventions carrosserie
-  const addCarrosserieIntervention = useCallback((intervention) => {
-    setItemStates(prev => ({ ...prev, [intervention.id]: 1 }));
-  }, []);
-
-  const activateAllRep = useCallback(() => {
-    setItemStates(prev => {
-      const updated = { ...prev };
-      TEXT_ITEMS_1.forEach(item => {
-        updated[item.id] = 1;
-      });
-      return updated;
-    });
-  }, []);
-
-  const activateRemp = useCallback(() => {
-    setItemStates(prev => {
-      const updated = { ...prev };
-      TEXT_ITEMS_2.forEach(item => {
-        updated[item.id] = 1;
-      });
-      return updated;
-    });
-  }, []);
-
   const parsePiecesText = useCallback((
     selectedFormat = 'auto',
     sourceSystem = 'auto',
@@ -429,6 +383,7 @@ function App() {
     const forced = SOURCE_FORCED_SUPPLIERS[sourceSystem] || '';
     const supplier = forced || defaultSupplier;
     const results = parsePieces(importText, selectedFormat, sourceSystem, supplier);
+
     const enriched = results.map((p, idx) => {
       const pu = p.prixUnitaire || p.unitPrice || '';
       const q = p.quantity || '1';
@@ -538,7 +493,7 @@ function App() {
   ]);
 
   const loadQuote = useCallback(lead => {
-    if (!lead.trim()) {
+    if (!lead?.trim()) {
       alert('⚠️ Nom requis');
       return;
     }
@@ -549,15 +504,15 @@ function App() {
     }
     try {
       const data = JSON.parse(raw);
-      setHeaderInfo(data.headerInfo);
-      setItemStates(data.itemStates);
-      setItemNotes(data.itemNotes);
-      setForfaitData(data.forfaitData);
-      setPieceLines(data.pieceLines);
-      setLastMaintenance(data.lastMaintenance);
-      setOilInfo(data.oilInfo);
-      setIncludeControleTechnique(data.includeControleTechnique);
-      setIncludeContrevisite(data.includeContrevisite);
+      setHeaderInfo(data.headerInfo || {});
+      setItemStates(data.itemStates || {});
+      setItemNotes(data.itemNotes || {});
+      setForfaitData(data.forfaitData || {});
+      setPieceLines(data.pieceLines || {});
+      setLastMaintenance(data.lastMaintenance || {});
+      setOilInfo(data.oilInfo || { viscosity: '', quantity: '' });
+      setIncludeControleTechnique(data.includeControleTechnique ?? true);
+      setIncludeContrevisite(data.includeContrevisite ?? false);
       alert('✅ Chargé');
     } catch (e) {
       alert('❌ ' + e.message);
@@ -571,7 +526,9 @@ function App() {
         return;
       }
       const auth2 = window.gapi?.auth2?.getAuthInstance();
-      if (!auth2) throw new Error('Auth2 indisponible');
+      if (!auth2) {
+        throw new Error('Auth2 indisponible');
+      }
       await auth2.signIn();
     } catch (e) {
       alert('❌ ' + e.message);
@@ -584,11 +541,19 @@ function App() {
       return;
     }
     try {
-      if (!googleApiState.initialized) throw new Error('API non initialisée');
+      if (!googleApiState.initialized) {
+        throw new Error('API non initialisée');
+      }
       const auth2 = window.gapi?.auth2?.getAuthInstance();
-      if (!auth2) throw new Error('Auth2 indisponible');
-      if (!auth2.isSignedIn.get()) await auth2.signIn();
-      if (!auth2.isSignedIn.get()) throw new Error('Connexion refusée');
+      if (!auth2) {
+        throw new Error('Auth2 indisponible');
+      }
+      if (!auth2.isSignedIn.get()) {
+        await auth2.signIn();
+      }
+      if (!auth2.isSignedIn.get()) {
+        throw new Error('Connexion refusée');
+      }
       const payload = {
         headerInfo,
         itemStates,
@@ -616,46 +581,68 @@ function App() {
         headers: new Headers({ Authorization: `Bearer ${accessToken}` }),
         body: form
       });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      if (!resp.ok) {
+        throw new Error('HTTP ' + resp.status);
+      }
       alert('✅ Export Drive OK');
     } catch (e) {
       alert('❌ ' + e.message);
     }
-  }, [googleApiState.initialized, headerInfo.lead]);
+  }, [
+    googleApiState.initialized,
+    headerInfo,
+    itemStates,
+    itemNotes,
+    forfaitData,
+    pieceLines,
+    lastMaintenance,
+    oilInfo,
+    includeControleTechnique,
+    includeContrevisite
+  ]);
 
   const printOrdreReparation = useCallback(() => {
     const el = document.getElementById('ordre-reparation-content');
-    if (!el) return;
+    if (!el) {
+      return;
+    }
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Ordre</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print{.print-button{display:none}}</style>');
+    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
     w.document.write('</head><body>');
     w.document.write(el.innerHTML);
     w.document.write('</body></html>');
     w.document.close();
     w.focus();
-    setTimeout(() => { w.print(); w.close(); }, 200);
+    setTimeout(() => {
+      w.print();
+      w.close();
+    }, 200);
   }, []);
 
   const printListePieces = useCallback(() => {
     const el = document.getElementById('liste-pieces-content');
-    if (!el) return;
+    if (!el) {
+      return;
+    }
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Pièces</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}@media print{.print-button{display:none}}</style>');
+    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
     w.document.write('</head><body>');
     w.document.write(el.innerHTML);
     w.document.write('</body></html>');
     w.document.close();
     w.focus();
-    setTimeout(() => { w.print(); w.close(); }, 200);
+    setTimeout(() => {
+      w.print();
+      w.close();
+    }, 200);
   }, []);
 
   // Dérivés
   const activeItemsList = ALL_ITEMS.filter(i => itemStates[i.id] === 1 || itemStates[i.id] === 2);
-  const activeMecaniqueItems = activeItemsList.filter(i => !DSP_ITEMS.some(d => d.id === i.id) && !LUSTRAGE_ITEMS.some(l => l.id === i.id));
+  const activeMecaniqueItems = activeItemsList.filter(i => !DSP_ITEMS.some(d => d.id === i.id));
   const activeDSPItems = activeItemsList.filter(i => DSP_ITEMS.some(d => d.id === i.id));
-  const activeLustrageItems = activeItemsList.filter(i => LUSTRAGE_ITEMS.some(l => l.id === i.id));
   const totalActive = activeItemsList.length;
   const totalCompleted = ALL_ITEMS.filter(i => itemStates[i.id] === 2).length;
   const allCompleted = totalActive > 0 && totalActive === totalCompleted;
@@ -666,14 +653,12 @@ function App() {
     pieceLines,
     includeControleTechnique,
     includeContrevisite,
-    activeDSPItems,
-    activeLustrageItems
+    activeDSPItems
   );
   const moByCategory = calculateMOByCategory(
     activeMecaniqueItems,
     forfaitData,
-    activeDSPItems,
-    activeLustrageItems
+    activeDSPItems
   );
   const piecesBySupplier = getPiecesListBySupplier(
     activeMecaniqueItems,
@@ -682,10 +667,18 @@ function App() {
   );
 
   const statusDisplay = (() => {
-    if (googleApiState.error) return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
-    if (!googleApiState.loaded) return { text: '⏳ Chargement Google API...', color: 'text-orange-600' };
-    if (!googleApiState.initialized) return { text: '⏳ Initialisation Google API...', color: 'text-orange-600' };
-    if (googleApiState.signedIn) return { text: '✅ Connecté à Google Drive', color: 'text-green-600' };
+    if (googleApiState.error) {
+      return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
+    }
+    if (!googleApiState.loaded) {
+      return { text: '⏳ Chargement Google API...', color: 'text-orange-600' };
+    }
+    if (!googleApiState.initialized) {
+      return { text: '⏳ Initialisation Google API...', color: 'text-orange-600' };
+    }
+    if (googleApiState.signedIn) {
+      return { text: '✅ Connecté à Google Drive', color: 'text-green-600' };
+    }
     return { text: '🔓 Google API prête (non connecté)', color: 'text-blue-600' };
   })();
 
@@ -935,10 +928,15 @@ function App() {
               <CarrosserieSubMenus
                 toggleSubMenu={toggleSubMenu}
                 subMenuStates={subMenuStates}
-                addCarrosserieIntervention={addCarrosserieIntervention}
-                activateAllRep={activateAllRep}
-                activateRemp={activateRemp}
               />
+              <div className="main-menu flex justify-end space-x-4 mb-6">
+                <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+                  REP
+                </button>
+                <button className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600">
+                  REMP
+                </button>
+              </div>
               <ChecklistSection
                 leftItems={TEXT_ITEMS_1}
                 rightItems={TEXT_ITEMS_2}
@@ -984,65 +982,25 @@ function App() {
 
             <div className="mt-8 border-t-2 border-gray-300 pt-8">
               <h2 className="text-2xl font-bold mb-6">Forfaits</h2>
-              {(activeMecaniqueItems.length > 0 || activeLustrageItems.length > 0 || activeItemsList.some(i => [...TEXT_ITEMS_1, ...TEXT_ITEMS_2].some(t => t.id === i.id))) && (
-                <>
-                  {activeMecaniqueItems.length > 0 && (
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
-                      {activeMecaniqueItems.map(item => (
-                        <ForfaitForm
-                          key={item.id}
-                          item={item}
-                          forfaitData={forfaitData}
-                          pieceLines={pieceLines}
-                          updateForfaitField={updateForfaitField}
-                          addPieceLine={addPieceLine}
-                          removePieceLine={removePieceLine}
-                          updatePieceLine={updatePieceLine}
-                          canHaveMultiplePieces={canHaveMultiplePieces}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {activeLustrageItems.length > 0 && (
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Lustrage</h3>
-                      {activeLustrageItems.map(item => (
-                        <ForfaitForm
-                          key={item.id}
-                          item={item}
-                          forfaitData={forfaitData}
-                          pieceLines={pieceLines}
-                          updateForfaitField={updateForfaitField}
-                          addPieceLine={addPieceLine}
-                          removePieceLine={removePieceLine}
-                          updatePieceLine={updatePieceLine}
-                          canHaveMultiplePieces={canHaveMultiplePieces}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {activeItemsList.some(i => [...TEXT_ITEMS_1, ...TEXT_ITEMS_2].some(t => t.id === i.id)) && (
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
-                      {activeItemsList
-                        .filter(i => [...TEXT_ITEMS_1, ...TEXT_ITEMS_2].some(t => t.id === i.id))
-                        .map(item => (
-                          <ForfaitForm
-                            key={item.id}
-                            item={item}
-                            forfaitData={forfaitData}
-                            pieceLines={pieceLines}
-                            updateForfaitField={updateForfaitField}
-                            addPieceLine={addPieceLine}
-                            removePieceLine={removePieceLine}
-                            updatePieceLine={updatePieceLine}
-                            canHaveMultiplePieces={canHaveMultiplePieces}
-                          />
-                        ))}
-                    </div>
-                  )}
-                </>
+              {activeMecaniqueItems.length > 0 && (
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
+                  {activeMecaniqueItems
+                    .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
+                    .map(item => (
+                      <ForfaitForm
+                        key={item.id}
+                        item={item}
+                        forfaitData={forfaitData}
+                        pieceLines={pieceLines}
+                        updateForfaitField={updateForfaitField}
+                        addPieceLine={addPieceLine}
+                        removePieceLine={removePieceLine}
+                        updatePieceLine={updatePieceLine}
+                        canHaveMultiplePieces={canHaveMultiplePieces}
+                      />
+                    ))}
+                </div>
               )}
             </div>
 
@@ -1056,7 +1014,6 @@ function App() {
               headerInfo={headerInfo}
               activeMecaniqueItems={activeMecaniqueItems}
               activeDSPItems={activeDSPItems}
-              activeLustrageItems={activeLustrageItems}
               forfaitData={forfaitData}
               pieceLines={pieceLines}
               totals={totals}
@@ -1079,4 +1036,3 @@ function App() {
 }
 
 export default App;
-```
