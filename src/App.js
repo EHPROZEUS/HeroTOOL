@@ -665,7 +665,17 @@ function App() {
     forfaitData,
     pieceLines
   );
+ const mecaForfaitItems = activeMecaniqueItems
+  .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
+  .filter(i => (forfaitData[i.id]?.moCategory || 'Mécanique') === 'Mécanique');
 
+ // Carrosserie regroupe Carrosserie + Peinture (toujours sans Lustrage)
+ const carrosserieForfaitItems = activeMecaniqueItems
+  .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
+  .filter(i => {
+    const cat = forfaitData[i.id]?.moCategory || 'Mécanique';
+    return cat === 'Carrosserie' || cat === 'Peinture';
+    );
   const statusDisplay = (() => {
     if (googleApiState.error) {
       return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
