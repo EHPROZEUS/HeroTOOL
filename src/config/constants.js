@@ -1,3 +1,4 @@
+```javascript
 // Couleurs AutoHero
 export const COLORS = {
   primary: '#FF6B35',        // Orange AutoHero
@@ -108,20 +109,31 @@ export const RIGHT_ITEMS_3 = [
   { id: 'plaquettesAr', label: 'plaquettes arrière', hasNote: true }
 ];
 
-// Items texte 1
+// Items texte 1 - Réparation + Peinture
 export const TEXT_ITEMS_1 = [
-  { id: 'repc1', label: 'REPC1', hasNote: true },
-  { id: 'repc2', label: 'REPC2', hasNote: true },
-  { id: 'repc3', label: 'REPC3', hasNote: true },
-  { id: 'repc4', label: 'REPC4', hasNote: true }
+  { id: 'r-p1', label: 'Réparation + Peinture 1 Élément', hasNote: true },
+  { id: 'r-paard', label: 'Réparation + Peinture Aile Arrière Droite', hasNote: true },
+  { id: 'r-paarg', label: 'Réparation + Peinture Aile Arrière Gauche', hasNote: true },
+  { id: 'r-paavd', label: 'Réparation + Peinture Aile Avant Droite', hasNote: true },
+  { id: 'r-paavg', label: 'Réparation + Peinture Aile Avant Gauche', hasNote: true },
+  { id: 'r-pavillon', label: 'Réparation + Peinture Pavillon', hasNote: true },
+  { id: 'r-pcp', label: 'Réparation + Peinture Capot', hasNote: true },
+  { id: 'r-pcrd', label: 'Réparation + Peinture Coque Rétro Droite', hasNote: true },
+  { id: 'r-pcrg', label: 'Réparation + Peinture Coque Rétro Gauche', hasNote: true },
+  { id: 'r-ph', label: 'Réparation + Peinture Hayon', hasNote: true },
+  { id: 'r-ppcar', label: 'Réparation + Peinture Pare-Chocs Arrière', hasNote: true },
+  { id: 'r-ppcav', label: 'Réparation + Peinture Pare-Chocs Avant', hasNote: true },
+  { id: 'r-ppteard', label: 'Réparation + Peinture Porte Arrière Droite', hasNote: true },
+  { id: 'r-pptearg', label: 'Réparation + Peinture Porte Arrière Gauche', hasNote: true },
+  { id: 'r-ppteavd', label: 'Réparation + Peinture Porte Avant Droite', hasNote: true },
+  { id: 'r-ppteavg', label: 'Réparation + Peinture Porte Avant Gauche', hasNote: true },
+  { id: 'r-bdcd', label: 'Réparation + Peinture Bas de Caisse Droit', hasNote: true },
+  { id: 'r-bdcg', label: 'Réparation + Peinture Bas de Caisse Gauche', hasNote: true }
 ];
 
-// Items texte 2
+// Items texte 2 - Remplacement
 export const TEXT_ITEMS_2 = [
-  { id: 'rempc1', label: 'REMPC1', hasNote: true },
-  { id: 'rempc2', label: 'REMPC2', hasNote: true },
-  { id: 'rempc3', label: 'REMPC3', hasNote: true },
-  { id: 'rempc4', label: 'REMPC4', hasNote: true }
+  { id: 'remp-parebrise', label: 'Remplacement Pare-Brise', hasNote: true }
 ];
 
 // Items texte 3
@@ -140,47 +152,41 @@ export const TEXT_ITEMS_4 = [
   { id: 'rempm4', label: 'REMPM4', hasNote: true }
 ];
 
-// ===== FORFAITS DSP =====
+// Forfaits DSP
 export const DSP_ITEMS = [
   // Ailes
   { id: 'dspAileAvd', label: 'DSP Aile avant droite', moQuantity: 0.5, consommable: 0 },
   { id: 'dspAileArd', label: 'DSP Aile arrière droite', moQuantity: 0.5, consommable: 0 },
   { id: 'dspAileAvg', label: 'DSP Aile avant gauche', moQuantity: 0.5, consommable: 0 },
   { id: 'dspAileArg', label: 'DSP Aile arrière gauche', moQuantity: 0.5, consommable: 0 },
-  
   // Portes
   { id: 'dspPorteAvd', label: 'DSP Porte avant droite', moQuantity: 0.5, consommable: 0 },
   { id: 'dspPorteArd', label: 'DSP Porte arrière droite', moQuantity: 0.5, consommable: 0 },
   { id: 'dspPorteAvg', label: 'DSP Porte avant gauche', moQuantity: 0.5, consommable: 0 },
   { id: 'dspPorteArg', label: 'DSP Porte arrière gauche', moQuantity: 0.5, consommable: 0 },
-  
   // Éléments de carrosserie
   { id: 'dspCapot', label: 'DSP Capot', moQuantity: 0.5, consommable: 0 },
   { id: 'dspHayon', label: 'DSP Hayon', moQuantity: 0.5, consommable: 0 },
   { id: 'dspPavillon', label: 'DSP Pavillon', moQuantity: 0.5, consommable: 0 },
-  
   // Montants côté droit
   { id: 'dspMontantAD', label: 'DSP Montant AD', moQuantity: 0.5, consommable: 0 },
   { id: 'dspMontantBD', label: 'DSP Montant BD', moQuantity: 0.5, consommable: 0 },
   { id: 'dspMontantCD', label: 'DSP Montant CD', moQuantity: 0.5, consommable: 0 },
   { id: 'dspMontantDD', label: 'DSP Montant DD', moQuantity: 0.5, consommable: 0 },
-  
   // Montants côté gauche
   { id: 'dspMontantAG', label: 'DSP Montant AG', moQuantity: 0.5, consommable: 0 },
   { id: 'dspMontantBG', label: 'DSP Montant BG', moQuantity: 0.5, consommable: 0 },
   { id: 'dspMontantCG', label: 'DSP Montant CG', moQuantity: 0.5, consommable: 0 },
   { id: 'dspMontantDG', label: 'DSP Montant DG', moQuantity: 0.5, consommable: 0 },
-  
   // Bas de caisse
   { id: 'dspBdcd', label: 'DSP Bas caisse d', moQuantity: 0.5, consommable: 0 },
   { id: 'dspBdcg', label: 'DSP Bas caisse g', moQuantity: 0.5, consommable: 0 },
-  
   // Forfaits spéciaux grêle
   { id: 'dspGrelePavillon', label: 'DSP Grêle Pavillon', moQuantity: 4, consommable: 0 },
   { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
 ];
 
-// ===== FORFAITS LUSTRAGE =====
+// Forfaits Lustrage
 export const LUSTRAGE_ITEMS = [
   { id: 'L1', label: 'Lustrage 1 élément', moQuantity: 0.25, consommable: 1.00 },
   { id: "L2", label: "Lustrage 2 éléments", moQuantity: 0.25, consommable: 2.00 },
@@ -283,8 +289,9 @@ export const EXCLUDED_MULTI_PIECES = [
   'pneusAvant',
   'pneusArriere',
   'pneus4',
-  'repc1', 'repc2', 'repc3', 'repc4',
-  'rempc1', 'rempc2', 'rempc3', 'rempc4',
+  'r-p1', 'r-paard', 'r-paarg', 'r-paavd', 'r-paavg', 'r-pavillon', 'r-pcp', 'r-pcrd', 'r-pcrg',
+  'r-ph', 'r-ppcar', 'r-ppcav', 'r-ppteard', 'r-pptearg', 'r-ppteavd', 'r-ppteavg', 'r-bdcd', 'r-bdcg',
+  'remp-parebrise',
   'repm1', 'repm2', 'repm3', 'repm4',
   'rempm1', 'rempm2', 'rempm3', 'rempm4'
 ];
@@ -377,6 +384,216 @@ export const DEFAULT_VALUES = {
     piecePrix: '',
     pieceFournisseur: ''
   },
+  'r-p1': {
+    moQuantity: '1.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-paard': {
+    moQuantity: '1.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-paarg': {
+    moQuantity: '1.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-paavd': {
+    moQuantity: '1.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.0',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-paavg': {
+    moQuantity: '1.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.0',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-pavillon': {
+    moQuantity: '3.0',
+    moPrix: '35.8',
+    moPeintureQuantity: '4.0',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-pcp': {
+    moQuantity: '3.0',
+    moPrix: '35.8',
+    moPeintureQuantity: '4.0',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-pcrd': {
+    moQuantity: '1.0',
+    moPrix: '35.8',
+    moPeintureQuantity: '0.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '0.5',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '5.00'
+  },
+  'r-pcrg': {
+    moQuantity: '1.0',
+    moPrix: '35.8',
+    moPeintureQuantity: '0.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '0.5',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '5.00'
+  },
+  'r-ph': {
+    moQuantity: '2.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-ppcar': {
+    moQuantity: '1.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.0',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-ppcav': {
+    moQuantity: '1.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.0',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-ppteard': {
+    moQuantity: '2.0',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-pptearg': {
+    moQuantity: '2.0',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-ppteavd': {
+    moQuantity: '2.0',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-ppteavg': {
+    moQuantity: '2.0',
+    moPrix: '35.8',
+    moPeintureQuantity: '2.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-bdcd': {
+    moQuantity: '2.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '1.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'r-bdcg': {
+    moQuantity: '2.5',
+    moPrix: '35.8',
+    moPeintureQuantity: '1.5',
+    moPeinturePrix: '35.8',
+    consommableReference: 'IGP',
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '10.00',
+    consommablePrix: '10.00'
+  },
+  'remp-parebrise': {
+    moQuantity: '2.0',
+    moPrix: '35.8',
+    pieceReference: '',
+    pieceQuantity: '1',
+    piecePrix: '',
+    consommableReference: 'KIT COLLE',
+    consommableDesignation: 'Kit colle pare-brise',
+    consommableQuantity: '1',
+    consommablePrixUnitaire: '18.40',
+    consommablePrix: '18.40'
+  },
   default: {
     moQuantity: '0.1',
     moPrix: '35.8',
@@ -385,3 +602,4 @@ export const DEFAULT_VALUES = {
     piecePrix: ''
   }
 };
+```
