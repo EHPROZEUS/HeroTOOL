@@ -665,17 +665,18 @@ function App() {
     forfaitData,
     pieceLines
   );
- const mecaForfaitItems = activeMecaniqueItems
-  .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
-  .filter(i => (forfaitData[i.id]?.moCategory || 'Mécanique') === 'Mécanique');
+  const mecaForfaitItems = activeMecaniqueItems
+    .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
+    .filter(i => (forfaitData[i.id]?.moCategory || 'Mécanique') === 'Mécanique');
 
- // Carrosserie regroupe Carrosserie + Peinture (toujours sans Lustrage)
- const carrosserieForfaitItems = activeMecaniqueItems
-  .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
-  .filter(i => {
-    const cat = forfaitData[i.id]?.moCategory || 'Mécanique';
-    return cat === 'Carrosserie' || cat === 'Peinture';
+  // Carrosserie regroupe Carrosserie + Peinture (toujours sans Lustrage)
+  const carrosserieForfaitItems = activeMecaniqueItems
+    .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
+    .filter(i => {
+      const cat = forfaitData[i.id]?.moCategory || 'Mécanique';
+      return cat === 'Carrosserie' || cat === 'Peinture';
     });
+
   const statusDisplay = (() => {
     if (googleApiState.error) {
       return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
@@ -786,50 +787,6 @@ function App() {
             onUpdateNote={updateNote}
           />
         </div>
-
-       <div className="mt-8 border-t-2 border-gray-300 pt-8">
-              <h2 className="text-2xl font-bold mb-6">Forfaits</h2>
-
-              {/* Mécanique */}
-              {mecaForfaitItems.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
-                  {mecaForfaitItems.map(item => (
-                    <ForfaitForm
-                      key={item.id}
-                      item={item}
-                      forfaitData={forfaitData}
-                      pieceLines={pieceLines}
-                      updateForfaitField={updateForfaitField}
-                      addPieceLine={addPieceLine}
-                      removePieceLine={removePieceLine}
-                      updatePieceLine={updatePieceLine}
-                      canHaveMultiplePieces={canHaveMultiplePieces}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Carrosserie */}
-              {carrosserieForfaitItems.length > 0 && (
-                <div className="mb-2">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
-                  {carrosserieForfaitItems.map(item => (
-                    <ForfaitForm
-                      key={item.id}
-                      item={item}
-                      forfaitData={forfaitData}
-                      pieceLines={pieceLines}
-                      updateForfaitField={updateForfaitField}
-                      addPieceLine={addPieceLine}
-                      removePieceLine={removePieceLine}
-                      updatePieceLine={updatePieceLine}
-                      canHaveMultiplePieces={canHaveMultiplePieces}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
 
         <div className="border-t-2 border-orange-400 my-8" />
 
@@ -998,26 +955,47 @@ function App() {
               cycleState={cycleState}
             />
 
+            {/* Forfaits (Mécanique + Carrosserie uniquement) */}
             <div className="mt-8 border-t-2 border-gray-300 pt-8">
               <h2 className="text-2xl font-bold mb-6">Forfaits</h2>
-              {activeMecaniqueItems.length > 0 && (
-                <div>
+
+              {/* Mécanique */}
+              {mecaForfaitItems && mecaForfaitItems.length > 0 && (
+                <div className="mb-8">
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
-                  {activeMecaniqueItems
-                    .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
-                    .map(item => (
-                      <ForfaitForm
-                        key={item.id}
-                        item={item}
-                        forfaitData={forfaitData}
-                        pieceLines={pieceLines}
-                        updateForfaitField={updateForfaitField}
-                        addPieceLine={addPieceLine}
-                        removePieceLine={removePieceLine}
-                        updatePieceLine={updatePieceLine}
-                        canHaveMultiplePieces={canHaveMultiplePieces}
-                      />
-                    ))}
+                  {mecaForfaitItems.map(item => (
+                    <ForfaitForm
+                      key={item.id}
+                      item={item}
+                      forfaitData={forfaitData}
+                      pieceLines={pieceLines}
+                      updateForfaitField={updateForfaitField}
+                      addPieceLine={addPieceLine}
+                      removePieceLine={removePieceLine}
+                      updatePieceLine={updatePieceLine}
+                      canHaveMultiplePieces={canHaveMultiplePieces}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Carrosserie */}
+              {carrosserieForfaitItems && carrosserieForfaitItems.length > 0 && (
+                <div className="mb-2">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
+                  {carrosserieForfaitItems.map(item => (
+                    <ForfaitForm
+                      key={item.id}
+                      item={item}
+                      forfaitData={forfaitData}
+                      pieceLines={pieceLines}
+                      updateForfaitField={updateForfaitField}
+                      addPieceLine={addPieceLine}
+                      removePieceLine={removePieceLine}
+                      updatePieceLine={updatePieceLine}
+                      canHaveMultiplePieces={canHaveMultiplePieces}
+                    />
+                  ))}
                 </div>
               )}
             </div>
