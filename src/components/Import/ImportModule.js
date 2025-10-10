@@ -82,7 +82,7 @@ const ImportModule = ({
         quantity = '';
         prixUnitaire = '';
       } else if (parts.length === 2) {
-        // Heuristique : si le premier champ ressemble à une quantité (num), alors c'est désignation + quantité
+        // Heuristique : si le deuxième champ ressemble à une quantité (num), alors c'est désignation + quantité
         if (/^\d+([,.]\d+)?$/.test(parts[1])) {
           designation = parts[0];
           quantity = parts[1];
