@@ -29,7 +29,7 @@ import {
   LUSTRAGE_ITEMS,
   PEINTURE_FORFAITS,
   PEINTURE_SEULE_FORFAITS,
-  PLUME_ITEMS  // ← AJOUTER
+  PLUME_ITEMS
 } from './config/constants';
 
 import { formatTireSize } from './utils/formatters';
@@ -102,7 +102,6 @@ const CarrosserieSubMenus = ({
 };
 
 function App() {
-  // États principaux
   const [headerInfo, setHeaderInfo] = useState({
     lead: '',
     immatriculation: '',
@@ -136,22 +135,21 @@ function App() {
     signedIn: false,
     error: null
   });
-const [expandedCategories, setExpandedCategories] = useState({
-  mecanique: false,
-  pneusFreins: false,
-  dsp: false,
-  lustrage: false,
-  carrosserie: false,
-  reparationPeinture: false,
-  peinture: false,
-  plume: false  // ← AJOUTER
-});
+  const [expandedCategories, setExpandedCategories] = useState({
+    mecanique: false,
+    pneusFreins: false,
+    dsp: false,
+    lustrage: false,
+    carrosserie: false,
+    reparationPeinture: false,
+    peinture: false,
+    plume: false
+  });
   const [subMenuStates, setSubMenuStates] = useState({
     'reparation-peinture': false,
     'peinture': false
   });
 
-  // Google API init
   useEffect(() => {
     const initGoogleApi = async () => {
       try {
@@ -201,7 +199,6 @@ const [expandedCategories, setExpandedCategories] = useState({
     initGoogleApi();
   }, []);
 
-  // Auto-save
   useEffect(() => {
     const interval = setInterval(() => {
       if (headerInfo.lead.trim()) {
@@ -233,7 +230,6 @@ const [expandedCategories, setExpandedCategories] = useState({
     includeContrevisite
   ]);
 
-  // Helpers
   const toggleCategory = useCallback(cat => {
     setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
   }, []);
@@ -270,38 +266,36 @@ const [expandedCategories, setExpandedCategories] = useState({
   }, []);
 
   const cycleState = useCallback(itemId => {
-  setItemStates(prev => {
-    const current = prev[itemId] ?? 0;
-    const next = (current + 1) % 3;
-    const updated = { ...prev, [itemId]: next };
-    
-    // Si c'est un forfait peinture avec réparation
-    const isPeintureForfait = PEINTURE_FORFAITS.some(f => f.id === itemId);
-    if (isPeintureForfait) {
-      setForfaitData(prevForfait => ({
-        ...prevForfait,
-        [itemId]: {
-          ...prevForfait[itemId],
-          state: next
-        }
-      }));
-    }
-    
-    // Si c'est un forfait peinture seule
-    const isPeintureSeule = PEINTURE_SEULE_FORFAITS.some(f => f.id === itemId);
-    if (isPeintureSeule) {
-      setForfaitData(prevForfait => ({
-        ...prevForfait,
-        [itemId]: {
-          ...prevForfait[itemId],
-          state: next
-        }
-      }));
-    }
-    
-    return updated;
-  });
-}, []);
+    setItemStates(prev => {
+      const current = prev[itemId] ?? 0;
+      const next = (current + 1) % 3;
+      const updated = { ...prev, [itemId]: next };
+      
+      const isPeintureForfait = PEINTURE_FORFAITS.some(f => f.id === itemId);
+      if (isPeintureForfait) {
+        setForfaitData(prevForfait => ({
+          ...prevForfait,
+          [itemId]: {
+            ...prevForfait[itemId],
+            state: next
+          }
+        }));
+      }
+      
+      const isPeintureSeule = PEINTURE_SEULE_FORFAITS.some(f => f.id === itemId);
+      if (isPeintureSeule) {
+        setForfaitData(prevForfait => ({
+          ...prevForfait,
+          [itemId]: {
+            ...prevForfait[itemId],
+            state: next
+          }
+        }));
+      }
+      
+      return updated;
+    });
+  }, []);
 
   const updateNote = useCallback((id, value) => {
     if (['pneusAvant', 'pneusArriere', 'pneus4'].includes(id)) {
@@ -348,7 +342,6 @@ const [expandedCategories, setExpandedCategories] = useState({
     });
   }, []);
 
-  // PATCH: supporte aussi "reparation" et "peinture" comme sections pour les forfaits peinture
   const updateForfaitField = useCallback((itemId, field, value) => {
     setForfaitData(prev => {
       if (field === "reparation" || field === "peinture") {
@@ -376,7 +369,6 @@ const [expandedCategories, setExpandedCategories] = useState({
     });
   }, []);
 
-  // Pièces supplémentaires
   const addPieceLine = useCallback(itemId => {
     setPieceLines(prev => ({
       ...prev,
@@ -466,6 +458,7 @@ const [expandedCategories, setExpandedCategories] = useState({
     setParsedPieces(prev => prev.filter(p => p.id !== id));
   }, []);
 
+  // ✅ FONCTION CORRIGÉE - Support multi-pièces
   const dispatchPieces = useCallback(() => {
     if (!parsedPieces.length) {
       alert('Aucune pièce à dispatcher.');
@@ -479,43 +472,102 @@ const [expandedCategories, setExpandedCategories] = useState({
       if (!ok) return;
     }
 
+    // Grouper les pièces par forfait
+    const piecesByForfait = {};
+    parsedPieces.forEach(piece => {
+      if (!piece.targetForfait || !piece.reference) return;
+      if (!piecesByForfait[piece.targetForfait]) {
+        piecesByForfait[piece.targetForfait] = [];
+      }
+      piecesByForfait[piece.targetForfait].push(piece);
+    });
+
+    // Dispatcher : 1ère pièce → forfaitData, autres → pieceLines
     setForfaitData(prev => {
       const nextData = { ...prev };
-      parsedPieces.forEach(piece => {
-        if (!piece.targetForfait || !piece.reference) return;
-        // Correction : gère bien virgules/points, valeurs vides
+      
+      Object.entries(piecesByForfait).forEach(([forfaitId, pieces]) => {
+        const existing = nextData[forfaitId] || {};
+        
+        // La première pièce va dans le forfait principal
+        const firstPiece = pieces[0];
         let qty = 1;
-        if (typeof piece.quantity === 'string' && piece.quantity.trim() !== '') {
-          qty = parseFloat(piece.quantity.replace(',', '.'));
+        if (typeof firstPiece.quantity === 'string' && firstPiece.quantity.trim() !== '') {
+          qty = parseFloat(firstPiece.quantity.replace(',', '.'));
           if (isNaN(qty)) qty = 1;
         }
         let pu = 0;
-        if (typeof piece.prixUnitaire === 'string' && piece.prixUnitaire.trim() !== '') {
-          pu = parseFloat(piece.prixUnitaire.replace(',', '.'));
+        if (typeof firstPiece.prixUnitaire === 'string' && firstPiece.prixUnitaire.trim() !== '') {
+          pu = parseFloat(firstPiece.prixUnitaire.replace(',', '.'));
           if (isNaN(pu)) pu = 0;
         }
         const prix = (qty * pu).toFixed(2);
-        const existing = nextData[piece.targetForfait] || {};
-        nextData[piece.targetForfait] = {
+        
+        nextData[forfaitId] = {
           ...existing,
-          pieceReference: piece.reference,
-          pieceDesignation: piece.designation || existing.pieceDesignation || '',
+          pieceReference: firstPiece.reference,
+          pieceDesignation: firstPiece.designation || existing.pieceDesignation || '',
           pieceQuantity: qty ? qty.toString() : '',
           piecePrixUnitaire: pu ? pu.toFixed(2) : '',
           piecePrix: prix,
-          pieceFournisseur: piece.fournisseur || existing.pieceFournisseur || ''
+          pieceFournisseur: firstPiece.fournisseur || existing.pieceFournisseur || ''
         };
       });
+      
       return nextData;
+    });
+
+    // Ajouter les pièces supplémentaires (2ème, 3ème, etc.) dans pieceLines
+    setPieceLines(prev => {
+      const nextLines = { ...prev };
+      
+      Object.entries(piecesByForfait).forEach(([forfaitId, pieces]) => {
+        // Ignorer la première pièce (déjà dans forfaitData)
+        const additionalPieces = pieces.slice(1);
+        
+        if (additionalPieces.length > 0) {
+          // Créer ou compléter le tableau de pièces supplémentaires
+          if (!nextLines[forfaitId]) {
+            nextLines[forfaitId] = [];
+          }
+          
+          additionalPieces.forEach(piece => {
+            let qty = 1;
+            if (typeof piece.quantity === 'string' && piece.quantity.trim() !== '') {
+              qty = parseFloat(piece.quantity.replace(',', '.'));
+              if (isNaN(qty)) qty = 1;
+            }
+            let pu = 0;
+            if (typeof piece.prixUnitaire === 'string' && piece.prixUnitaire.trim() !== '') {
+              pu = parseFloat(piece.prixUnitaire.replace(',', '.'));
+              if (isNaN(pu)) pu = 0;
+            }
+            const prix = (qty * pu).toFixed(2);
+            
+            nextLines[forfaitId].push({
+              reference: piece.reference,
+              designation: piece.designation || '',
+              fournisseur: piece.fournisseur || '',
+              quantity: qty.toString(),
+              prixUnitaire: pu.toFixed(2),
+              prix: prix
+            });
+          });
+        }
+      });
+      
+      return nextLines;
     });
 
     setImportText('');
     setParsedPieces([]);
     setShowImportModule(false);
-    alert('✓ Pièces importées (fournisseur attribué et modifiable dans le forfait).');
+    
+    const totalPieces = parsedPieces.length;
+    const totalForfaits = Object.keys(piecesByForfait).length;
+    alert(`✓ ${totalPieces} pièce(s) importée(s) vers ${totalForfaits} forfait(s)`);
   }, [parsedPieces]);
 
-  // --- Ajout logique Réparation peinture ---
   const countRP1 = Object.keys(forfaitData).filter(
     k => forfaitData[k]?.peintureForfait === "R-P1"
   ).length;
@@ -564,7 +616,6 @@ const [expandedCategories, setExpandedCategories] = useState({
       return next;
     });
   };
-  // --- Fin logique Réparation peinture ---
 
   const saveQuote = useCallback(() => {
     if (!headerInfo.lead.trim()) {
@@ -712,9 +763,7 @@ const [expandedCategories, setExpandedCategories] = useState({
 
   const printOrdreReparation = useCallback(() => {
     const el = document.getElementById('ordre-reparation-content');
-    if (!el) {
-      return;
-    }
+    if (!el) return;
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Ordre</title>');
     w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
@@ -731,9 +780,7 @@ const [expandedCategories, setExpandedCategories] = useState({
 
   const printListePieces = useCallback(() => {
     const el = document.getElementById('liste-pieces-content');
-    if (!el) {
-      return;
-    }
+    if (!el) return;
     const w = window.open('', '', 'height=800,width=1000');
     w.document.write('<html><head><title>Pièces</title>');
     w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
@@ -748,11 +795,10 @@ const [expandedCategories, setExpandedCategories] = useState({
     }, 200);
   }, []);
 
-  // Dérivés
   const activeItemsList = ALL_ITEMS.filter(i => itemStates[i.id] === 1 || itemStates[i.id] === 2);
   const activeMecaniqueItems = activeItemsList.filter(i => !DSP_ITEMS.some(d => d.id === i.id));
   const activeDSPItems = activeItemsList.filter(i => DSP_ITEMS.some(d => d.id === i.id));
-    const activePlumeItems = activeItemsList.filter(i => PLUME_ITEMS.some(p => p.id === i.id));
+  const activePlumeItems = activeItemsList.filter(i => PLUME_ITEMS.some(p => p.id === i.id));
   const totalActive = activeItemsList.length;
   const totalCompleted = ALL_ITEMS.filter(i => itemStates[i.id] === 2).length;
   const allCompleted = totalActive > 0 && totalActive === totalCompleted;
@@ -764,13 +810,13 @@ const [expandedCategories, setExpandedCategories] = useState({
     includeControleTechnique,
     includeContrevisite,
     activeDSPItems,
-    activePlumeItems  // ← AJOUTER
+    activePlumeItems
   );
   const moByCategory = calculateMOByCategory(
     activeMecaniqueItems,
     forfaitData,
     activeDSPItems,
-    activePlumeItems,  // ← AJOUTER
+    activePlumeItems,
     itemStates
   );
   const piecesBySupplier = getPiecesListBySupplier(
@@ -813,7 +859,6 @@ const [expandedCategories, setExpandedCategories] = useState({
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-8">
-        {/* En-tête */}
         <div className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: '#E5E7EB' }}>
           <div className="flex items-center justify-center mb-3">
             <div style={{ width: 60, height: 60, background: '#FF6B35', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 15 }}>
@@ -828,14 +873,10 @@ const [expandedCategories, setExpandedCategories] = useState({
           </p>
         </div>
 
-        {/* Sauvegarde */}
         <div className="mb-8 p-6 rounded-xl border-2 border-green-200 bg-green-50">
           <h2 className="text-lg font-bold text-gray-800 mb-4">Sauvegardez votre progression</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              onClick={saveQuote}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
-            >
+            <button onClick={saveQuote} className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">
               💾 Sauvegarder
             </button>
             <button
@@ -847,18 +888,10 @@ const [expandedCategories, setExpandedCategories] = useState({
             >
               📂 Charger
             </button>
-            <button
-              onClick={handleGoogleSignIn}
-              disabled={!googleApiState.initialized}
-              className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 disabled:opacity-50"
-            >
+            <button onClick={handleGoogleSignIn} disabled={!googleApiState.initialized} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 disabled:opacity-50">
               🔐 Google Drive
             </button>
-            <button
-              onClick={uploadToDrive}
-              disabled={!googleApiState.initialized}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50"
-            >
+            <button onClick={uploadToDrive} disabled={!googleApiState.initialized} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50">
               ☁️ Export Drive
             </button>
           </div>
@@ -876,23 +909,12 @@ const [expandedCategories, setExpandedCategories] = useState({
           toggleFreinParking={toggleFreinParking}
           toggleStartStop={toggleStartStop}
         />
-        <MaintenanceHistory
-          lastMaintenance={lastMaintenance}
-          updateLastMaintenance={updateLastMaintenance}
-        />
-        <VehicleSummary
-          headerInfo={headerInfo}
-          oilInfo={oilInfo}
-          lastMaintenance={lastMaintenance}
-        />
+        <MaintenanceHistory lastMaintenance={lastMaintenance} updateLastMaintenance={updateLastMaintenance} />
+        <VehicleSummary headerInfo={headerInfo} oilInfo={oilInfo} lastMaintenance={lastMaintenance} />
         <div className="mb-8">
-          <OilInfoForm
-            oilInfo={oilInfo}
-            updateOilInfo={updateOilInfo}
-          />
+          <OilInfoForm oilInfo={oilInfo} updateOilInfo={updateOilInfo} />
         </div>
 
-        {/* Entretien */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Entretien</h2>
           <ChecklistSection
@@ -907,15 +929,10 @@ const [expandedCategories, setExpandedCategories] = useState({
 
         <div className="border-t-2 border-orange-400 my-8" />
 
-        {/* Pneus & Freins */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Pneus et Freins</h2>
-            <button
-              onClick={() => toggleCategory('pneusFreins')}
-              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
-            >
+            <button onClick={() => toggleCategory('pneusFreins')} className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" style={{ backgroundColor: '#FF6B35' }}>
               {expandedCategories.pneusFreins ? 'Fermer' : 'Ouvrir'}
             </button>
           </div>
@@ -933,15 +950,10 @@ const [expandedCategories, setExpandedCategories] = useState({
 
         <div className="border-t-2 border-orange-400 my-8" />
 
-        {/* SMART DSP */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">SMART - DSP</h2>
-            <button
-              onClick={() => toggleCategory('dsp')}
-              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
-            >
+            <button onClick={() => toggleCategory('dsp')} className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" style={{ backgroundColor: '#FF6B35' }}>
               {expandedCategories.dsp ? 'Fermer' : 'Ouvrir'}
             </button>
           </div>
@@ -953,11 +965,7 @@ const [expandedCategories, setExpandedCategories] = useState({
                 const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
                 const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
                 return (
-                  <div
-                    key={item.id}
-                    onClick={() => cycleState(item.id)}
-                    className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-content text-center`}
-                  >
+                  <div key={item.id} onClick={() => cycleState(item.id)} className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-content text-center`}>
                     <span className={`text-sm font-medium ${txt}`}>{item.label}</span>
                   </div>
                 );
@@ -968,15 +976,10 @@ const [expandedCategories, setExpandedCategories] = useState({
 
         <div className="border-t-2 border-orange-400 my-8" />
 
-        {/* SMART LUSTRAGE */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">SMART - LUSTRAGE</h2>
-            <button
-              onClick={() => toggleCategory('lustrage')}
-              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
-            >
+            <button onClick={() => toggleCategory('lustrage')} className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" style={{ backgroundColor: '#FF6B35' }}>
               {expandedCategories.lustrage ? 'Fermer' : 'Ouvrir'}
             </button>
           </div>
@@ -988,11 +991,7 @@ const [expandedCategories, setExpandedCategories] = useState({
                 const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
                 const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
                 return (
-                  <div
-                    key={item.id}
-                    onClick={() => cycleState(item.id)}
-                    className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-content text-center`}
-                  >
+                  <div key={item.id} onClick={() => cycleState(item.id)} className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-content text-center`}>
                     <span className={`text-sm font-medium ${txt}`}>{item.label}</span>
                   </div>
                 );
@@ -1003,50 +1002,36 @@ const [expandedCategories, setExpandedCategories] = useState({
 
         <div className="border-t-2 border-orange-400 my-8" />
 
-{/* SMART PLUME */}
-<div className="mb-8">
-  <div className="flex items-center justify-between mb-6">
-    <h2 className="text-2xl font-bold text-gray-800">SMART - PLUME</h2>
-    <button
-      onClick={() => toggleCategory('plume')}
-      className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-      style={{ backgroundColor: '#FF6B35' }}
-    >
-      {expandedCategories.plume ? 'Fermer' : 'Ouvrir'}
-    </button>
-  </div>
-  {expandedCategories.plume && (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      {PLUME_ITEMS.map(item => {
-        const state = itemStates[item.id] ?? 0;
-        const bg = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
-        const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
-        const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
-        return (
-          <div
-            key={item.id}
-            onClick={() => cycleState(item.id)}
-            className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-center text-center`}
-          >
-            <span className={`text-sm font-medium ${txt}`}>{item.label}</span>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">SMART - PLUME</h2>
+            <button onClick={() => toggleCategory('plume')} className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" style={{ backgroundColor: '#FF6B35' }}>
+              {expandedCategories.plume ? 'Fermer' : 'Ouvrir'}
+            </button>
           </div>
-        );
-      })}
-    </div>
-  )}
-</div>
+          {expandedCategories.plume && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {PLUME_ITEMS.map(item => {
+                const state = itemStates[item.id] ?? 0;
+                const bg = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
+                const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
+                const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
+                return (
+                  <div key={item.id} onClick={() => cycleState(item.id)} className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-center text-center`}>
+                    <span className={`text-sm font-medium ${txt}`}>{item.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
-<div className="border-t-2 border-orange-400 my-8" />
+        <div className="border-t-2 border-orange-400 my-8" />
 
-        {/* CARROSSERIE */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-orange-800">CARROSSERIE</h2>
-            <button
-              onClick={() => toggleCategory('carrosserie')}
-              className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-              style={{ backgroundColor: '#FF6B35' }}
-            >
+            <button onClick={() => toggleCategory('carrosserie')} className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" style={{ backgroundColor: '#FF6B35' }}>
               {expandedCategories.carrosserie ? 'Fermer' : 'Ouvrir'}
             </button>
           </div>
@@ -1074,76 +1059,58 @@ const [expandedCategories, setExpandedCategories] = useState({
         </div>
 
         <div className="border-t-2 border-orange-400 my-8" />
-        
-        {/* RÉPARATION PEINTURE */}
-<div className="mb-8">
-  <div className="flex items-center justify-between mb-6">
-    <h2 className="text-2xl font-bold text-gray-800">RÉPARATION PEINTURE</h2>
-    <button
-      onClick={() => toggleCategory('reparationPeinture')}
-      className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-      style={{ backgroundColor: '#FF6B35' }}
-    >
-      {expandedCategories.reparationPeinture ? 'Fermer' : 'Ouvrir'}
-    </button>
-  </div>
-  {expandedCategories.reparationPeinture && (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {PEINTURE_FORFAITS.map(forfait => {
-        const state = itemStates[forfait.id] ?? 0;
-        const bg = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
-        const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
-        const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
-        return (
-          <div
-            key={forfait.id}
-            onClick={() => cycleState(forfait.id)}
-            className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-center text-center`}
-          >
-            <span className={`text-sm font-medium ${txt}`}>{forfait.label}</span>
+
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">RÉPARATION PEINTURE</h2>
+            <button onClick={() => toggleCategory('reparationPeinture')} className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" style={{ backgroundColor: '#FF6B35' }}>
+              {expandedCategories.reparationPeinture ? 'Fermer' : 'Ouvrir'}
+            </button>
           </div>
-        );
-      })}
-    </div>
-  )}
-</div>
+          {expandedCategories.reparationPeinture && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {PEINTURE_FORFAITS.map(forfait => {
+                const state = itemStates[forfait.id] ?? 0;
+                const bg = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
+                const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
+                const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
+                return (
+                  <div key={forfait.id} onClick={() => cycleState(forfait.id)} className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-center text-center`}>
+                    <span className={`text-sm font-medium ${txt}`}>{forfait.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
-<div className="border-t-2 border-orange-400 my-8" />
+        <div className="border-t-2 border-orange-400 my-8" />
 
-{/* PEINTURE SEULE */}
-<div className="mb-8">
-  <div className="flex items-center justify-between mb-6">
-    <h2 className="text-2xl font-bold text-gray-800">PEINTURE</h2>
-    <button
-      onClick={() => toggleCategory('peinture')}
-      className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90"
-      style={{ backgroundColor: '#FF6B35' }}
-    >
-      {expandedCategories.peinture ? 'Fermer' : 'Ouvrir'}
-    </button>
-  </div>
-  {expandedCategories.peinture && (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {PEINTURE_SEULE_FORFAITS.map(forfait => {
-        const state = itemStates[forfait.id] ?? 0;
-        const bg = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
-        const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
-        const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
-        return (
-          <div
-            key={forfait.id}
-            onClick={() => cycleState(forfait.id)}
-            className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-center text-center`}
-          >
-            <span className={`text-sm font-medium ${txt}`}>{forfait.label}</span>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">PEINTURE</h2>
+            <button onClick={() => toggleCategory('peinture')} className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" style={{ backgroundColor: '#FF6B35' }}>
+              {expandedCategories.peinture ? 'Fermer' : 'Ouvrir'}
+            </button>
           </div>
-        );
-      })}
-    </div>
-  )}
-</div>
+          {expandedCategories.peinture && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {PEINTURE_SEULE_FORFAITS.map(forfait => {
+                const state = itemStates[forfait.id] ?? 0;
+                const bg = state === 0 ? 'bg-gray-200' : state === 1 ? 'bg-orange-100' : 'bg-green-100';
+                const border = state === 0 ? 'border-gray-400' : state === 1 ? 'border-orange-400' : 'border-green-500';
+                const txt = state === 0 ? 'text-gray-600' : state === 1 ? 'text-orange-900' : 'text-green-800 line-through';
+                return (
+                  <div key={forfait.id} onClick={() => cycleState(forfait.id)} className={`rounded-lg border-2 px-4 py-4 cursor-pointer ${bg} ${border} flex items-center justify-center text-center`}>
+                    <span className={`text-sm font-medium ${txt}`}>{forfait.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
-<div className="border-t-2 border-orange-400 my-8" />
+        <div className="border-t-2 border-orange-400 my-8" />
 
         {allCompleted && (
           <div className="mt-6 p-4 bg-green-100 rounded-xl text-center">
@@ -1167,18 +1134,11 @@ const [expandedCategories, setExpandedCategories] = useState({
               activeItems={activeItemsList}
             />
 
-            <TaskSummary
-              allItems={ALL_ITEMS}
-              itemStates={itemStates}
-              itemNotes={itemNotes}
-              cycleState={cycleState}
-            />
+            <TaskSummary allItems={ALL_ITEMS} itemStates={itemStates} itemNotes={itemNotes} cycleState={cycleState} />
 
-            {/* Forfaits (Mécanique + Carrosserie) */}
             <div className="mt-8 border-t-2 border-gray-300 pt-8">
               <h2 className="text-2xl font-bold mb-6">Forfaits</h2>
 
-              {/* Mécanique */}
               {mecaForfaitItems && mecaForfaitItems.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
@@ -1199,7 +1159,6 @@ const [expandedCategories, setExpandedCategories] = useState({
                 </div>
               )}
 
-              {/* Carrosserie */}
               <div className="mb-2">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
                 {Object.entries(forfaitData)
@@ -1241,22 +1200,22 @@ const [expandedCategories, setExpandedCategories] = useState({
             </div>
 
             <OrdreReparation
-            showOrdreReparation={showOrdreReparation}
-            setShowOrdreReparation={setShowOrdreReparation}
-            includeControleTechnique={includeControleTechnique}
-            setIncludeControleTechnique={setIncludeControleTechnique}
-            includeContrevisite={includeContrevisite}
-            setIncludeContrevisite={setIncludeContrevisite}
-            headerInfo={headerInfo}
-            activeMecaniqueItems={activeMecaniqueItems}
-            activeDSPItems={activeDSPItems}
-            activePlumeItems={activePlumeItems}  // ← AJOUTER
-            forfaitData={forfaitData}
-            pieceLines={pieceLines}
-            totals={totals}
-            moByCategory={moByCategory}
-            printOrdreReparation={printOrdreReparation}
-            itemStates={itemStates}
+              showOrdreReparation={showOrdreReparation}
+              setShowOrdreReparation={setShowOrdreReparation}
+              includeControleTechnique={includeControleTechnique}
+              setIncludeControleTechnique={setIncludeControleTechnique}
+              includeContrevisite={includeContrevisite}
+              setIncludeContrevisite={setIncludeContrevisite}
+              headerInfo={headerInfo}
+              activeMecaniqueItems={activeMecaniqueItems}
+              activeDSPItems={activeDSPItems}
+              activePlumeItems={activePlumeItems}
+              forfaitData={forfaitData}
+              pieceLines={pieceLines}
+              totals={totals}
+              moByCategory={moByCategory}
+              printOrdreReparation={printOrdreReparation}
+              itemStates={itemStates}
             />
             <ListePieces
               showListePieces={showListePieces}
