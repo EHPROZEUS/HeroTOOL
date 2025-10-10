@@ -412,7 +412,8 @@ liquideRefroidissement: {
     pieceReference: '',
     pieceQuantity: '1',
     piecePrix: ''
-  }
+  ];
+
   export const PEINTURE_FORFAITS = [
   {
     id: 'R-P1',
