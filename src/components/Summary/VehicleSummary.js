@@ -10,7 +10,16 @@ const VehicleSummary = ({ headerInfo, oilInfo, lastMaintenance, includeContrevis
           {headerInfo.lead && (
             <div className="flex items-center">
               <span className="font-bold text-gray-700 w-32">Client:</span>
-              <span className="text-gray-900 font-medium">{headerInfo.lead}</span>
+              <a
+                href={`https://admin.wkda.de/car/detail/${headerInfo.lead}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-orange-600 underline font-medium"
+                style={{ wordBreak: 'break-all' }}
+                title="Voir la fiche admin"
+              >
+                {headerInfo.lead}
+              </a>
             </div>
           )}
           {headerInfo.immatriculation && (
@@ -71,7 +80,6 @@ const VehicleSummary = ({ headerInfo, oilInfo, lastMaintenance, includeContrevis
               <span className="text-gray-900 font-medium">Oui</span>
             </div>
           )}
-          
         </div>
       </div>
       
