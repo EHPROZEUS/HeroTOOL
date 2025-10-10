@@ -1,0 +1,1 @@
+export const HOURLY_RATE = 35.8;
