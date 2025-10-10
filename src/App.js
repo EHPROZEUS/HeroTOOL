@@ -675,7 +675,7 @@ function App() {
     ...TEXT_ITEMS_1.map(i => i.id),
     ...TEXT_ITEMS_2.map(i => i.id),
   ]);
-  const isLustrageId = (id) => LUSTRAGE_ITEMS.some(l => l.id === i);
+  const isLustrageId = (id) => LUSTRAGE_ITEMS.some(l => l.i === i);
   const defaultCategoryForItem = (item) => {
     if (isLustrageId(item.id)) return 'Lustrage';
     if (CARROSSERIE_IDS.has(item.id)) return 'Carrosserie';
