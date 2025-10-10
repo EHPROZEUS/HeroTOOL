@@ -46,6 +46,25 @@ export const FOURNISSEURS = [
   'AMAZON'
 ];
 
+// Ajout d'un élément de peinture (exemple)
+export const PEINTURE_FORFAITS = [
+  {
+    id: 'peinture_bouclier_avant',
+    label: 'Peinture Bouclier Avant',
+    moQuantity: 1.2,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: '',
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: '',
+    consommablePrixUnitaire: '',
+    consommablePrix: ''
+  }
+];
+
 // Configuration des huiles
 export const HUILES_CONFIG = {
   '5W30': { prixUnitaire: 3, unite: 'litre' },
