@@ -46,25 +46,6 @@ export const FOURNISSEURS = [
   'AMAZON'
 ];
 
-// Ajout d'un élément de peinture (exemple)
-export const PEINTURE_FORFAITS = [
-  {
-    id: 'peinture_bouclier_avant',
-    label: 'Peinture Bouclier Avant',
-    moQuantity: 1.2,
-    pieceReference: '',
-    pieceDesignation: '',
-    pieceQuantity: 1,
-    piecePrixUnitaire: '',
-    pieceFournisseur: '',
-    consommableReference: '',
-    consommableDesignation: '',
-    consommableQuantity: '',
-    consommablePrixUnitaire: '',
-    consommablePrix: ''
-  }
-];
-
 // Configuration des huiles
 export const HUILES_CONFIG = {
   '5W30': { prixUnitaire: 3, unite: 'litre' },
@@ -123,8 +104,8 @@ export const LEFT_ITEMS_3 = [
 export const RIGHT_ITEMS_3 = [
   { id: 'disquesPlaquettesAv', label: 'Disques et plaquettes AV', hasNote: true },
   { id: 'disquesPlaquettesAr', label: 'Disques et plaquettes AR', hasNote: true },
-  { id: 'plaquettesAv', label: 'plaquettes avant', hasNote: true },
-  { id: 'plaquettesAr', label: 'plaquettes arrière', hasNote: true }
+  { id: 'plaquettesAv', label: 'Plaquettes avant', hasNote: true },
+  { id: 'plaquettesAr', label: 'Plaquettes arrière', hasNote: true }
 ];
 
 // Items texte 1
@@ -199,82 +180,63 @@ export const DSP_ITEMS = [
   { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
 ];
 
+// Organiser les items DSP en deux colonnes pour l'affichage (généré dynamiquement pour éviter redondance)
+export const DSP_LEFT_ITEMS = DSP_ITEMS.filter(item => [
+  'dspAileAvd', 'dspAileArd', 'dspAileAvg', 'dspAileArg', 'dspPorteAvd', 'dspPorteArd', 'dspPorteAvg', 'dspPorteArg',
+  'dspCapot', 'dspHayon', 'dspPavillon', 'dspBdcd'
+].includes(item.id));
+
+export const DSP_RIGHT_ITEMS = DSP_ITEMS.filter(item => [
+  'dspMontantAD', 'dspMontantBD', 'dspMontantCD', 'dspMontantDD', 'dspMontantAG', 'dspMontantBG', 'dspMontantCG', 'dspMontantDG',
+  'dspBdcg', 'dspGrelePavillon', 'dspGreleCapot'
+].includes(item.id));
+
 // ===== FORFAITS LUSTRAGE =====
 export const LUSTRAGE_ITEMS = [
   { id: 'L1', label: 'Lustrage 1 élément', moQuantity: 0.25, consommable: 1.00 },
-  { id: "L2", label: "Lustrage 2 éléments", moQuantity: 0.25, consommable: 2.00 },
-  { id: "L3", label: "Lustrage capot ou pavillon", moQuantity: 0.25, consommable: 1.00 },
-  { id: "L4", label: "Lustrage latéral", moQuantity: 0.25, consommable: 2.00 },
-  { id: "L6", label: "Lustrage 2 coques rétroviseurs", moQuantity: 0.25, consommable: 1.00 },
-  { id: "L7", label: "Lustrage moulure", moQuantity: 0.25, consommable: 0.50 },
-  { id: "L9", label: "Lustrage bouclier avant et arrière", moQuantity: 0.25, consommable: 2.00 },
-  { id: "LAARD", label: "Lustrage aile arrière droite", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LAARG", label: "Lustrage aile arrière gauche", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LAAVD", label: "Lustrage aile avant droite", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LAAVG", label: "Lustrage aile avant gauche", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LPAVILLON", label: "Lustrage pavillon", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LCP", label: "Lustrage capot", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LCRD", label: "Lustrage coque rétro droite", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LCRG", label: "Lustrage coque rétro gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LH", label: "Lustrage hayon", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LPCAR", label: "Lustrage pare-choc arrière", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LPCAV", label: "Lustrage pare-choc avant", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LPTEARD", label: "Lustrage porte arrière droite", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LPTEARG", label: "Lustrage porte arrière gauche", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LPTEAVD", label: "Lustrage porte avant droite", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LPTEAVG", label: "Lustrage porte avant gauche", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LFAD", label: "Lustrage feu arrière droit", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LPD", label: "Lustrage phare droit", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LFAG", label: "Lustrage feu arrière gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LPG", label: "Lustrage phare gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "REP PB", label: "Réfection pare-brise", moQuantity: 0.50, consommable: 0.00 },
-  { id: "LMAD", label: "Lustrage montant A droit", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LMBD", label: "Lustrage montant B droit", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LMCD", label: "Lustrage montant C droit", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LMDD", label: "Lustrage montant D droit", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LMAG", label: "Lustrage montant A gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LMBG", label: "Lustrage montant B gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LMCG", label: "Lustrage montant C gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LMDG", label: "Lustrage montant D gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LBH", label: "Lustrage becquet de hayon", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LAAR", label: "Lustrage aileron arrière", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LPDPAVD", label: "Lustrage poignée de porte avant droite", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LPDPAVG", label: "Lustrage poignée de porte avant gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LPDPARD", label: "Lustrage poignée de porte arrière droite", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LPDPARG", label: "Lustrage poignée de porte arrière gauche", moQuantity: 0.25, consommable: 0.50 },
-  { id: "LBDCD", label: "Lustrage bas de caisse droit", moQuantity: 0.25, consommable: 1.00 },
-  { id: "LBDCG", label: "Lustrage bas de caisse gauche", moQuantity: 0.25, consommable: 1.00 },
-  { id: "DE-COVERING", label: "Retrait covering", moQuantity: 0.25, consommable: 0.00 }
-];
-
-// Organiser les items DSP en deux colonnes pour l'affichage
-export const DSP_LEFT_ITEMS = [
-  { id: 'dspAileAvd', label: 'DSP Aile avant droite', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileArd', label: 'DSP Aile arrière droite', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileAvg', label: 'DSP Aile avant gauche', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspAileArg', label: 'DSP Aile arrière gauche', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteAvd', label: 'DSP Porte avant droite', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteArd', label: 'DSP Porte arrière droite', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteAvg', label: 'DSP Porte avant gauche', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPorteArg', label: 'DSP Porte arrière gauche', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspCapot', label: 'DSP Capot', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspHayon', label: 'DSP Hayon', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspPavillon', label: 'DSP Pavillon', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspBdcd', label: 'DSP Bas caisse d', moQuantity: 0.5, consommable: 0 }
-];
-
-export const DSP_RIGHT_ITEMS = [
-  { id: 'dspMontantAD', label: 'DSP Montant AD', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspMontantBD', label: 'DSP Montant BD', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspMontantCD', label: 'DSP Montant CD', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspMontantDD', label: 'DSP Montant DD', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspMontantAG', label: 'DSP Montant AG', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspMontantBG', label: 'DSP Montant BG', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspMontantCG', label: 'DSP Montant CG', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspMontantDG', label: 'DSP Montant DG', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspBdcg', label: 'DSP Bas caisse g', moQuantity: 0.5, consommable: 0 },
-  { id: 'dspGrelePavillon', label: 'DSP Grêle Pavillon', moQuantity: 4, consommable: 0 },
-  { id: 'dspGreleCapot', label: 'DSP Grêle Capot', moQuantity: 2, consommable: 0 }
+  { id: 'L2', label: 'Lustrage 2 éléments', moQuantity: 0.25, consommable: 2.00 },
+  { id: 'L3', label: 'Lustrage capot ou pavillon', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'L4', label: 'Lustrage latéral', moQuantity: 0.25, consommable: 2.00 },
+  { id: 'L6', label: 'Lustrage 2 coques rétroviseurs', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'L7', label: 'Lustrage moulure', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'L9', label: 'Lustrage bouclier avant et arrière', moQuantity: 0.25, consommable: 2.00 },
+  { id: 'LAARD', label: 'Lustrage aile arrière droite', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LAARG', label: 'Lustrage aile arrière gauche', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LAAVD', label: 'Lustrage aile avant droite', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LAAVG', label: 'Lustrage aile avant gauche', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LPAVILLON', label: 'Lustrage pavillon', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LCP', label: 'Lustrage capot', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LCRD', label: 'Lustrage coque rétro droite', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LCRG', label: 'Lustrage coque rétro gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LH', label: 'Lustrage hayon', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LPCAR', label: 'Lustrage pare-choc arrière', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LPCAV', label: 'Lustrage pare-choc avant', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LPTEARD', label: 'Lustrage porte arrière droite', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LPTEARG', label: 'Lustrage porte arrière gauche', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LPTEAVD', label: 'Lustrage porte avant droite', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LPTEAVG', label: 'Lustrage porte avant gauche', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LFAD', label: 'Lustrage feu arrière droit', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LPD', label: 'Lustrage phare droit', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LFAG', label: 'Lustrage feu arrière gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LPG', label: 'Lustrage phare gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'REP PB', label: 'Réfection pare-brise', moQuantity: 0.50, consommable: 0.00 },
+  { id: 'LMAD', label: 'Lustrage montant A droit', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LMBD', label: 'Lustrage montant B droit', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LMCD', label: 'Lustrage montant C droit', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LMDD', label: 'Lustrage montant D droit', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LMAG', label: 'Lustrage montant A gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LMBG', label: 'Lustrage montant B gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LMCG', label: 'Lustrage montant C gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LMDG', label: 'Lustrage montant D gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LBH', label: 'Lustrage becquet de hayon', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LAAR', label: 'Lustrage aileron arrière', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LPDPAVD', label: 'Lustrage poignée de porte avant droite', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LPDPAVG', label: 'Lustrage poignée de porte avant gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LPDPARD', label: 'Lustrage poignée de porte arrière droite', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LPDPARG', label: 'Lustrage poignée de porte arrière gauche', moQuantity: 0.25, consommable: 0.50 },
+  { id: 'LBDCD', label: 'Lustrage bas de caisse droit', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'LBDCG', label: 'Lustrage bas de caisse gauche', moQuantity: 0.25, consommable: 1.00 },
+  { id: 'DE-COVERING', label: 'Retrait covering', moQuantity: 0.25, consommable: 0.00 }
 ];
 
 // Tous les items combinés
@@ -308,113 +270,210 @@ export const EXCLUDED_MULTI_PIECES = [
   'rempm1', 'rempm2', 'rempm3', 'rempm4'
 ];
 
-// Valeurs par défaut pour les forfaits
+// Valeurs par défaut pour les forfaits (harmonisées avec nombres pour calculs)
 export const DEFAULT_VALUES = {
   miseANiveau: {
-    moQuantity: '0.2',
-    moPrix: '35.8',
+    moQuantity: 0.2,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '1',
-    piecePrix: ''
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   filtreHuile: {
-    moQuantity: '0.5',
-    moPrix: '35.8',
+    moQuantity: 0.5,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '1',
-    piecePrix: ''
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   liquideFrein: {
-  moQuantity: '0.8',
-  moPrix: '35.8',
-  pieceReference: '',
-  pieceQuantity: '',
-  piecePrix: '',
-  pieceFournisseur: '',
-  consommableReference: 'ILF4500',
-  consommableDesignation: 'Liquide de frein',
-  consommableQuantity: '1',
-  consommablePrixUnitaire: '1',
-  consommablePrix: '1'
-},
-liquideRefroidissement: {
-  moQuantity: '0.6',
-  moPrix: '35.8',
-  pieceReference: '',
-  pieceQuantity: '',
-  piecePrix: '',
-  pieceFournisseur: '',
-  consommableReference: 'LRJ',
-  consommableDesignation: 'Liquide de refroidissement',
-  consommableQuantity: '1',
-  consommablePrixUnitaire: '5',
-  consommablePrix: '5'
-},
-  pneusAvant: {
-    moQuantity: '0.5',
-    moPrix: '35.8',
+    moQuantity: 0.8,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '2',
-    piecePrix: '',
-    pieceFournisseur: ''
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: 'ILF4500',
+    consommableDesignation: 'Liquide de frein',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 1,
+    consommablePrix: 1
+  },
+  liquideRefroidissement: {
+    moQuantity: 0.6,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: 'LRJ',
+    consommableDesignation: 'Liquide de refroidissement',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 5,
+    consommablePrix: 5
+  },
+  pneusAvant: {
+    moQuantity: 0.5,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 2,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   pneusArriere: {
-    moQuantity: '0.5',
-    moPrix: '35.8',
+    moQuantity: 0.5,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '2',
-    piecePrix: '',
-    pieceFournisseur: ''
+    pieceDesignation: '',
+    pieceQuantity: 2,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   pneus4: {
-    moQuantity: '1.0',
-    moPrix: '35.8',
+    moQuantity: 1.0,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '4',
-    piecePrix: '',
-    pieceFournisseur: ''
+    pieceDesignation: '',
+    pieceQuantity: 4,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   disquesPlaquettesAv: {
-    moQuantity: '0.5',
-    moPrix: '35.8',
+    moQuantity: 0.5,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '1',
-    piecePrix: '',
-    pieceFournisseur: ''
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   disquesPlaquettesAr: {
-    moQuantity: '1.3',
-    moPrix: '35.8',
+    moQuantity: 1.3,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '1',
-    piecePrix: '',
-    pieceFournisseur: ''
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   plaquettesAv: {
-    moQuantity: '0.5',
-    moPrix: '35.8',
+    moQuantity: 0.5,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '1',
-    piecePrix: '',
-    pieceFournisseur: ''
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   plaquettesAr: {
-    moQuantity: '0.8',
-    moPrix: '35.8',
+    moQuantity: 0.8,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '1',
-    piecePrix: '',
-    pieceFournisseur: ''
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
   },
   default: {
-    moQuantity: '0.1',
-    moPrix: '35.8',
+    moQuantity: 0.1,
+    moPrix: 35.8,
     pieceReference: '',
-    pieceQuantity: '1',
-    piecePrix: ''
-  ];
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  }
+};
 
-  export const PEINTURE_FORFAITS = [
+// ===== FORFAITS PEINTURE (fusionnés et harmonisés) =====
+export const PEINTURE_FORFAITS = [
+  // Exemple initial
+  {
+    id: 'peinture_bouclier_avant',
+    label: 'Peinture Bouclier Avant',
+    moQuantity: 1.2,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  // Forfaits réparation + peinture
   {
     id: 'R-P1',
     label: 'RÉPARATION + PEINTURE 1 ÉLÉMENT',
@@ -424,7 +483,8 @@ liquideRefroidissement: {
     mo2Quantity: 2.5,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 1,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
   },
   {
     id: 'R-PAARD',
@@ -435,7 +495,8 @@ liquideRefroidissement: {
     mo2Quantity: 2.5,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 1,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
   },
   {
     id: 'R-PAARG',
@@ -446,7 +507,8 @@ liquideRefroidissement: {
     mo2Quantity: 2.5,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 1,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
   },
   {
     id: 'R-PAAVD',
@@ -457,7 +519,8 @@ liquideRefroidissement: {
     mo2Quantity: 2,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 1,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
   },
   {
     id: 'R-PAAVG',
@@ -468,7 +531,8 @@ liquideRefroidissement: {
     mo2Quantity: 2,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 1,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
   },
   {
     id: 'R-PAVILLON',
@@ -479,7 +543,8 @@ liquideRefroidissement: {
     mo2Quantity: 4,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 1,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
   },
   {
     id: 'R-PCP',
@@ -490,7 +555,8 @@ liquideRefroidissement: {
     mo2Quantity: 4,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 1,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
   },
   {
     id: 'R-PCRD',
@@ -501,7 +567,8 @@ liquideRefroidissement: {
     mo2Quantity: 0.5,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 0.5,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
   },
   {
     id: 'R-PCRG',
@@ -512,7 +579,8 @@ liquideRefroidissement: {
     mo2Quantity: 0.5,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 0.5,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
   },
   {
     id: 'R-PH',
@@ -523,6 +591,7 @@ liquideRefroidissement: {
     mo2Quantity: 2.5,
     consommableDesignation: 'Ingrédient peinture 500 ml',
     consommableQuantity: 1,
-    consommablePrixUnitaire: 10
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
   }
-};
+];
