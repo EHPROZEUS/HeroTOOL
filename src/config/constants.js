@@ -413,4 +413,115 @@ liquideRefroidissement: {
     pieceQuantity: '1',
     piecePrix: ''
   }
+  export const PEINTURE_FORFAITS = [
+  {
+    id: 'R-P1',
+    label: 'RÉPARATION + PEINTURE 1 ÉLÉMENT',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PAARD',
+    label: 'RÉPARATION + PEINTURE AILE ARRIÈRE DROITE',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PAARG',
+    label: 'RÉPARATION + PEINTURE AILE ARRIÈRE GAUCHE',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PAAVD',
+    label: 'RÉPARATION + PEINTURE AILE AVANT DROITE',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PAAVG',
+    label: 'RÉPARATION + PEINTURE AILE AVANT GAUCHE',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PAVILLON',
+    label: 'RÉPARATION + PAVILLON',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 3,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 4,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PCP',
+    label: 'RÉPARATION + PEINTURE CAPOT',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 3,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 4,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PCRD',
+    label: 'RÉPARATION + PEINTURE COQUE RÉTRO DROITE',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 0.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PCRG',
+    label: 'RÉPARATION + PEINTURE COQUE RÉTRO GAUCHE',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 0.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10
+  },
+  {
+    id: 'R-PH',
+    label: 'RÉPARATION + PEINTURE HAYON',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 2.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10
+  }
 };
