@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { gapi } from 'gapi-script';
 import VehicleInfoForm from './components/Header/VehicleInfoForm';
 import MaintenanceHistory from './components/Maintenance/MaintenanceHistory';
 import OilInfoForm from './components/Maintenance/OilInfoForm';

@@ -28,19 +28,6 @@ function timeSince(dateStr) {
   return `${days} j`;
 }
 
-const colors = {
-  brand: '#F7931E',
-  brandHover: '#e07d06',
-  text: '#1F2933',
-  textMuted: '#5A6572',
-  border: '#E2E8EE',
-  borderStrong: '#D1D7DE',
-  rowSelectedBg: '#FFF6EC',
-  rowHoverBg: '#F9FBFC',
-  page: '#F7F9FA',
-  focus: '#2563EB'
-};
-
 const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => {
   const [batchDate, setBatchDate] = useState('');
   const [batchKm, setBatchKm] = useState('');
@@ -108,209 +95,192 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
   };
 
   return (
-    <div className="space-y-8">
-      <section
-        className="rounded-lg border shadow-sm p-6"
-        style={{ borderColor: '#FF6B35', borderWidth: '2px', backgroundColor: '#F5F5F5' }}
-      >
-        <header className="px-6 pt-5 pb-4 border-b" style={{ borderColor: colors.border }}>
-          <h2 className="text-[18px] font-semibold" style={{ color: colors.text }}>
-            Derniers entretiens connus
-          </h2>
-        </header>
+    <div className="bg-white rounded-xl border-2 p-6 shadow-sm" style={{ borderColor: '#FF6B35' }}>
+      {/* Header */}
+      <h2 className="text-2xl font-bold mb-6" style={{ color: '#FF6B35' }}>
+        Derniers entretiens connus
+      </h2>
 
-        <div className="px-6 pt-4 pb-3 space-y-4">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col md:flex-row md:items-end gap-3">
-              <div className="flex flex-col gap-1 flex-1">
-                <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={batchDate || ''}
-                  onChange={(e) => setBatchDate(e.target.value)}
-                  className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
-                  style={{ border: `1px solid ${colors.border}`, background: '#FFFFFF', color: colors.text }}
-                />
-              </div>
-              <div className="flex flex-col gap-1 flex-1">
-                <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
-                  Kilométrage
-                </label>
-                <input
-                  type="text"
-                  value={batchKm || ''}
-                  onChange={(e) => setBatchKm(e.target.value)}
-                  placeholder="Ex: 15423"
-                  className="px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
-                  style={{ border: `1px solid ${colors.border}`, background: '#FFFFFF', color: colors.text }}
-                />
-              </div>
-            </div>
-            <div>
-              <button
-                disabled={!canApply}
-                onClick={applyBatch}
-                className="px-4 py-2 rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-opacity-90 disabled:opacity-40 w-full"
-                style={{
-                  background: canApply ? colors.brand : '#F1F4F6',
-                  color: canApply ? '#FFFFFF' : colors.textMuted,
-                  border: '1px solid ' + (canApply ? colors.brand : colors.border)
-                }}
-              >
-                Appliquer aux éléments cochés
-              </button>
-              <div className="flex flex-wrap gap-3 mt-2">
-                <button
-                  onClick={() => setSelected(new Set())}
-                  className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
-                  style={{ background: '#FFFFFF', border: `1px solid ${colors.border}`, color: colors.text }}
-                >
-                  Réinitialiser sélection
-                </button>
-                <button
-                  onClick={toggleSelectAll}
-                  className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
-                  style={{ background: '#FFFFFF', border: `1px solid ${colors.border}`, color: colors.text }}
-                >
-                  {allSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
-                </button>
-              </div>
-            </div>
+      {/* Batch Update Section */}
+      <div className="bg-orange-50 rounded-xl p-6 mb-6 border-2 border-orange-200">
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-700 uppercase tracking-wide">
+              Date
+            </label>
+            <input
+              type="date"
+              value={batchDate || ''}
+              onChange={(e) => setBatchDate(e.target.value)}
+              className="w-full px-4 py-3 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              style={{ borderColor: '#FF6B35' }}
+            />
           </div>
-          <p className="text-xs" style={{ color: colors.textMuted }}>
-            Laisser vide la date ou le kilométrage conserve la valeur existante.
-          </p>
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-700 uppercase tracking-wide">
+              Kilométrage
+            </label>
+            <input
+              type="text"
+              value={batchKm || ''}
+              onChange={(e) => setBatchKm(e.target.value)}
+              placeholder="Ex: 15423"
+              className="w-full px-4 py-3 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              style={{ borderColor: '#FF6B35' }}
+            />
+          </div>
+        </div>
+        
+        <button
+          disabled={!canApply}
+          onClick={applyBatch}
+          className="w-full px-6 py-5 rounded-xl text-base font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-lg mb-4"
+          style={{
+            backgroundColor: canApply ? '#FF6B35' : '#E5E7EB',
+            color: canApply ? 'white' : '#6B7280'
+          }}
+        >
+          Appliquer aux éléments cochés
+        </button>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setSelected(new Set())}
+            className="px-5 py-3 rounded-xl text-sm font-bold bg-white border-2 hover:bg-orange-50 transition-all shadow-sm"
+            style={{ borderColor: '#FF6B35', color: '#FF6B35' }}
+          >
+            Réinitialiser sélection
+          </button>
+          <button
+            onClick={toggleSelectAll}
+            className="px-5 py-3 rounded-xl text-sm font-bold bg-white border-2 hover:bg-orange-50 transition-all shadow-sm"
+            style={{ borderColor: '#FF6B35', color: '#FF6B35' }}
+          >
+            {allSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
+          </button>
         </div>
 
-        <div className="px-6">
-          <div className="border-t" style={{ borderColor: colors.border }} />
-          <ul className="grid grid-cols-2 gap-3 pt-4">
-            {maintenanceItems.map(({ field, label }) => {
-              const raw = lastMaintenance[field] || '';
-              const [d = '', k = ''] = raw.split('|');
-              const age = timeSince(d);
-              const isSelected = selected.has(field);
-              const isEditing = inlineEdit === field;
+        <p className="text-xs text-gray-600 mt-3 italic">
+          Laisser vide la date ou le kilométrage conserve la valeur existante.
+        </p>
+      </div>
 
-              return (
-                <li
-                  key={field}
-                  role="checkbox"
-                  aria-checked={isSelected}
-                  tabIndex={0}
-                  onKeyDown={(e) => handleRowKeyDown(e, field)}
-                  onClick={(e) => {
-                    if (isEditing) return;
-                    if (e.target.closest('[data-row-action="true"]')) return;
-                    toggleSelect(field);
-                  }}
-                  className="p-4 text-sm relative cursor-pointer focus:outline-none transition-colors duration-150 hover:bg-gray-50 rounded-lg"
-                  style={{
-                    background: isSelected ? colors.rowSelectedBg : '#E5E7EB',
-                    borderLeft: `4px solid ${isSelected ? colors.brand : 'transparent'}`,
-                    border: `1px solid ${colors.border}`
-                  }}
-                >
-                  {!isEditing && (
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="font-medium" style={{ color: colors.text }}>
-                          {label}
-                        </div>
-                        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
-                          <span style={{ color: colors.textMuted }}>
-                            Date: <span style={{ color: colors.text }}>{d || '—'}</span>
-                          </span>
-                          <span style={{ color: colors.textMuted }}>
-                            Km: <span style={{ color: colors.text }}>{k || '—'}</span>
-                          </span>
-                          <span style={{ color: colors.textMuted }}>
-                            Âge: <span style={{ color: colors.text }}>{age ? `il y a ${age}` : '—'}</span>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          data-row-action="true"
-                          type="button"
-                          onClick={() => startInlineEdit(field)}
-                          className="px-3 py-1.5 rounded-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
-                          style={{ background: '#FFFFFF', border: `1px solid ${colors.border}`, color: colors.brand }}
-                        >
-                          Éditer
-                        </button>
-                      </div>
-                    </div>
-                  )}
+      {/* Maintenance Items Grid */}
+      <div className="grid md:grid-cols-2 gap-5">
+        {maintenanceItems.map(({ field, label }) => {
+          const raw = lastMaintenance[field] || '';
+          const [d = '', k = ''] = raw.split('|');
+          const age = timeSince(d);
+          const isSelected = selected.has(field);
+          const isEditing = inlineEdit === field;
 
-                  {isEditing && (
-                    <div className="mt-1 space-y-4" data-row-action="true">
-                      <div className="grid gap-4 sm:grid-cols-3">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
-                            Date
-                          </label>
-                          <input
-                            type="date"
-                            value={inlineDate || ''}
-                            onChange={(e) => setInlineDate(e.target.value)}
-                            className="px-2 py-1 rounded-sm text-xs focus:outline-none focus:ring-1 focus:ring-offset-1"
-                            style={{ border: `1px solid ${colors.borderStrong}`, background: '#FFFFFF', color: colors.text, }}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
-                            Kilométrage
-                          </label>
-                          <input
-                            type="text"
-                            value={inlineKm || ''}
-                            onChange={(e) => setInlineKm(e.target.value)}
-                            placeholder="Km"
-                            className="px-2 py-1 rounded-sm text-xs focus:outline-none focus:ring-1 focus:ring-offset-1"
-                            style={{ border: `1px solid ${colors.borderStrong}`, background: '#FFFFFF', color: colors.text }}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.textMuted }}>
-                            Aperçu âge
-                          </span>
-                          <div 
-                            className="px-3 py-2 rounded-md text-sm"
-                            style={{ border: `1px solid ${colors.borderStrong}`, background: '#FAFAFA', color: colors.text }}
-                          >
-                            {inlineDate ? `il y a ${timeSince(inlineDate)}` : '—'}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          type="button"
-                          onClick={saveInlineEdit}
-                          className="px-4 py-2 rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-opacity-90"
-                          style={{ background: colors.brand, color: '#FFFFFF', border: `1px solid ${colors.brand}` }}
-                        >
-                          Sauver
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelInlineEdit}
-                          className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors duration-150 hover:bg-gray-50"
-                          style={{ background: '#FFFFFF', color: colors.text, border: `1px solid ${colors.border}` }}
-                        >
-                          Annuler
-                        </button>
-                      </div>
+          return (
+            <div
+              key={field}
+              role="checkbox"
+              aria-checked={isSelected}
+              tabIndex={0}
+              onKeyDown={(e) => handleRowKeyDown(e, field)}
+              onClick={(e) => {
+                if (isEditing) return;
+                if (e.target.closest('[data-row-action="true"]')) return;
+                toggleSelect(field);
+              }}
+              className="rounded-xl p-6 cursor-pointer transition-all border-2 shadow-sm hover:shadow-lg"
+              style={{
+                backgroundColor: isSelected ? '#FFF4E6' : '#F9FAFB',
+                borderColor: isSelected ? '#FF6B35' : '#D1D5DB',
+                borderLeftWidth: isSelected ? '6px' : '2px',
+                transform: isSelected ? 'translateX(2px)' : 'none'
+              }}
+            >
+              {!isEditing && (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-lg text-gray-800">{label}</h3>
+                    <button
+                      data-row-action="true"
+                      type="button"
+                      onClick={() => startInlineEdit(field)}
+                      className="px-4 py-2 rounded-lg text-sm font-bold transition-all hover:opacity-90 shadow-sm"
+                      style={{ backgroundColor: '#FF6B35', color: 'white' }}
+                    >
+                      Éditer
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-gray-600 font-semibold text-sm">Date:</span>
+                      <span className="text-gray-900 font-bold">{d || '—'}</span>
                     </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </section>
+                    <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-gray-600 font-semibold text-sm">Km:</span>
+                      <span className="text-gray-900 font-bold">{k || '—'}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 rounded-lg border-2" style={{ 
+                      backgroundColor: '#FFF4E6',
+                      borderColor: '#FF6B35'
+                    }}>
+                      <span className="text-gray-600 font-semibold text-sm">Âge:</span>
+                      <span className="font-bold text-base" style={{ color: '#FF6B35' }}>
+                        {age ? `il y a ${age}` : '—'}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {isEditing && (
+                <div data-row-action="true" className="space-y-4">
+                  <h3 className="font-bold text-lg text-gray-800 mb-4 pb-3 border-b-2" style={{ borderColor: '#FF6B35' }}>
+                    {label}
+                  </h3>
+                  <div>
+                    <label className="block text-sm font-bold mb-2 text-gray-700 uppercase tracking-wide">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      value={inlineDate || ''}
+                      onChange={(e) => setInlineDate(e.target.value)}
+                      className="w-full px-4 py-3 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      style={{ borderColor: '#FF6B35' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold mb-2 text-gray-700 uppercase tracking-wide">
+                      Kilométrage
+                    </label>
+                    <input
+                      type="text"
+                      value={inlineKm || ''}
+                      onChange={(e) => setInlineKm(e.target.value)}
+                      placeholder="Ex: 15423"
+                      className="w-full px-4 py-3 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      style={{ borderColor: '#FF6B35' }}
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-3">
+                    <button
+                      onClick={saveInlineEdit}
+                      className="flex-1 px-5 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-md"
+                      style={{ backgroundColor: '#FF6B35' }}
+                    >
+                      Enregistrer
+                    </button>
+                    <button
+                      onClick={cancelInlineEdit}
+                      className="flex-1 px-5 py-3 rounded-xl text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all shadow-md"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
