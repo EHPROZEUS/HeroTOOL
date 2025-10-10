@@ -325,21 +325,31 @@ export const DEFAULT_VALUES = {
     piecePrix: ''
   },
   liquideFrein: {
-    moQuantity: '0.8',
-    moPrix: '35.8',
-    pieceReference: 'ILF4500',
-    pieceQuantity: '1',
-    piecePrix: '1',
-    pieceFournisseur: 'Divers Comptoir'
-  },
-  liquideRefroidissement: {
-    moQuantity: '0.6',
-    moPrix: '35.8',
-    pieceReference: 'LRJ',
-    pieceQuantity: '1',
-    piecePrix: '5',
-    pieceFournisseur: 'Divers Comptoir'
-  },
+  moQuantity: '0.8',
+  moPrix: '35.8',
+  pieceReference: '',
+  pieceQuantity: '',
+  piecePrix: '',
+  pieceFournisseur: '',
+  consommableReference: 'ILF4500',
+  consommableDesignation: 'Liquide de frein',
+  consommableQuantity: '1',
+  consommablePrixUnitaire: '1',
+  consommablePrix: '1'
+},
+liquideRefroidissement: {
+  moQuantity: '0.6',
+  moPrix: '35.8',
+  pieceReference: '',
+  pieceQuantity: '',
+  piecePrix: '',
+  pieceFournisseur: '',
+  consommableReference: 'LRJ',
+  consommableDesignation: 'Liquide de refroidissement',
+  consommableQuantity: '1',
+  consommablePrixUnitaire: '5',
+  consommablePrix: '5'
+},
   pneusAvant: {
     moQuantity: '0.5',
     moPrix: '35.8',
