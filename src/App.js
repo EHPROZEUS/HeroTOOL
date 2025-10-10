@@ -421,7 +421,7 @@ function App() {
     setParsedPieces(prev => prev.filter(p => p.id !== id));
   }, []);
 
-  const dispatchPieces = useCallback(() => {
+    const dispatchPieces = useCallback(() => {
     if (!parsedPieces.length) {
       alert('Aucune pièce à dispatcher.');
       return;
@@ -438,16 +438,25 @@ function App() {
       const nextData = { ...prev };
       parsedPieces.forEach(piece => {
         if (!piece.targetForfait || !piece.reference) return;
-        const qty = parseFloat(piece.quantity) || 0;
-        const pu = parseFloat(piece.prixUnitaire || piece.unitPrice || 0) || 0;
+        // Correction : gère bien virgules/points, valeurs vides
+        let qty = 1;
+        if (typeof piece.quantity === 'string' && piece.quantity.trim() !== '') {
+          qty = parseFloat(piece.quantity.replace(',', '.'));
+          if (isNaN(qty)) qty = 1;
+        }
+        let pu = 0;
+        if (typeof piece.prixUnitaire === 'string' && piece.prixUnitaire.trim() !== '') {
+          pu = parseFloat(piece.prixUnitaire.replace(',', '.'));
+          if (isNaN(pu)) pu = 0;
+        }
         const prix = (qty * pu).toFixed(2);
         const existing = nextData[piece.targetForfait] || {};
         nextData[piece.targetForfait] = {
           ...existing,
           pieceReference: piece.reference,
           pieceDesignation: piece.designation || existing.pieceDesignation || '',
-          pieceQuantity: qty.toString(),
-          piecePrixUnitaire: pu.toFixed(2),
+          pieceQuantity: qty ? qty.toString() : '',
+          piecePrixUnitaire: pu ? pu.toFixed(2) : '',
           piecePrix: prix,
           pieceFournisseur: piece.fournisseur || existing.pieceFournisseur || ''
         };
