@@ -28,11 +28,6 @@ const SOURCE_FORCED_SUPPLIERS = {
   AUTOSSIMO: 'AUTOSSIMO'
 };
 
-// Générateur d'id simple
-function uuid() {
-  return '_' + Math.random().toString(36).substr(2, 9);
-}
-
 const ImportModule = ({ 
   showImportModule,
   setShowImportModule,
@@ -40,6 +35,7 @@ const ImportModule = ({
   setImportText,
   parsedPieces,
   setParsedPieces,
+  parsePiecesText,
   updateParsedPiece,
   removeParsedPiece,
   dispatchPieces,
@@ -48,79 +44,7 @@ const ImportModule = ({
   const [selectedFormat, setSelectedFormat] = useState('auto');
   const [sourceSystem, setSourceSystem] = useState('auto');
   const [defaultFournisseur, setDefaultFournisseur] = useState('');
-  const [globalForfait, setGlobalForfait] = useState('');
   const forcedSupplier = SOURCE_FORCED_SUPPLIERS[sourceSystem] || '';
-
-  // Nouveau parseur prenant en compte les [Forfait: ...] et la saisie libre
-  const parsePiecesText = (selectedFormat, sourceSystem, defaultFournisseur) => {
-    const lines = importText
-      .split('\n')
-      .map(l => l.trim())
-      .filter(Boolean);
-
-    let currentForfait = '';
-    let forfaitsTrouves = false;
-    const pieces = [];
-
-    lines.forEach(line => {
-      // Gestion du changement de forfait cible
-      const forfaitMatch = line.match(/^\[Forfait\s*:\s*(.+)\]$/i);
-      if (forfaitMatch) {
-        currentForfait = forfaitMatch[1].trim();
-        forfaitsTrouves = true;
-        return;
-      }
-
-      // Split ligne (|, ;, tab)
-      const parts = line.split(/\s*\|\s*|\t|;/).map(s => s.trim());
-      let [reference, designation, quantity, prixUnitaire] = parts;
-
-      // Saisie libre (1 champ = désignation, 2 = ref+désignation ou désignation+qte)
-      if (parts.length === 1) {
-        designation = parts[0];
-        reference = '';
-        quantity = '';
-        prixUnitaire = '';
-      } else if (parts.length === 2) {
-        // Heuristique : si le deuxième champ ressemble à une quantité (num), alors c'est désignation + quantité
-        if (/^\d+([,.]\d+)?$/.test(parts[1])) {
-          designation = parts[0];
-          quantity = parts[1];
-          reference = '';
-          prixUnitaire = '';
-        } else {
-          reference = parts[0];
-          designation = parts[1];
-          quantity = '';
-          prixUnitaire = '';
-        }
-      } else if (parts.length === 3) {
-        [reference, designation, quantity] = parts;
-        prixUnitaire = '';
-      }
-
-      // Si pas de forfait dans la saisie, on utilisera le global
-      let targetForfait = currentForfait || '';
-
-      pieces.push({
-        id: uuid(),
-        reference: reference || '',
-        designation: designation || '',
-        quantity: quantity || '',
-        prixUnitaire: prixUnitaire || '',
-        targetForfait, // à finaliser plus tard
-        fournisseur: forcedSupplier || defaultFournisseur || ''
-      });
-    });
-
-    // Si aucun forfait trouvé dans la saisie, on propose le globalForfait
-    if (!forfaitsTrouves && globalForfait) {
-      pieces.forEach(piece => {
-        piece.targetForfait = globalForfait;
-      });
-    }
-    setParsedPieces(pieces);
-  };
 
   const handleParsePieces = () => {
     parsePiecesText(selectedFormat, sourceSystem, defaultFournisseur);
@@ -133,16 +57,6 @@ const ImportModule = ({
       setParsedPieces(parsedPieces.map(p => ({ ...p, fournisseur })));
     }
   };
-
-  const handleGlobalForfait = (e) => {
-    setGlobalForfait(e.target.value);
-    if (parsedPieces.length > 0) {
-      setParsedPieces(parsedPieces.map(p => ({ ...p, targetForfait: e.target.value })));
-    }
-  };
-
-  // Vérifie si au moins une pièce n'a pas de targetForfait
-  const someNeedsForfait = parsedPieces.some(p => !p.targetForfait);
 
   return (
     <div className="mt-8 border-t-2 border-gray-300 pt-8">
@@ -221,20 +135,8 @@ const ImportModule = ({
             <textarea
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
-              placeholder={`Collez ici vos lignes pièces (multi-sources ou saisie libre).
-Chaque ligne = 1 pièce. Vous pouvez utiliser :
-- Réf | Désignation | Qté | Prix
-- Désignation | Qté
-- ou juste Désignation
-Pour dispatcher dans plusieurs forfaits :
-[Forfait: Vidange]
-Filtre à huile | 1 | 10
-Huile moteur 5W30 | 4 | 8
-[Forfait: Freinage]
-Plaquettes avant | 1 | 40
-Disque avant | 2 | 35
-Laisser vide pour choisir un forfait global.`}
-              className="w-full h-48 px-4 py-3 border-2 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
+              placeholder="Collez ici vos lignes (multi-sources)..."
+              className="w-full h-40 px-4 py-3 border-2 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
               style={{ borderColor: '#FF6B35' }}
             />
             <div className="flex gap-3 mt-3 flex-wrap">
@@ -253,26 +155,6 @@ Laisser vide pour choisir un forfait global.`}
               </button>
             </div>
           </div>
-
-          {/* Sélection d'un forfait global si besoin */}
-          {parsedPieces.length > 0 && parsedPieces.every(p => !p.targetForfait) && (
-            <div className="mb-6">
-              <label className="block text-xs font-semibold text-gray-700 mb-2">
-                Aucun forfait détecté dans la saisie. Choisissez un forfait cible pour toutes les pièces :
-              </label>
-              <select
-                value={globalForfait}
-                onChange={handleGlobalForfait}
-                className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                style={{ borderColor: '#FF6B35' }}
-              >
-                <option value="">Choisir...</option>
-                {activeItems.map(it => (
-                  <option key={it.id} value={it.id}>{it.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
 
           {/* Étape 2 */}
           {parsedPieces.length > 0 && (
@@ -307,7 +189,7 @@ Laisser vide pour choisir un forfait global.`}
                     {/* Lignes simples verticales */}
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-[11px] font-semibold mb-1">Référence</label>
+                        <label className="block text-[11px] font-semibold mb-1">Référence *</label>
                         <input
                           type="text"
                           value={piece.reference}
@@ -317,7 +199,7 @@ Laisser vide pour choisir un forfait global.`}
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold mb-1">Désignation</label>
+                        <label className="block text-[11px] font-semibold mb-1">Désignation (agrandie)</label>
                         <textarea
                           rows={2}
                           value={piece.designation}
@@ -349,7 +231,7 @@ Laisser vide pour choisir un forfait global.`}
                           />
                         </div>
                         <div className="flex-1">
-                          <label className="block text-[11px] font-semibold mb-1">Forfait cible</label>
+                          <label className="block text-[11px] font-semibold mb-1">Forfait cible *</label>
                           <select
                             value={piece.targetForfait}
                             onChange={(e) => updateParsedPiece(piece.id, 'targetForfait', e.target.value)}
@@ -372,23 +254,16 @@ Laisser vide pour choisir un forfait global.`}
                 <button
                   onClick={dispatchPieces}
                   className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 shadow-lg transition-all text-sm"
-                  disabled={someNeedsForfait}
-                  title={someNeedsForfait ? "Toutes les pièces doivent avoir un forfait cible." : ""}
                 >
                   ✓ Dispatcher (pièces principales)
                 </button>
                 <button
-                  onClick={() => { setImportText(''); setParsedPieces([]); setGlobalForfait(''); }}
+                  onClick={() => { setImportText(''); setParsedPieces([]); }}
                   className="px-5 py-3 bg-gray-500 text-white rounded-lg font-semibold hover:bg-gray-600 transition-all text-sm"
                 >
                   ↺ Réinitialiser
                 </button>
               </div>
-              {someNeedsForfait && (
-                <div className="mt-2 text-red-600 text-sm">
-                  Veuillez sélectionner un forfait cible pour chaque pièce avant de dispatcher.
-                </div>
-              )}
             </div>
           )}
         </div>
