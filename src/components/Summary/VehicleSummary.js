@@ -9,7 +9,7 @@ const VehicleSummary = ({ headerInfo, oilInfo, lastMaintenance, includeContrevis
         <div className="space-y-3">
           {headerInfo.lead && (
             <div className="flex items-center">
-              <span className="font-bold text-gray-700 w-32">Client:</span>
+              <span className="font-bold text-gray-700 w-32">Lead:</span>
               <a
                 href={`https://admin.wkda.de/car/detail/${headerInfo.lead}`}
                 target="_blank"
