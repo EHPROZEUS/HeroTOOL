@@ -80,30 +80,7 @@ const CarrosserieSubMenus = ({
     <div className="section-carrosserie mb-6 flex justify-end">
       <div className="sous-menus space-y-4">
         <div className="submenu flex flex-col items-end">
-          <button
-            className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
-            onClick={() => toggleSubMenu('reparation-peinture')}
-          >
-            Réparation peinture {subMenuStates['reparation-peinture'] ? '▲' : '▼'}
-          </button>
-          {subMenuStates['reparation-peinture'] && (
-            <div className="submenu-content mt-2 flex flex-col items-end">
-              <ReparationPeintureSubMenu
-                forfaitData={forfaitData}
-                addPeintureForfait={addPeintureForfait}
-                removePeintureForfait={removePeintureForfait}
-                countRP1={countRP1}
-              />
-            </div>
-          )}
-        </div>
-               <div className="submenu flex flex-col items-end">
-          <button
-            className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
-            onClick={() => toggleSubMenu('peinture')}
-          >
-            Peinture {subMenuStates['peinture'] ? '▲' : '▼'}
-          </button>
+
           {subMenuStates['peinture'] && (
             <div className="submenu-content mt-2 flex flex-col items-end">
               <PeintureSubMenu

@@ -7,12 +7,12 @@ import { getFirestore } from "firebase/firestore";
 const clean = v => (typeof v === 'string' ? v.replace(/^["']|["']$/g, '') : v);
 
 const firebaseConfig = {
-  apiKey: clean(process.env.REACT_APP_FIREBASE_API_KEY || ""),
-  authDomain: clean(process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || ""),
-  projectId: clean(process.env.REACT_APP_FIREBASE_PROJECT_ID || ""),
-  storageBucket: clean(process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || ""),
-  messagingSenderId: clean(process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || ""),
-  appId: clean(process.env.REACT_APP_FIREBASE_APP_ID || "")
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
 // Debug court (temporaire) : affiche uniquement la fin de la clé
