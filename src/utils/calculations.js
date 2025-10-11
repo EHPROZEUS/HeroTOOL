@@ -1,7 +1,5 @@
 import { DEFAULT_VALUES, DSP_ITEMS, LUSTRAGE_ITEMS, PEINTURE_FORFAITS, PEINTURE_SEULE_FORFAITS, PLUME_ITEMS } from '../config/constants';
 
-
-
 // Obtenir les valeurs par défaut d'un item
 export const getDefaultValues = (itemId) => {
   return DEFAULT_VALUES[itemId] || DEFAULT_VALUES.default;
@@ -81,6 +79,25 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
     }
   });
 
+  // Calcul pour Lustrage 1 élément (stackables)
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    if (data.lustrage1Elem === true) {
+      const moQty = parseFloat(data.moQuantity || 0);
+      totalMOHeures += moQty;
+      
+      const consQty = parseFloat(data.consommableQuantity || 0);
+      const consPU = parseFloat(data.consommablePrixUnitaire || 0);
+      totalConsommables += (consQty * consPU);
+    }
+  });
+
+  // Calcul pour Plume 1 élément (stackables)
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    if (data.plume1Elem === true) {
+      const moQty = parseFloat(data.moQuantity || 0);
+      totalMOHeures += moQty;
+    }
+  });
 
   const totalMO = totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
@@ -161,14 +178,6 @@ export const calculateMOByCategory = (activeMecaniqueItems, forfaitData, activeD
     }
   });
 
-    // Calcul pour les items DSP
-  activeDSPItems.forEach(dspItem => {
-    const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
-    if (dspConfig) {
-      dsp += dspConfig.moQuantity;
-    }
-  });
-
   // Calcul pour les items PLUME
   activePlumeItems.forEach(plumeItem => {
     const plumeConfig = PLUME_ITEMS.find(item => item.id === plumeItem.id);
@@ -177,23 +186,7 @@ export const calculateMOByCategory = (activeMecaniqueItems, forfaitData, activeD
     }
   });
 
-  // NOUVEAU : Calcul pour les forfaits de réparation peinture
-  PEINTURE_FORFAITS.forEach(forfait => {
-    const state = itemStates[forfait.id] ?? 0;
-    
-    // Vérifier si le forfait est activé (state > 0)
-    if (state > 0) {
-      // MO Réparation (Tolerie)
-      const mo1Qty = parseFloat(forfait.mo1Quantity || 0);
-      tolerie += mo1Qty;
-      
-      // MO Peinture
-      const mo2Qty = parseFloat(forfait.mo2Quantity || 0);
-      peinture += mo2Qty;
-    }
-  });
-
-    // NOUVEAU : Calcul pour les forfaits de réparation peinture
+  // Calcul pour les forfaits de réparation peinture
   PEINTURE_FORFAITS.forEach(forfait => {
     const state = itemStates[forfait.id] ?? 0;
     
@@ -213,6 +206,22 @@ export const calculateMOByCategory = (activeMecaniqueItems, forfaitData, activeD
     if (state > 0) {
       const moQty = parseFloat(forfait.moQuantity || 0);
       peinture += moQty;
+    }
+  });
+
+  // Calcul pour Lustrage 1 élément (stackables)
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    if (data.lustrage1Elem === true) {
+      const moQty = parseFloat(data.moQuantity || 0);
+      lustrage += moQty;
+    }
+  });
+
+  // Calcul pour Plume 1 élément (stackables)
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    if (data.plume1Elem === true) {
+      const moQty = parseFloat(data.moQuantity || 0);
+      mecanique += moQty;
     }
   });
 

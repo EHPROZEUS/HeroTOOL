@@ -923,7 +923,62 @@ const OrdreReparation = ({
                     })}
                   </>
                 )}
+              {/* === LUSTRAGE 1 ÉLÉMENT (STACKABLES) === */}
+                {Object.entries(forfaitData || {})
+                  .filter(([key, data]) => data.lustrage1Elem === true)
+                  .map(([key, data]) => {
+                    const moQty = parseFloat(data.moQuantity || 0);
+                    const consQty = parseFloat(data.consommableQuantity || 0);
+                    const consPU = parseFloat(data.consommablePrixUnitaire || 0);
+                    
+                    return (
+                      <React.Fragment key={key}>
+                        {/* MO Lustrage */}
+                        <tr>
+                          <td className="border border-gray-300 p-2">LUSTRAGE</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">{data.moDesignation || 'Lustrage 1 élément'}</td>
+                          <td className="border border-gray-300 p-2">Lustrage</td>
+                          <td className="border border-gray-300 p-2 text-right">{moQty} h</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                        {/* Consommable Lustrage */}
+                        {consQty > 0 && (
+                          <tr>
+                            <td className="border border-gray-300 p-2">LUSTRAGE</td>
+                            <td className="border border-gray-300 p-2">CONSO</td>
+                            <td className="border border-gray-300 p-2">Consommable lustrage</td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2 text-right">{consQty}</td>
+                            <td className="border border-gray-300 p-2 text-right">{consPU.toFixed(2)} €</td>
+                            <td className="border border-gray-300 p-2 text-right">{(consQty * consPU).toFixed(2)} €</td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })
+                }
 
+                {/* === PLUME 1 ÉLÉMENT (STACKABLES) === */}
+                {Object.entries(forfaitData || {})
+                  .filter(([key, data]) => data.plume1Elem === true)
+                  .map(([key, data]) => {
+                    const moQty = parseFloat(data.moQuantity || 0);
+                    
+                    return (
+                      <tr key={key}>
+                        <td className="border border-gray-300 p-2">PLUME</td>
+                        <td className="border border-gray-300 p-2">-</td>
+                        <td className="border border-gray-300 p-2">{data.moDesignation || 'Plume 1 élément'}</td>
+                        <td className="border border-gray-300 p-2">Mécanique</td>
+                        <td className="border border-gray-300 p-2 text-right">{moQty} h</td>
+                        <td className="border border-gray-300 p-2 text-right">-</td>
+                        <td className="border border-gray-300 p-2 text-right">-</td>
+                      </tr>
+                    );
+                  })
+                }
               </tbody>
             </table>
           </div>

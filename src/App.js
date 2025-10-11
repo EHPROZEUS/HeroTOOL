@@ -8,6 +8,8 @@ import TaskSummary from './components/Summary/TaskSummary';
 import ChecklistSection from './components/Checklist/ChecklistSection';
 import ForfaitForm from './components/Forfaits/ForfaitForm';
 import ForfaitReparationPeintureForm from './components/Forfaits/ForfaitReparationPeintureForm';
+import ForfaitCarrosserieForm from './components/Forfaits/ForfaitCarrosserieForm';
+import ForfaitPeintureSeuleForm from './components/Forfaits/ForfaitPeintureSeuleForm';
 import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
@@ -42,6 +44,11 @@ import {
 import { parsePieces } from './utils/parser';
 
 import ReparationPeintureSubMenu from './components/Carrosserie/ReparationPeintureSubMenu';
+import PeintureSubMenu from './components/Carrosserie/PeintureSubMenu';
+import LustrageSubMenu from './components/Smart/LustrageSubMenu';
+import PlumeSubMenu from './components/Smart/PlumeSubMenu';
+import ForfaitSmartForm from './components/Forfaits/ForfaitSmartForm';
+
 
 // Firebase helpers (you must create src/firebase.js with your config)
 import { auth, googleProvider, storage, db } from './firebase';
@@ -63,8 +70,12 @@ const CarrosserieSubMenus = ({
   updateForfaitField,
   addPeintureForfait,
   removePeintureForfait,
-  countRP1
+  countRP1,
+  countP1Elem,
+  addPeintureSeuleForfait,
+  removePeintureSeuleForfait
 }) => {
+  
   return (
     <div className="section-carrosserie mb-6 flex justify-end">
       <div className="sous-menus space-y-4">
@@ -86,7 +97,7 @@ const CarrosserieSubMenus = ({
             </div>
           )}
         </div>
-        <div className="submenu flex flex-col items-end">
+               <div className="submenu flex flex-col items-end">
           <button
             className="px-6 py-3 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600"
             onClick={() => toggleSubMenu('peinture')}
@@ -94,8 +105,13 @@ const CarrosserieSubMenus = ({
             Peinture {subMenuStates['peinture'] ? '▲' : '▼'}
           </button>
           {subMenuStates['peinture'] && (
-            <div className="submenu-content mt-2 space-y-2 flex flex-col items-end">
-              {/* Tu peux ajouter d'autres options ici si besoin */}
+            <div className="submenu-content mt-2 flex flex-col items-end">
+              <PeintureSubMenu
+                forfaitData={forfaitData}
+                addPeintureSeuleForfait={addPeintureSeuleForfait}
+                removePeintureSeuleForfait={removePeintureSeuleForfait}
+                countP1Elem={countP1Elem}
+              />
             </div>
           )}
         </div>
@@ -233,32 +249,56 @@ function App() {
       const next = (current + 1) % 3;
       const updated = { ...prev, [itemId]: next };
 
-      const isPeintureForfait = PEINTURE_FORFAITS.some(f => f.id === itemId);
-      if (isPeintureForfait) {
+      // REPC/REMPC - Ajouter à forfaitData quand activés
+      const isREPC = TEXT_ITEMS_1.some(item => item.id === itemId);
+      const isREMPC = TEXT_ITEMS_2.some(item => item.id === itemId);
+      
+      if ((isREPC || isREMPC) && next === 1) {
         setForfaitData(prevForfait => ({
           ...prevForfait,
           [itemId]: {
             ...prevForfait[itemId],
-            state: next
+            moQuantity: '0',
+            moCategory: 'Carrosserie'
           }
         }));
       }
 
+      // Réparation Peinture - Ajouter à forfaitData quand activés
+      const isPeintureForfait = PEINTURE_FORFAITS.some(f => f.id === itemId);
+      if (isPeintureForfait && next === 1) {
+        const forfaitConfig = PEINTURE_FORFAITS.find(f => f.id === itemId);
+        if (forfaitConfig) {
+          setForfaitData(prevForfait => ({
+            ...prevForfait,
+            [itemId]: {
+              ...forfaitConfig,
+              peintureForfait: itemId,
+              state: next
+            }
+          }));
+        }
+      }
+
+      // Peinture Seule - Ajouter à forfaitData quand activés
       const isPeintureSeule = PEINTURE_SEULE_FORFAITS.some(f => f.id === itemId);
-      if (isPeintureSeule) {
-        setForfaitData(prevForfait => ({
-          ...prevForfait,
-          [itemId]: {
-            ...prevForfait[itemId],
-            state: next
-          }
-        }));
+      if (isPeintureSeule && next === 1) {
+        const forfaitConfig = PEINTURE_SEULE_FORFAITS.find(f => f.id === itemId);
+        if (forfaitConfig) {
+          setForfaitData(prevForfait => ({
+            ...prevForfait,
+            [itemId]: {
+              ...forfaitConfig,
+              peintureSeuleForfait: itemId,
+              state: next
+            }
+          }));
+        }
       }
 
       return updated;
     });
   }, []);
-
   const updateNote = useCallback((id, value) => {
     if (['pneusAvant', 'pneusArriere', 'pneus4'].includes(id)) {
       setItemNotes(prev => ({ ...prev, [id]: formatTireSize(value) }));
@@ -653,6 +693,120 @@ function App() {
     }
   }, []);
 
+  // --- Logique Peinture seule ---
+  const countP1Elem = Object.keys(forfaitData).filter(
+    k => forfaitData[k]?.peintureSeuleForfait === "P-1ELEM"
+  ).length;
+
+  const addPeintureSeuleForfait = id => {
+    setForfaitData(prev => {
+      if (id === "P-1ELEM") {
+        const uniqKey = `P-1ELEM_${Date.now()}`;
+        return {
+          ...prev,
+          [uniqKey]: {
+            ...PEINTURE_SEULE_FORFAITS.find(f => f.id === "P-1ELEM"),
+            peintureSeuleForfait: "P-1ELEM"
+          }
+        };
+      }
+      if (Object.values(prev).some(fd => fd.peintureSeuleForfait === id)) return prev;
+      return {
+        ...prev,
+        [id]: {
+          ...PEINTURE_SEULE_FORFAITS.find(f => f.id === id),
+          peintureSeuleForfait: id
+        }
+      };
+    });
+  };
+
+  const removePeintureSeuleForfait = id => {
+    setForfaitData(prev => {
+      if (id === "P-1ELEM") {
+        const keys = Object.keys(prev).filter(
+          k => prev[k]?.peintureSeuleForfait === "P-1ELEM"
+        );
+        if (!keys.length) return prev;
+        const lastKey = keys[keys.length - 1];
+        const next = { ...prev };
+        delete next[lastKey];
+        return next;
+      }
+      const key = Object.keys(prev).find(
+        k => prev[k]?.peintureSeuleForfait === id
+      );
+      if (!key) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+  // --- Fin logique Peinture seule ---
+
+  // --- Logique Lustrage 1 élément ---
+  const countL1 = Object.keys(forfaitData).filter(
+    k => forfaitData[k]?.lustrage1Elem === true
+  ).length;
+
+  const addLustrage1Elem = () => {
+    setForfaitData(prev => {
+      const uniqKey = `L1_${Date.now()}`;
+      return {
+        ...prev,
+        [uniqKey]: {
+          moDesignation: 'Lustrage 1 élément',
+          moQuantity: '0.25',
+          moCategory: 'Lustrage',
+          consommableQuantity: '1',
+          consommablePrixUnitaire: '1',
+          lustrage1Elem: true
+        }
+      };
+    });
+  };
+
+  const removeLustrage1Elem = () => {
+    setForfaitData(prev => {
+      const keys = Object.keys(prev).filter(k => prev[k]?.lustrage1Elem === true);
+      if (!keys.length) return prev;
+      const lastKey = keys[keys.length - 1];
+      const next = { ...prev };
+      delete next[lastKey];
+      return next;
+    });
+  };
+
+  // --- Logique Plume 1 élément ---
+  const countPlume1 = Object.keys(forfaitData).filter(
+    k => forfaitData[k]?.plume1Elem === true
+  ).length;
+
+  const addPlume1Elem = () => {
+    setForfaitData(prev => {
+      const uniqKey = `PLUME1_${Date.now()}`;
+      return {
+        ...prev,
+        [uniqKey]: {
+          moDesignation: 'Plume 1 élément',
+          moQuantity: '0.2',
+          moCategory: 'Mécanique',
+          plume1Elem: true
+        }
+      };
+    });
+  };
+
+  const removePlume1Elem = () => {
+    setForfaitData(prev => {
+      const keys = Object.keys(prev).filter(k => prev[k]?.plume1Elem === true);
+      if (!keys.length) return prev;
+      const lastKey = keys[keys.length - 1];
+      const next = { ...prev };
+      delete next[lastKey];
+      return next;
+    });
+  };
   const handleFirebaseSignOut = useCallback(async () => {
     try {
       await signOut(auth);
@@ -983,6 +1137,15 @@ function App() {
             </button>
           </div>
           {expandedCategories.lustrage && (
+            <>
+              <div className="mb-6 flex justify-end">
+                <LustrageSubMenu
+                  forfaitData={forfaitData}
+                  addLustrage1Elem={addLustrage1Elem}
+                  removeLustrage1Elem={removeLustrage1Elem}
+                  countL1={countL1}
+                />
+              </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {LUSTRAGE_ITEMS.map(item => {
                 const state = itemStates[item.id] ?? 0;
@@ -996,6 +1159,7 @@ function App() {
                 );
               })}
             </div>
+            </>
           )}
         </div>
 
@@ -1009,6 +1173,15 @@ function App() {
             </button>
           </div>
           {expandedCategories.plume && (
+            <>
+              <div className="mb-6 flex justify-end">
+                <PlumeSubMenu
+                  forfaitData={forfaitData}
+                  addPlume1Elem={addPlume1Elem}
+                  removePlume1Elem={removePlume1Elem}
+                  countPlume1={countPlume1}
+                />
+              </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {PLUME_ITEMS.map(item => {
                 const state = itemStates[item.id] ?? 0;
@@ -1022,6 +1195,7 @@ function App() {
                 );
               })}
             </div>
+            </>
           )}
         </div>
 
@@ -1044,6 +1218,9 @@ function App() {
                 addPeintureForfait={addPeintureForfait}
                 removePeintureForfait={removePeintureForfait}
                 countRP1={countRP1}
+                countP1Elem={countP1Elem}
+                addPeintureSeuleForfait={addPeintureSeuleForfait}
+                removePeintureSeuleForfait={removePeintureSeuleForfait}
               />
               <ChecklistSection
                 leftItems={TEXT_ITEMS_1}
@@ -1137,7 +1314,33 @@ function App() {
 
             <div className="mt-8 border-t-2 border-gray-300 pt-8">
               <h2 className="text-2xl font-bold mb-6">Forfaits</h2>
+            {/* Lustrage 1 élément */}
+              {Object.entries(forfaitData)
+                .filter(([key, data]) => data.lustrage1Elem === true)
+                .map(([key, data]) => (
+                  <ForfaitSmartForm
+                    key={key}
+                    item={{ id: key, label: data.moDesignation || 'Lustrage 1 élément' }}
+                    forfaitData={forfaitData}
+                    updateForfaitField={updateForfaitField}
+                    type="lustrage"
+                  />
+                ))
+              }
 
+              {/* Plume 1 élément */}
+              {Object.entries(forfaitData)
+                .filter(([key, data]) => data.plume1Elem === true)
+                .map(([key, data]) => (
+                  <ForfaitSmartForm
+                    key={key}
+                    item={{ id: key, label: data.moDesignation || 'Plume 1 élément' }}
+                    forfaitData={forfaitData}
+                    updateForfaitField={updateForfaitField}
+                    type="plume"
+                  />
+                ))
+              }
               {mecaForfaitItems && mecaForfaitItems.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
@@ -1164,42 +1367,75 @@ function App() {
                 </div>
               )}
 
-              <div className="mb-2">
+                            <div className="mb-2">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
                 {Object.entries(forfaitData)
-                  .filter(([key, data]) =>
-                    data.peintureForfait ||
-                    data.moCategory === 'Carrosserie' ||
-                    data.moCategory === 'Peinture'
-                  )
-                  .map(([key, data]) =>
-                    data.peintureForfait ? (
-                      <ForfaitReparationPeintureForm
-                        key={key}
-                        item={{ id: key, label: data.label || key }}
-                        forfaitData={forfaitData}
-                        updateForfaitField={updateForfaitField}
-                      />
-                    ) : (
-                      <ForfaitForm
-                        key={key}
-                        item={{ id: key, label: data.label || key }}
-                        forfaitData={forfaitData}
-                        pieceLines={pieceLines}
-                        updateForfaitField={updateForfaitField}
-                        addPieceLine={addPieceLine}
-                        removePieceLine={removePieceLine}
-                        updatePieceLine={updatePieceLine}
-                        canHaveMultiplePieces={canHaveMultiplePieces}
-                        moDefaultCategory={data.moCategory || 'Carrosserie'}
-                      />
-                    )
-                  )
+                  .filter(([key, data]) => {
+                    // REPC et REMPC
+                    const isREPC = TEXT_ITEMS_1.some(item => item.id === key);
+                    const isREMPC = TEXT_ITEMS_2.some(item => item.id === key);
+                    
+                    // Réparation Peinture
+                    const isReparationPeinture = data.peintureForfait;
+                    
+                    // Peinture Seule
+                    const isPeintureSeule = data.peintureSeuleForfait;
+                    
+                    return isREPC || isREMPC || isReparationPeinture || isPeintureSeule;
+                  })
+                  .map(([key, data]) => {
+                    // REPC ou REMPC
+                    if (TEXT_ITEMS_1.some(item => item.id === key) || TEXT_ITEMS_2.some(item => item.id === key)) {
+                      const item = ALL_ITEMS.find(i => i.id === key);
+                      return (
+                        <ForfaitCarrosserieForm
+                          key={key}
+                          item={item}
+                          forfaitData={forfaitData}
+                          pieceLines={pieceLines}
+                          updateForfaitField={updateForfaitField}
+                          addPieceLine={addPieceLine}
+                          removePieceLine={removePieceLine}
+                          updatePieceLine={updatePieceLine}
+                        />
+                      );
+                    }
+                    
+                    // Réparation Peinture (2 MO + consommables)
+                    if (data.peintureForfait) {
+                      const forfait = PEINTURE_FORFAITS.find(f => f.id === data.peintureForfait);
+                      if (!forfait) return null;
+                      return (
+                        <ForfaitReparationPeintureForm
+                          key={key}
+                          item={{ id: key, label: forfait.label }}
+                          forfaitData={forfaitData}
+                          updateForfaitField={updateForfaitField}
+                        />
+                      );
+                    }
+                    
+                    // Peinture Seule (1 MO + consommables)
+                    if (data.peintureSeuleForfait) {
+                      const forfait = PEINTURE_SEULE_FORFAITS.find(f => f.id === data.peintureSeuleForfait);
+                      if (!forfait) return null;
+                      return (
+                        <ForfaitPeintureSeuleForm
+                          key={key}
+                          item={{ id: key, label: forfait.label }}
+                          forfaitData={forfaitData}
+                          updateForfaitField={updateForfaitField}
+                        />
+                      );
+                    }
+                    
+                    return null;
+                  })
                 }
                 {Object.values(forfaitData).filter(data =>
                   data.peintureForfait || data.moCategory === 'Carrosserie' || data.moCategory === 'Peinture'
                 ).length === 0 && (
-                  <p className="text-sm text-gray-500">Aucun forfait Carrosserie actif</p>
+                  <p className="text-sm text-gray-500"> </p>
                 )}
               </div>
             </div>
