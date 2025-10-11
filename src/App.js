@@ -117,6 +117,9 @@ function App() {
   const [itemStates, setItemStates] = useState(
     Object.fromEntries(ALL_ITEMS.map(i => [i.id, 0]))
   );
+  const selectedCarrosserieItems = ALL_ITEMS.filter(
+  item => item.moCategory === 'Carrosserie' && itemStates[item.id] > 0
+ );
   const [itemNotes, setItemNotes] = useState({});
   const [forfaitData, setForfaitData] = useState({});
   const [pieceLines, setPieceLines] = useState({});
@@ -1145,7 +1148,13 @@ function App() {
               {mecaForfaitItems && mecaForfaitItems.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
-                  {mecaForfaitItems.map(item => (
+                      {mecaForfaitItems
+                      .filter(item => 
+                       !item.label.toLowerCase().includes("plume") &&
+                       !item.id.toLowerCase().includes("plume")
+                    )
+                   .map(item => (
+
                     <ForfaitForm
                       key={item.id}
                       item={item}
