@@ -1000,18 +1000,22 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-8">
         <div className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: '#E5E7EB' }}>
-          <div className="flex items-center justify-center mb-3">
-            <div style={{ width: 60, height: 60, background: '#FF6B35', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 15 }}>
-              <span style={{ fontSize: 32, color: '#fff', fontWeight: 'bold' }}>H</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold">
-              <span style={{ color: '#FF6B35' }}>Hero</span><span style={{ color: '#002F6C' }}>TOOL</span>
-            </h1>
-          </div>
-          <p className="text-sm font-bold text-gray-500 italic">
-            Développé par Loïc.L, codé par Claude.ia
-          </p>
-        </div>
+  <div className="flex items-center justify-center mb-3">
+    <div style={{ width: 60, height: 60, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 15, overflow: 'hidden' }}>
+      <img 
+        src="/logo.png" 
+        alt="HeroTOOL Logo" 
+        style={{ width: '140%', height: '140%', objectFit: 'contain' }}
+      />
+    </div>
+    <h1 className="text-4xl md:text-5xl font-bold">
+      <span style={{ color: '#FF6B35' }}>Hero</span><span style={{ color: '#002F6C' }}>TOOL</span>
+    </h1>
+  </div>
+  <p className="text-sm font-bold text-gray-500 italic">
+    Développé par Loïc.L, codé par Claude.ia
+  </p>
+</div>
 
         <div className="mb-8 p-6 rounded-xl border-2 border-green-200 bg-green-50">
           <h2 className="text-lg font-bold text-gray-800 mb-4">Sauvegardez votre progression</h2>
