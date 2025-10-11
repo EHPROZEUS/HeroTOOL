@@ -239,6 +239,36 @@ export const LUSTRAGE_ITEMS = [
   { id: 'DE-COVERING', label: 'Retrait covering', moQuantity: 0.25, consommable: 0.00 }
 ];
 
+// ===== FORFAITS PLUME (16 forfaits) =====
+export const PLUME_ITEMS = [
+  { id: 'plume1Elem', label: 'Plume 1 élément', moQuantity: 0.2, consommable: 0 },
+  
+  // Ailes
+  { id: 'plumeAileARD', label: 'Plume Aile ARD', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumeAileARG', label: 'Plume Aile ARG', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumeAileAVD', label: 'Plume Aile AVD', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumeAileAVG', label: 'Plume Aile AVG', moQuantity: 0.2, consommable: 0 },
+  
+  // Éléments horizontaux
+  { id: 'plumePavillon', label: 'Plume Pavillon', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumeCapot', label: 'Plume Capot', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumeHayon', label: 'Plume Hayon', moQuantity: 0.2, consommable: 0 },
+  
+  // Coques rétro
+  { id: 'plumeCoqueRetroD', label: 'Plume Coque rétro D', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumeCoqueRetroG', label: 'Plume Coque rétro G', moQuantity: 0.2, consommable: 0 },
+  
+  // Pare-chocs
+  { id: 'plumeParechocAR', label: 'Plume Pare-choc AR', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumeParechocAV', label: 'Plume Pare-choc AV', moQuantity: 0.2, consommable: 0 },
+  
+  // Portes
+  { id: 'plumePorteARD', label: 'Plume Porte ARD', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumePorteARG', label: 'Plume Porte ARG', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumePorteAVD', label: 'Plume Porte AVD', moQuantity: 0.2, consommable: 0 },
+  { id: 'plumePorteAVG', label: 'Plume Porte AVG', moQuantity: 0.2, consommable: 0 }
+];
+
 // Tous les items combinés
 export const ALL_ITEMS = [
   ...LEFT_ITEMS,
@@ -252,9 +282,11 @@ export const ALL_ITEMS = [
   ...TEXT_ITEMS_3,
   ...TEXT_ITEMS_4,
   ...DSP_ITEMS,
-  ...LUSTRAGE_ITEMS
+  ...LUSTRAGE_ITEMS,
+  ...PLUME_ITEMS
   // NE PAS AJOUTER PEINTURE_FORFAITS ICI
 ];
+
 
 // Items qui ne peuvent pas avoir plusieurs pièces
 export const EXCLUDED_MULTI_PIECES = [
@@ -963,32 +995,10 @@ export const PEINTURE_SEULE_FORFAITS = [
 
 ];
 
-// ===== FORFAITS PLUME (16 forfaits) =====
-export const PLUME_ITEMS = [
-  { id: 'plume1Elem', label: 'Plume 1 élément', moQuantity: 0.2, consommable: 0 },
-  
-  // Ailes
-  { id: 'plumeAileARD', label: 'Plume Aile ARD', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumeAileARG', label: 'Plume Aile ARG', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumeAileAVD', label: 'Plume Aile AVD', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumeAileAVG', label: 'Plume Aile AVG', moQuantity: 0.2, consommable: 0 },
-  
-  // Éléments horizontaux
-  { id: 'plumePavillon', label: 'Plume Pavillon', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumeCapot', label: 'Plume Capot', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumeHayon', label: 'Plume Hayon', moQuantity: 0.2, consommable: 0 },
-  
-  // Coques rétro
-  { id: 'plumeCoqueRetroD', label: 'Plume Coque rétro D', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumeCoqueRetroG', label: 'Plume Coque rétro G', moQuantity: 0.2, consommable: 0 },
-  
-  // Pare-chocs
-  { id: 'plumeParechocAR', label: 'Plume Pare-choc AR', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumeParechocAV', label: 'Plume Pare-choc AV', moQuantity: 0.2, consommable: 0 },
-  
-  // Portes
-  { id: 'plumePorteARD', label: 'Plume Porte ARD', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumePorteARG', label: 'Plume Porte ARG', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumePorteAVD', label: 'Plume Porte AVD', moQuantity: 0.2, consommable: 0 },
-  { id: 'plumePorteAVG', label: 'Plume Porte AVG', moQuantity: 0.2, consommable: 0 }
+// ===== EXPORTS FINAUX =====
+// Tous les items combinés
+export const ALL_FORFAITS = [
+  ...PEINTURE_FORFAITS,
+  ...PEINTURE_SEULE_FORFAITS,
+  ...PLUME_ITEMS  
 ];

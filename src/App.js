@@ -802,6 +802,9 @@ function App() {
   const totalActive = activeItemsList.length;
   const totalCompleted = ALL_ITEMS.filter(i => itemStates[i.id] === 2).length;
   const allCompleted = totalActive > 0 && totalActive === totalCompleted;
+  const activePeintureForfaits = Object.entries(forfaitData)
+  .filter(([key, data]) => data.peintureForfait)
+  .map(([key, data]) => ({ id: key, ...data }));
 
   const totals = calculateTotals(
     activeMecaniqueItems,
@@ -1216,6 +1219,7 @@ function App() {
               moByCategory={moByCategory}
               printOrdreReparation={printOrdreReparation}
               itemStates={itemStates}
+                activePeintureForfaits={activePeintureForfaits}
             />
             <ListePieces
               showListePieces={showListePieces}

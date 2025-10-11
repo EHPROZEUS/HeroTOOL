@@ -72,15 +72,6 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
     }
   });
 
-  // Calcul pour les items DSP
-  activeDSPItems.forEach(dspItem => {
-    const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
-    if (dspConfig) {
-      totalMOHeures += dspConfig.moQuantity;
-      totalConsommables += dspConfig.consommable;
-    }
-  });
-
   // Calcul pour les items PLUME
   activePlumeItems.forEach(plumeItem => {
     const plumeConfig = PLUME_ITEMS.find(item => item.id === plumeItem.id);
