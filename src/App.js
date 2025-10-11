@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import html2pdf from "html2pdf.js";
 import VehicleInfoForm from './components/Header/VehicleInfoForm';
 import MaintenanceHistory from './components/Maintenance/MaintenanceHistory';
 import OilInfoForm from './components/Maintenance/OilInfoForm';
@@ -42,9 +43,11 @@ import { parsePieces } from './utils/parser';
 
 import ReparationPeintureSubMenu from './components/Carrosserie/ReparationPeintureSubMenu';
 
-const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+// Firebase helpers (you must create src/firebase.js with your config)
+import { auth, googleProvider, storage, db } from './firebase';
+import { signInWithPopup, signOut } from 'firebase/auth';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const SOURCE_FORCED_SUPPLIERS = {
   NED: 'NED',
@@ -118,8 +121,8 @@ function App() {
     Object.fromEntries(ALL_ITEMS.map(i => [i.id, 0]))
   );
   const selectedCarrosserieItems = ALL_ITEMS.filter(
-  item => item.moCategory === 'Carrosserie' && itemStates[item.id] > 0
- );
+    item => item.moCategory === 'Carrosserie' && itemStates[item.id] > 0
+  );
   const [itemNotes, setItemNotes] = useState({});
   const [forfaitData, setForfaitData] = useState({});
   const [pieceLines, setPieceLines] = useState({});
@@ -132,12 +135,6 @@ function App() {
   const [parsedPieces, setParsedPieces] = useState([]);
   const [lastMaintenance, setLastMaintenance] = useState({});
   const [oilInfo, setOilInfo] = useState({ viscosity: '', quantity: '' });
-  const [googleApiState, setGoogleApiState] = useState({
-    loaded: false,
-    initialized: false,
-    signedIn: false,
-    error: null
-  });
   const [expandedCategories, setExpandedCategories] = useState({
     mecanique: false,
     pneusFreins: false,
@@ -153,53 +150,15 @@ function App() {
     'peinture': false
   });
 
+  // Firebase auth user state
+  const [firebaseUser, setFirebaseUser] = useState(null);
+
   useEffect(() => {
-    const initGoogleApi = async () => {
-      try {
-        if (!CLIENT_ID || !API_KEY) {
-          throw new Error('Credentials Google manquants.');
-        }
-        let attempts = 0;
-        while (!window.gapi && attempts < 50) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
-        }
-        if (!window.gapi) {
-          throw new Error('Google API script non chargé');
-        }
-        setGoogleApiState(prev => ({ ...prev, loaded: true }));
-        await new Promise((resolve, reject) => {
-          window.gapi.load('client:auth2', { callback: resolve, onerror: reject });
-        });
-        await window.gapi.client.init({
-          apiKey: API_KEY,
-          clientId: CLIENT_ID,
-          scope: SCOPES,
-          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-        });
-        const auth2 = window.gapi.auth2.getAuthInstance();
-        if (!auth2) {
-          throw new Error('Instance auth2 introuvable');
-        }
-        setGoogleApiState({
-          loaded: true,
-          initialized: true,
-          signedIn: auth2.isSignedIn.get(),
-          error: null
-        });
-        auth2.isSignedIn.listen(isSignedIn =>
-          setGoogleApiState(prev => ({ ...prev, signedIn: isSignedIn }))
-        );
-      } catch (e) {
-        setGoogleApiState({
-          loaded: false,
-          initialized: false,
-          signedIn: false,
-          error: e.message
-        });
-      }
-    };
-    initGoogleApi();
+    // listen auth state
+    const unsub = auth.onAuthStateChanged(user => {
+      setFirebaseUser(user || null);
+    });
+    return () => unsub();
   }, []);
 
   useEffect(() => {
@@ -273,7 +232,7 @@ function App() {
       const current = prev[itemId] ?? 0;
       const next = (current + 1) % 3;
       const updated = { ...prev, [itemId]: next };
-      
+
       const isPeintureForfait = PEINTURE_FORFAITS.some(f => f.id === itemId);
       if (isPeintureForfait) {
         setForfaitData(prevForfait => ({
@@ -284,7 +243,7 @@ function App() {
           }
         }));
       }
-      
+
       const isPeintureSeule = PEINTURE_SEULE_FORFAITS.some(f => f.id === itemId);
       if (isPeintureSeule) {
         setForfaitData(prevForfait => ({
@@ -295,7 +254,7 @@ function App() {
           }
         }));
       }
-      
+
       return updated;
     });
   }, []);
@@ -488,10 +447,10 @@ function App() {
     // Dispatcher : 1ère pièce → forfaitData, autres → pieceLines
     setForfaitData(prev => {
       const nextData = { ...prev };
-      
+
       Object.entries(piecesByForfait).forEach(([forfaitId, pieces]) => {
         const existing = nextData[forfaitId] || {};
-        
+
         // La première pièce va dans le forfait principal
         const firstPiece = pieces[0];
         let qty = 1;
@@ -505,7 +464,7 @@ function App() {
           if (isNaN(pu)) pu = 0;
         }
         const prix = (qty * pu).toFixed(2);
-        
+
         nextData[forfaitId] = {
           ...existing,
           pieceReference: firstPiece.reference,
@@ -516,24 +475,24 @@ function App() {
           pieceFournisseur: firstPiece.fournisseur || existing.pieceFournisseur || ''
         };
       });
-      
+
       return nextData;
     });
 
     // Ajouter les pièces supplémentaires (2ème, 3ème, etc.) dans pieceLines
     setPieceLines(prev => {
       const nextLines = { ...prev };
-      
+
       Object.entries(piecesByForfait).forEach(([forfaitId, pieces]) => {
         // Ignorer la première pièce (déjà dans forfaitData)
         const additionalPieces = pieces.slice(1);
-        
+
         if (additionalPieces.length > 0) {
           // Créer ou compléter le tableau de pièces supplémentaires
           if (!nextLines[forfaitId]) {
             nextLines[forfaitId] = [];
           }
-          
+
           additionalPieces.forEach(piece => {
             let qty = 1;
             if (typeof piece.quantity === 'string' && piece.quantity.trim() !== '') {
@@ -546,7 +505,7 @@ function App() {
               if (isNaN(pu)) pu = 0;
             }
             const prix = (qty * pu).toFixed(2);
-            
+
             nextLines[forfaitId].push({
               reference: piece.reference,
               designation: piece.designation || '',
@@ -558,14 +517,14 @@ function App() {
           });
         }
       });
-      
+
       return nextLines;
     });
 
     setImportText('');
     setParsedPieces([]);
     setShowImportModule(false);
-    
+
     const totalPieces = parsedPieces.length;
     const totalForfaits = Object.keys(piecesByForfait).length;
     alert(`✓ ${totalPieces} pièce(s) importée(s) vers ${totalForfaits} forfait(s)`);
@@ -682,41 +641,33 @@ function App() {
     }
   }, []);
 
-  const handleGoogleSignIn = useCallback(async () => {
+  // ---- Firebase authentication and upload helpers ----
+  const handleFirebaseSignIn = useCallback(async () => {
     try {
-      if (!googleApiState.initialized) {
-        alert('API non prête');
-        return;
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result?.user) {
+        alert(`Connecté en tant que ${result.user.displayName || result.user.email}`);
       }
-      const auth2 = window.gapi?.auth2?.getAuthInstance();
-      if (!auth2) {
-        throw new Error('Auth2 indisponible');
-      }
-      await auth2.signIn();
     } catch (e) {
-      alert('❌ ' + e.message);
+      alert('Erreur connexion Firebase: ' + e.message);
     }
-  }, [googleApiState.initialized]);
+  }, []);
 
-  const uploadToDrive = useCallback(async () => {
-    if (!headerInfo.lead.trim()) {
+  const handleFirebaseSignOut = useCallback(async () => {
+    try {
+      await signOut(auth);
+      alert('Déconnecté');
+    } catch (e) {
+      alert('Erreur déconnexion: ' + e.message);
+    }
+  }, []);
+
+  const uploadToFirebaseStorage = useCallback(async () => {
+    if (!headerInfo.lead?.trim()) {
       alert('⚠️ Lead requis');
       return;
     }
     try {
-      if (!googleApiState.initialized) {
-        throw new Error('API non initialisée');
-      }
-      const auth2 = window.gapi?.auth2?.getAuthInstance();
-      if (!auth2) {
-        throw new Error('Auth2 indisponible');
-      }
-      if (!auth2.isSignedIn.get()) {
-        await auth2.signIn();
-      }
-      if (!auth2.isSignedIn.get()) {
-        throw new Error('Connexion refusée');
-      }
       const payload = {
         headerInfo,
         itemStates,
@@ -729,30 +680,18 @@ function App() {
         includeContrevisite,
         savedAt: new Date().toISOString()
       };
-      const fileContent = JSON.stringify(payload, null, 2);
-      const blob = new Blob([fileContent], { type: 'application/json' });
-      const meta = {
-        name: `HeroTOOL_${headerInfo.lead}_${new Date().toISOString().split('T')[0]}.json`,
-        mimeType: 'application/json'
-      };
-      const accessToken = auth2.currentUser.get().getAuthResponse().access_token;
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
-      form.append('file', blob);
-      const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: new Headers({ Authorization: `Bearer ${accessToken}` }),
-        body: form
-      });
-      if (!resp.ok) {
-        throw new Error('HTTP ' + resp.status);
-      }
-      alert('✅ Export Drive OK');
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+
+      const path = `herotool/${headerInfo.lead.replace(/\s+/g, '_')}/${Date.now()}.json`;
+      const sRef = storageRef(storage, path);
+      await uploadBytes(sRef, blob);
+      const url = await getDownloadURL(sRef);
+      alert('✅ Export Storage OK — URL: ' + url);
     } catch (e) {
       alert('❌ ' + e.message);
     }
   }, [
-    googleApiState.initialized,
     headerInfo,
     itemStates,
     itemNotes,
@@ -764,6 +703,44 @@ function App() {
     includeContrevisite
   ]);
 
+  const saveToFirestore = useCallback(async () => {
+    if (!headerInfo.lead?.trim()) {
+      alert('⚠️ Lead requis');
+      return;
+    }
+    try {
+      const payload = {
+        headerInfo,
+        itemStates,
+        itemNotes,
+        forfaitData,
+        pieceLines,
+        lastMaintenance,
+        oilInfo,
+        includeControleTechnique,
+        includeContrevisite,
+        createdAt: serverTimestamp()
+      };
+      const id = `${headerInfo.lead.replace(/\s+/g, '_')}_${Date.now()}`;
+      const docRef = doc(db, 'herotoolQuotes', id);
+      await setDoc(docRef, payload);
+      alert('✅ Export Firestore OK');
+    } catch (e) {
+      alert('❌ ' + e.message);
+    }
+  }, [
+    headerInfo,
+    itemStates,
+    itemNotes,
+    forfaitData,
+    pieceLines,
+    lastMaintenance,
+    oilInfo,
+    includeControleTechnique,
+    includeContrevisite
+  ]);
+
+  // ---- Print / PDF helpers ----
   const printOrdreReparation = useCallback(() => {
     const el = document.getElementById('ordre-reparation-content');
     if (!el) return;
@@ -780,6 +757,20 @@ function App() {
       w.close();
     }, 200);
   }, []);
+
+  const downloadOrdreReparationPDF = useCallback(() => {
+    const el = document.getElementById('ordre-reparation-content');
+    if (!el) return;
+    html2pdf()
+      .set({
+        margin: 0.25,
+        filename: `Ordre_Reparation_${headerInfo.lead || 'vehicule'}.pdf`,
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+      })
+      .from(el)
+      .save();
+  }, [headerInfo.lead]);
 
   const printListePieces = useCallback(() => {
     const el = document.getElementById('liste-pieces-content');
@@ -806,8 +797,8 @@ function App() {
   const totalCompleted = ALL_ITEMS.filter(i => itemStates[i.id] === 2).length;
   const allCompleted = totalActive > 0 && totalActive === totalCompleted;
   const activePeintureForfaits = Object.entries(forfaitData)
-  .filter(([key, data]) => data.peintureForfait)
-  .map(([key, data]) => ({ id: key, ...data }));
+    .filter(([key, data]) => data.peintureForfait)
+    .map(([key, data]) => ({ id: key, ...data }));
 
   const totals = calculateTotals(
     activeMecaniqueItems,
@@ -847,19 +838,8 @@ function App() {
     .filter(i => (forfaitData[i.id]?.moCategory || defaultCategoryForItem(i)) === 'Mécanique');
 
   const statusDisplay = (() => {
-    if (googleApiState.error) {
-      return { text: `❌ Erreur: ${googleApiState.error}`, color: 'text-red-600' };
-    }
-    if (!googleApiState.loaded) {
-      return { text: '⏳ Chargement Google API...', color: 'text-orange-600' };
-    }
-    if (!googleApiState.initialized) {
-      return { text: '⏳ Initialisation Google API...', color: 'text-orange-600' };
-    }
-    if (googleApiState.signedIn) {
-      return { text: '✅ Connecté à Google Drive', color: 'text-green-600' };
-    }
-    return { text: '🔓 Google API prête (non connecté)', color: 'text-blue-600' };
+    if (firebaseUser) return { text: `✅ Connecté: ${firebaseUser.displayName || firebaseUser.email}`, color: 'text-green-600' };
+    return { text: '🔓 Non connecté (Firebase)', color: 'text-blue-600' };
   })();
 
   return (
@@ -894,12 +874,25 @@ function App() {
             >
               📂 Charger
             </button>
-            <button onClick={handleGoogleSignIn} disabled={!googleApiState.initialized} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 disabled:opacity-50">
-              🔐 Google Drive
-            </button>
-            <button onClick={uploadToDrive} disabled={!googleApiState.initialized} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50">
-              ☁️ Export Drive
-            </button>
+
+            {firebaseUser ? (
+              <button onClick={handleFirebaseSignOut} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700">
+                🔓 Déconnexion Firebase
+              </button>
+            ) : (
+              <button onClick={handleFirebaseSignIn} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700">
+                🔐 Connexion Firebase
+              </button>
+            )}
+
+            <div className="flex gap-2">
+              <button onClick={uploadToFirebaseStorage} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">
+                ☁️ Export Firebase Storage
+              </button>
+              <button onClick={saveToFirestore} className="px-6 py-3 bg-indigo-700 text-white rounded-lg font-semibold hover:bg-indigo-800">
+                ☁️ Enregistrer sur Firestore
+              </button>
+            </div>
           </div>
           <div className="mt-4 text-sm">
             <span className={statusDisplay.color}>{statusDisplay.text}</span>
@@ -1149,10 +1142,10 @@ function App() {
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-4">Mécanique</h3>
                       {mecaForfaitItems
-                      .filter(item => 
-                       !item.label.toLowerCase().includes("plume") &&
-                       !item.id.toLowerCase().includes("plume")
-                    )
+                      .filter(item =>
+                        !item.label.toLowerCase().includes("plume") &&
+                        !item.id.toLowerCase().includes("plume")
+                      )
                    .map(item => (
 
                     <ForfaitForm
@@ -1228,8 +1221,17 @@ function App() {
               moByCategory={moByCategory}
               printOrdreReparation={printOrdreReparation}
               itemStates={itemStates}
-                activePeintureForfaits={activePeintureForfaits}
+              activePeintureForfaits={activePeintureForfaits}
             />
+            <div className="mt-4 text-center">
+              <button
+                onClick={downloadOrdreReparationPDF}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg"
+              >
+                📄 Télécharger l'ordre de réparation (PDF)
+              </button>
+            </div>
+
             <ListePieces
               showListePieces={showListePieces}
               setShowListePieces={setShowListePieces}
