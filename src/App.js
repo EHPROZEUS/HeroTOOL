@@ -143,6 +143,127 @@ function App() {
     'peinture': false
   });
 
+// Mode Maurice ULTIMATE
+const [mauriceMode, setMauricMode] = useState(() => {
+  const saved = localStorage.getItem('mauriceMode');
+  return saved === 'true';
+});
+const [mauriceClicks, setMauriceClicks] = useState(0);
+const [showConfetti, setShowConfetti] = useState(false);
+const [darkMaurice, setDarkMaurice] = useState(() => {
+  const saved = localStorage.getItem('darkMaurice');
+  return saved === 'true';
+});
+const [footerClicks, setFooterClicks] = useState(0);
+const [currentQuote, setCurrentQuote] = useState(0);
+const [mauriceTheme, setMauriceTheme] = useState(() => {
+  const saved = localStorage.getItem('mauriceTheme');
+  return saved || 'classic'; // 'classic' ou 'vegas'
+});
+const [mauriceStats, setMauriceStats] = useState(() => {
+  const saved = localStorage.getItem('mauriceStats');
+  return saved ? JSON.parse(saved) : {
+    activations: 0,
+    devisCrees: 0,
+    modeNuitActivations: 0,
+    firstActivation: null
+  };
+});
+
+const [konamiSequence, setKonamiSequence] = useState([]);
+const [ultraMaurice, setUltraMaurice] = useState(false);
+
+// Citations de Maurice
+const mauriceQuotes = [
+  "Maurice ne fait jamais d'erreur, seulement des approximations stratégiques",
+  "Un bon devis, c'est comme une bonne baguette : croustillant",
+  "Maurice travaille vite, mais il travaille bien",
+  "La précision, c'est l'élégance de Maurice",
+  "Pourquoi payer plus quand Maurice peut négocier ?",
+  "Maurice : 20 ans d'expérience, 0 regret",
+  "Un client satisfait vaut mieux que deux tu l'auras",
+  "Maurice optimise, jamais il n'improvise",
+  "La qualité n'attend pas, Maurice non plus",
+  "Avec Maurice, même les pièces ont la classe"
+];
+
+// Messages Maurice pour les alertes
+const mauriceAlert = (message) => {
+  if (mauriceMode) {
+    const mauriceMessages = {
+      'sauvegarde': '🧙‍♂️ Maurice a tout sauvegardé, chef !',
+      'charge': '🎩 Maurice a retrouvé ton dossier !',
+      'lead_requis': '⚠️ Maurice dit : Donne-moi un nom de lead, frérot !',
+      'erreur': '❌ Maurice a un souci : ',
+      'aucun_devis': '❌ Maurice trouve rien avec ce nom...',
+      'pieces_importees': '✨ Maurice a importé '
+    };
+    return mauriceMessages[message] || message;
+  }
+  return message;
+};
+
+// Rotation automatique des citations
+useEffect(() => {
+  if (!mauriceMode) return;
+  const interval = setInterval(() => {
+    setCurrentQuote(prev => (prev + 1) % mauriceQuotes.length);
+  }, 5000);
+  return () => clearInterval(interval);
+}, [mauriceMode]);
+
+// Détection Konami Code
+useEffect(() => {
+  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight' ,'b', 'a'];
+  
+  const handleKeyDown = (e) => {
+    const newSequence = [...konamiSequence, e.key].slice(-10);
+    setKonamiSequence(newSequence);
+    
+    if (newSequence.join(',') === konamiCode.join(',')) {
+      setUltraMaurice(true);
+      playMauriceSound('ding');
+      alert('🚀 ULTRA MAURICE MODE ACTIVÉ ! 🌈');
+      setTimeout(() => setUltraMaurice(false), 30000); // 30 secondes
+    }
+  };
+  
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, [konamiSequence]);
+
+// Sons Maurice
+const playMauriceSound = (type) => {
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    if (type === 'ding') {
+      // Son "ding" joyeux
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } else if (type === 'whoosh') {
+      // Son "whoosh" pour mode nuit
+      oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    }
+  } catch (e) {
+    // Si le son ne marche pas, on ignore silencieusement
+    console.log('Audio non disponible');
+  }
+};
   // Firebase auth user state
   const [firebaseUser, setFirebaseUser] = useState(null);
 
@@ -544,7 +665,7 @@ function App() {
 
     const totalPieces = parsedPieces.length;
     const totalForfaits = Object.keys(piecesByForfait).length;
-    alert(`✓ ${totalPieces} pièce(s) importée(s) vers ${totalForfaits} forfait(s)`);
+    alert(mauriceMode ? `✨ Maurice a importé ${totalPieces} pièce(s) dans ${totalForfaits} forfait(s), nickel !` : `✓ ${totalPieces} pièce(s) importée(s) vers ${totalForfaits} forfait(s)`);
   }, [parsedPieces]);
 
   const countRP1 = Object.keys(forfaitData).filter(
@@ -598,7 +719,7 @@ function App() {
 
   const saveQuote = useCallback(() => {
     if (!headerInfo.lead.trim()) {
-      alert('⚠️ Lead requis');
+      alert(mauriceMode ? '⚠️ C\'est quoi ce lead ?' : '⚠️ Lead requis');
       return;
     }
     try {
@@ -615,9 +736,21 @@ function App() {
         savedAt: new Date().toISOString()
       };
       localStorage.setItem(`herotool_quote_${headerInfo.lead}`, JSON.stringify(data));
-      alert('✅ Devis sauvegardé');
+      alert(mauriceMode ? '🧙‍♂️ Maurice a tout sauvegardé, chef !' : '✅ Devis sauvegardé');
     } catch (e) {
-      alert('❌ ' + e.message);
+      alert(mauriceMode ? '❌ Maurice a un souci : ' + e.message : '❌ ' + e.message);
+
+      // Incrémenter les devis Maurice
+if (mauriceMode) {
+  setMauriceStats(prev => {
+    const newStats = {
+      ...prev,
+      devisCrees: prev.devisCrees + 1
+    };
+    localStorage.setItem('mauriceStats', JSON.stringify(newStats));
+    return newStats;
+  });
+}
     }
   }, [
     headerInfo,
@@ -633,12 +766,12 @@ function App() {
 
   const loadQuote = useCallback(lead => {
     if (!lead?.trim()) {
-      alert('⚠️ Nom requis');
+      alert(mauriceMode ? '⚠️ Maurice dit : Donne-moi un nom, chef !' : '⚠️ Nom requis');
       return;
     }
     const raw = localStorage.getItem(`herotool_quote_${lead}`);
     if (!raw) {
-      alert('❌ Aucun devis');
+      alert(mauriceMode ? '❌ Maurice trouve rien avec ce nom...' : '❌ Aucun devis');
       return;
     }
     try {
@@ -652,9 +785,9 @@ function App() {
       setOilInfo(data.oilInfo || { viscosity: '', quantity: '' });
       setIncludeControleTechnique(data.includeControleTechnique ?? true);
       setIncludeContrevisite(data.includeContrevisite ?? false);
-      alert('✅ Chargé');
+      alert(mauriceMode ? '🎩 Maurice a retrouvé ton dossier !' : '✅ Chargé');
     } catch (e) {
-      alert('❌ ' + e.message);
+      alert(mauriceMode ? '❌ Maurice galère : ' + e.message : '❌ ' + e.message);
     }
   }, []);
 
@@ -784,6 +917,155 @@ function App() {
       return next;
     });
   };
+
+// Fonction Maurice Mode ULTIMATE
+const handleLogoClick = () => {
+  const newClicks = mauriceClicks + 1;
+  setMauriceClicks(newClicks);
+
+  if (newClicks === 5) {
+  const newMode = !mauriceMode;
+  setMauricMode(newMode);
+  localStorage.setItem('mauriceMode', newMode);
+  setShowConfetti(true);
+  playMauriceSound('ding');
+
+
+    // Mise à jour des stats Maurice
+  if (newMode) {
+    setMauriceStats(prev => {
+      const newStats = {
+        ...prev,
+        activations: prev.activations + 1,
+        firstActivation: prev.firstActivation || new Date().toISOString()
+      };
+      localStorage.setItem('mauriceStats', JSON.stringify(newStats));
+      return newStats;
+    });
+  }
+    
+    // Reset dark mode si on désactive Maurice
+    if (!newMode && darkMaurice) {
+      setDarkMaurice(false);
+      localStorage.setItem('darkMaurice', 'false');
+    }
+    
+    setTimeout(() => {
+      setShowConfetti(false);
+      setMauriceClicks(0);
+    }, 3000);
+  } else if (newClicks < 5) {
+    setTimeout(() => setMauriceClicks(0), 2000);
+  }
+};
+
+// Fonction Footer pour Mode Nuit
+const handleFooterClick = () => {
+  if (!mauriceMode) return;
+  
+  const newClicks = footerClicks + 1;
+  setFooterClicks(newClicks);
+  
+  if (newClicks === 3) {
+    const newDarkMode = !darkMaurice;
+    setDarkMaurice(newDarkMode);
+    localStorage.setItem('darkMaurice', newDarkMode);
+    setFooterClicks(0);
+    playMauriceSound('whoosh');
+      // Stats mode nuit
+  if (newDarkMode) {
+    setMauriceStats(prev => {
+      const newStats = {
+        ...prev,
+        modeNuitActivations: prev.modeNuitActivations + 1
+      };
+      localStorage.setItem('mauriceStats', JSON.stringify(newStats));
+      return newStats;
+    });
+  }
+    alert(newDarkMode ? '🌙 Mode Nuit Maurice activé !' : '☀️ Mode Jour Maurice activé !');
+  } else {
+    setTimeout(() => setFooterClicks(0), 2000);
+  }
+};
+
+
+ // Couleurs dynamiques ULTIMATE avec thèmes
+const colors = mauriceMode ? (darkMaurice ? {
+  // MODE NUIT CYBERPUNK
+  primary: '#00FFFF',
+  secondary: '#FF00FF',
+  bg: 'linear-gradient(135deg, #000000 0%, #1a0033 50%, #000000 100%)',
+  bgCard: '#0a0a0a',
+  text: '#00FFFF',
+  textSecondary: '#FF00FF',
+  btnPrimary: '#00FFFF',
+  btnSuccess: '#00FF00',
+  borderColor: '#00FFFF',
+  borderSecondary: '#FF00FF'
+} : (mauriceTheme === 'vegas' ? {
+  // MODE VEGAS (Doré/Noir)
+  primary: '#FFD700',
+  secondary: '#FF6B00',
+  bg: 'linear-gradient(135deg, #1a1a1a 0%, #2d1810 50%, #1a1a1a 100%)',
+  bgCard: '#1a1a1a',
+  text: '#FFD700',
+  textSecondary: '#FF6B00',
+  btnPrimary: '#FFD700',
+  btnSuccess: '#32CD32',
+  borderColor: '#FFD700',
+  borderSecondary: '#FF6B00'
+} : {
+  // MODE JOUR MAURICE CLASSIQUE
+  primary: '#9333EA',
+  secondary: '#EC4899',
+  bg: 'linear-gradient(135deg, #FDF4FF 0%, #FCE7F3 50%, #FEF3C7 100%)',
+  bgCard: '#FFFFFF',
+  text: '#9333EA',
+  textSecondary: '#EC4899',
+  btnPrimary: '#9333EA',
+  btnSuccess: '#10B981',
+  borderColor: '#E9D5FF',
+  borderSecondary: '#FED7AA'
+})) : {
+  // MODE NORMAL HEROTOOL
+  primary: '#003D5C',
+  secondary: '#0891B2',
+  bg: 'linear-gradient(135deg, #F0F4F8 0%, #E1E8ED 100%)',
+  bgCard: '#FFFFFF',
+  text: '#003D5C',
+  textSecondary: '#0891B2',
+  btnPrimary: '#003D5C',
+  btnSuccess: '#0891B2',
+  borderColor: '#CBD5E1',
+  borderSecondary: '#E1E8ED'
+};
+
+// Calcul des badges Maurice (FONCTION SÉPARÉE)
+const getMauriceBadges = () => {
+  const badges = [];
+  
+  if (mauriceStats.activations >= 1) {
+    badges.push({ emoji: '🎩', label: 'Découvreur Maurice' });
+  }
+  if (mauriceStats.activations >= 10) {
+    badges.push({ emoji: '⭐', label: 'Fan Maurice' });
+  }
+  if (mauriceStats.activations >= 50) {
+    badges.push({ emoji: '👑', label: 'Maurice Légendaire' });
+  }
+  if (mauriceStats.modeNuitActivations >= 5) {
+    badges.push({ emoji: '🌙', label: 'Maurice Nocturne' });
+  }
+  if (mauriceStats.devisCrees >= 10) {
+    badges.push({ emoji: '💼', label: 'Maurice Pro' });
+  }
+  if (mauriceStats.devisCrees >= 100) {
+    badges.push({ emoji: '🏆', label: 'Maurice Expert' });
+  }
+  
+  return badges;
+};
   const handleFirebaseSignOut = useCallback(async () => {
     try {
       await signOut(auth);
@@ -974,65 +1256,188 @@ function App() {
   })();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-8">
-        <div className="text-center mb-8 pb-6 border-b-2" style={{ borderColor: '#E5E7EB' }}>
+<div className={`min-h-screen p-4 md:p-8 transition-all-smooth ${mauriceMode ? 'maurice-cursor' : ''} ${ultraMaurice ? 'ultra-maurice' : ''}`} style={{ background: colors.bg }}>      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-8">
+<div 
+  className="text-center mb-8 pb-6 border-b-2 transition-all-smooth" 
+  style={{ 
+    borderColor: colors.borderColor,
+    backgroundColor: darkMaurice ? colors.bgCard : 'transparent'
+  }}
+>
   <div className="flex items-center justify-center mb-3">
-    <div style={{ width: 60, height: 60, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 15, overflow: 'hidden' }}>
-      <img 
-        src="/logo.png" 
-        alt="HeroTOOL Logo" 
-        style={{ width: '140%', height: '140%', objectFit: 'contain' }}
-      />
+    <div 
+      onClick={handleLogoClick}
+      className="transition-all-smooth"
+      style={{ 
+        width: 60, 
+        height: 60, 
+        borderRadius: '50%', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        marginRight: 15,
+        overflow: 'hidden',
+        cursor: 'pointer',
+        transform: mauriceClicks > 0 ? `rotate(${mauriceClicks * 15}deg) scale(${1 + mauriceClicks * 0.1})` : 'none',
+        boxShadow: darkMaurice ? '0 0 20px #00FFFF' : 'none'
+      }}
+      title={mauriceMode ? mauriceQuotes[currentQuote] : "Cliquez 5 fois pour activer Maurice"}
+    >
+      {mauriceMode ? (
+  <img 
+    src="/elon.png" 
+    alt="Maurice"
+    style={{ 
+      width: '100%', 
+      height: '100%', 
+      objectFit: 'cover',
+      filter: darkMaurice ? 'brightness(1.2) contrast(1.3)' : 'none',
+      backgroundColor: darkMaurice ? '#1a1a1a' : '#9333EA'
+    }}
+  />
+      ) : (
+        <img 
+          src="/logo.png" 
+          alt="HeroTOOL Logo"
+          style={{ width: '140%', height: '140%', objectFit: 'contain' }}
+        />
+      )}
     </div>
-    <h1 className="text-4xl md:text-5xl font-bold">
-      <span style={{ color: '#FF6B35' }}>Hero</span><span style={{ color: '#002F6C' }}>TOOL</span>
-    </h1>
+    <h1 className="text-4xl md:text-5xl font-bold transition-all-smooth">
+  {mauriceMode ? (
+    <>
+      <span style={{ color: colors.primary }}>Maurice</span>
+      <span style={{ color: colors.secondary }}> le chiffreur</span>
+    </>
+  ) : (
+    <>
+      <span style={{ color: '#FF6B35' }}>Hero</span>
+      <span style={{ color: '#003D5C' }}>TOOL</span>
+    </>
+  )}
+</h1>
   </div>
-  <p className="text-sm font-bold text-gray-500 italic">
-    Outil professionnel de chiffrage automobile
+  
+  {/* Compteur de clics */}
+  {mauriceClicks >= 3 && mauriceClicks < 5 && (
+    <p className="text-xs mb-2 animate-pulse" style={{ color: darkMaurice ? colors.primary : '#6b7280' }}>
+      🤫 {5 - mauriceClicks} clic{5 - mauriceClicks > 1 ? 's' : ''} restant{5 - mauriceClicks > 1 ? 's' : ''}...
+    </p>
+  )}
+  
+  {/* Confetti */}
+  {showConfetti && (
+    <div className="text-4xl mb-2 animate-bounce">
+      🎉 🎊 ✨ 🎈 🎁 
+    </div>
+  )}
+  
+  {/* Citation de Maurice (en tooltip sur le logo) */}
+  {mauriceMode && (
+    <div 
+      className="text-xs italic mb-2 transition-all-smooth" 
+      style={{ 
+        color: darkMaurice ? colors.secondary : colors.primary,
+        minHeight: '40px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 20px'
+      }}
+    >
+      💬 "{mauriceQuotes[currentQuote]}"
+    </div>
+  )}
+  
+  {/* Bouton changement de thème Maurice */}
+{mauriceMode && !darkMaurice && (
+  <button
+    onClick={() => {
+      const newTheme = mauriceTheme === 'classic' ? 'vegas' : 'classic';
+      setMauriceTheme(newTheme);
+      localStorage.setItem('mauriceTheme', newTheme);
+      playMauriceSound('ding');
+    }}
+    className="text-xs px-4 py-2 rounded-full font-semibold hover:opacity-80 transition-all mb-2"
+    style={{ 
+      backgroundColor: mauriceTheme === 'vegas' ? '#FFD700' : '#9333EA',
+      color: '#000'
+    }}
+  >
+    {mauriceTheme === 'vegas' ? '🎰 Mode Vegas' : '💜 Mode Classique'} • Cliquez pour changer
+  </button>
+)}
+{/* Ultra Maurice Indicator */}
+{ultraMaurice && (
+  <div className="text-lg font-bold mt-2 ultra-maurice-spin" style={{ color: colors.primary }}>
+    🚀 ULTRA MAURICE MODE 🌈
+  </div>
+)}
+
+  {/* Footer cliquable pour mode nuit */}
+  <p 
+    className="text-sm font-bold italic transition-all-smooth" 
+    style={{ color: darkMaurice ? colors.text : '#6b7280' }}
+  >
+    {mauriceMode 
+      ? "Maurice fait des prix d'ami" 
+      : "Outil professionnel de chiffrage automobile"
+    }
   </p>
+  
+  {darkMaurice && (
+    <p className="text-xs mt-2 animate-glow" style={{ color: colors.primary }}>
+      🌙 Mode Nuit Cyberpunk
+    </p>
+  )}
 </div>
 
-        <div className="mb-8 p-6 rounded-xl border-2 border-green-200 bg-green-50">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Sauvegardez votre progression</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button onClick={saveQuote} className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">
-              💾 Sauvegarder
-            </button>
-            <button
-              onClick={() => {
-                const lead = prompt('Nom du Lead à charger:');
-                if (lead) loadQuote(lead);
-              }}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-            >
-              📂 Charger
-            </button>
+        <div className="mb-8 p-6 rounded-xl border-2" style={{ 
+  borderColor: mauriceMode ? colors.primary : '#BBF7D0',
+  backgroundColor: mauriceMode ? '#FAF5FF' : '#F0FDF4'
+}}>
+  <h2 className="text-lg font-bold text-gray-800 mb-4">
+    {mauriceMode ? "Maurice sauvegarde ton taf" : "Sauvegardez votre progression"}
+  </h2>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+<button onClick={saveQuote} className={`px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all-smooth ${mauriceMode ? 'maurice-button-dance' : ''}`} style={{ backgroundColor: colors.btnSuccess }}>
+      {mauriceMode ? '🧙‍♂️ Maurice sauvegarde' : '💾 Sauvegarder'}
+    </button>
+    <button
+      onClick={() => {
+        const lead = prompt('Nom du Lead à charger:');
+        if (lead) loadQuote(lead);
+      }}
+className={`px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all-smooth ${mauriceMode ? 'maurice-button-dance' : ''}`}
+      style={{ backgroundColor: '#3B82F6' }}
+    >
+      {mauriceMode ? '🎩 Maurice charge' : '📂 Charger'}
+    </button>
 
-            {firebaseUser ? (
-              <button onClick={handleFirebaseSignOut} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700">
-                🔓 Déconnexion Firebase
-              </button>
-            ) : (
-              <button onClick={handleFirebaseSignIn} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700">
-                🔐 Connexion Firebase
-              </button>
-            )}
+    {/* GARDE TOUT LE RESTE IDENTIQUE À PARTIR D'ICI */}
+    {firebaseUser ? (
+      <button onClick={handleFirebaseSignOut} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700">
+        🔓 Déconnexion Firebase
+      </button>
+    ) : (
+      <button onClick={handleFirebaseSignIn} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700">
+        🔐 Connexion Firebase
+      </button>
+    )}
 
-            <div className="flex gap-2">
-              <button onClick={uploadToFirebaseStorage} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">
-                ☁️ Export Firebase Storage
-              </button>
-              <button onClick={saveToFirestore} className="px-6 py-3 bg-indigo-700 text-white rounded-lg font-semibold hover:bg-indigo-800">
-                ☁️ Enregistrer sur Firestore
-              </button>
-            </div>
-          </div>
-          <div className="mt-4 text-sm">
-            <span className={statusDisplay.color}>{statusDisplay.text}</span>
-          </div>
-        </div>
+    <div className="flex gap-2">
+      <button onClick={uploadToFirebaseStorage} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">
+        ☁️ Export Firebase Storage
+      </button>
+      <button onClick={saveToFirestore} className="px-6 py-3 bg-indigo-700 text-white rounded-lg font-semibold hover:bg-indigo-800">
+        ☁️ Enregistrer sur Firestore
+      </button>
+    </div>
+  </div>
+  <div className="mt-4 text-sm">
+    <span className={statusDisplay.color}>{statusDisplay.text}</span>
+  </div>
+</div>
 
         <VehicleInfoForm
           headerInfo={headerInfo}
@@ -1050,7 +1455,7 @@ function App() {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Entretien</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">ENTRETIEN</h2>
           <ChecklistSection
             leftItems={LEFT_ITEMS}
             rightItems={RIGHT_ITEMS}
@@ -1065,7 +1470,7 @@ function App() {
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Pneus et Freins</h2>
+            <h2 className="text-2xl font-bold text-gray-800">PNEUS ET FREINS</h2>
             <button onClick={() => toggleCategory('pneusFreins')} className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" style={{ backgroundColor: '#FF6B35' }}>
               {expandedCategories.pneusFreins ? 'Fermer' : 'Ouvrir'}
             </button>
@@ -1271,7 +1676,7 @@ function App() {
 
         {allCompleted && (
           <div className="mt-6 p-4 bg-green-100 rounded-xl text-center">
-            <p className="text-green-800 font-semibold">Bravo ! Entretien terminé</p>
+            <p className="text-green-800 font-semibold">Checklist terminée ! 🎉</p>
           </div>
         )}
 
@@ -1458,15 +1863,84 @@ function App() {
             />
           </>
         )}
-              {/* Footer */}
-<div className="mt-8 pt-6 pb-4 border-t-2 border-gray-200 text-center">
-  <p className="text-sm text-gray-600">
-    HeroTOOL © 2025 - Développé par Loïc.L, codé par Claude.ia
+{/* Footer */}
+<div 
+  onClick={handleFooterClick}
+  className="mt-8 pt-6 pb-4 border-t-2 text-center transition-all-smooth" 
+  style={{ 
+    borderColor: colors.borderColor,
+    background: darkMaurice 
+      ? 'linear-gradient(90deg, #000000 0%, #1a0033 50%, #000000 100%)'
+      : (mauriceMode ? 'linear-gradient(90deg, #FDF4FF 0%, #FCE7F3 100%)' : 'transparent'),
+    cursor: mauriceMode ? 'pointer' : 'default',
+    boxShadow: darkMaurice ? `0 -5px 20px ${colors.primary}` : 'none'
+  }}
+  title={mauriceMode ? "Triple-clic pour le mode nuit !" : ""}
+>
+  <p 
+    className="text-sm font-semibold transition-all-smooth" 
+    style={{ color: darkMaurice ? colors.primary : (mauriceMode ? colors.primary : '#6b7280') }}
+  >
+    {mauriceMode ? (
+      <>
+        <span style={{ fontSize: '1.2em' }}>
+          {darkMaurice ? '🌙' : '🎩'}
+        </span> Maurice le chiffreur © 2025
+      </>
+    ) : (
+      'HeroTOOL © 2025 - Développé par Loïc.L, codé par Claude.ia'
+    )}
   </p>
-  <p className="text-xs text-gray-500 mt-1">
-    Version 1.0 - Reconditionnement & Devis
+  <p 
+    className="text-xs mt-1 transition-all-smooth" 
+    style={{ color: darkMaurice ? colors.secondary : (mauriceMode ? colors.secondary : '#9ca3af') }}
+  >
+    {mauriceMode 
+      ? (darkMaurice ? "💎 Expert en devis nocturnes" : "👔 Le pro des prix d'ami depuis toujours")
+      : "Version 1.0 - Reconditionnement & Devis"
+    }
   </p>
+  {mauriceMode && (
+    <p 
+      className="text-xs mt-2 italic animate-pulse" 
+      style={{ color: colors.primary }}
+    >
+      {darkMaurice ? '✨ Mode Cyberpunk activé ✨' : '✨ Mode secret activé ✨'}
+    </p>
+  )}
+  {mauriceMode && footerClicks > 0 && footerClicks < 3 && (
+    <p className="text-xs mt-1 animate-pulse" style={{ color: colors.secondary }}>
+      🤫 {3 - footerClicks} clic{3 - footerClicks > 1 ? 's' : ''} pour le mode nuit...
+    </p>
+  )}
+  
+  {/* Stats et Badges Maurice */}
+  {mauriceMode && (
+    <div className="mt-4 pt-4 border-t transition-all-smooth" style={{ borderColor: colors.borderColor }}>
+      <p className="text-xs font-semibold mb-2" style={{ color: colors.text }}>
+        📊 Stats Maurice : {mauriceStats.activations} activation{mauriceStats.activations > 1 ? 's' : ''} • {mauriceStats.devisCrees} devis • {mauriceStats.modeNuitActivations} nuit{mauriceStats.modeNuitActivations > 1 ? 's' : ''}
+      </p>
+      {getMauriceBadges().length > 0 && (
+        <div className="flex gap-2 justify-center flex-wrap">
+          {getMauriceBadges().map((badge, i) => (
+            <span 
+              key={i}
+              className="text-xs px-3 py-1 rounded-full font-semibold"
+              style={{ 
+                backgroundColor: darkMaurice ? 'rgba(0,255,255,0.2)' : 'rgba(147,51,234,0.2)',
+                color: colors.primary,
+                border: `1px solid ${colors.primary}`
+              }}
+            >
+              {badge.emoji} {badge.label}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
 </div>
+
       </div>
 
     </div>
