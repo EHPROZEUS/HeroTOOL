@@ -450,6 +450,45 @@ const OrdreReparation = ({
                 </tr>
               </thead>
               <tbody>
+                {includeControleTechnique && (
+                  <>
+                    <tr style={{ backgroundColor: "#FFE4D6" }}>
+                      <td colSpan="7" className="border border-gray-300 p-2 font-bold">
+                        Contrôle Technique
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2">Prestation extérieure</td>
+                      <td className="border border-gray-300 p-2">-</td>
+                      <td className="border border-gray-300 p-2">
+                        Contrôle technique obligatoire
+                      </td>
+                      <td className="border border-gray-300 p-2">-</td>
+                      <td className="border border-gray-300 p-2 text-right">1</td>
+                      <td className="border border-gray-300 p-2 text-right">42.00 €</td>
+                      <td className="border border-gray-300 p-2 text-right">42.00 €</td>
+                    </tr>
+                  </>
+                )}
+                
+                {includeContrevisite && (
+                  <tr>
+                    <td className="border border-gray-300 p-2">Prestation extérieure</td>
+                    <td className="border border-gray-300 p-2">-</td>
+                    <td className="border border-gray-300 p-2 bg-orange-50 font-semibold">
+                      Contre-visite
+                    </td>
+                    <td className="border border-gray-300 p-2">-</td>
+                    <td className="border border-gray-300 p-2 text-right">1</td>
+                    <td className="border border-gray-300 p-2 text-right">10.00 €</td>
+                    <td className="border border-gray-300 p-2 text-right">10.00 €</td>
+                  </tr>
+                )}
+                <tr style={{ backgroundColor: "#FFE4D6" }}>
+                      <td colSpan="7" className="border border-gray-300 p-2 font-bold">
+                        PRESTATIONS OBLIGATOIRES
+                      </td>
+                    </tr>
                 {/* === PRESTATIONS OBLIGATOIRES === */}
                 {OBLIGATORY_PRESTATIONS.map(item => (
                   <tr key={item.id}>
@@ -488,6 +527,13 @@ const OrdreReparation = ({
                     </tr>
                   </React.Fragment>
                 ))}
+{Array.isArray(pureActiveMecaniqueItems) && pureActiveMecaniqueItems.length > 0 && (
+  <tr className="bg-amber-100">
+    <td colSpan={7} className="border border-gray-300 p-2 font-bold">
+      MECANIQUE - FORFAITS ET PRESTATIONS
+    </td>
+  </tr>
+)}
 
                 {/* === PRESTATIONS DYNAMIQUES EXISTANTES === */}
                 {Array.isArray(pureActiveMecaniqueItems) &&
@@ -514,7 +560,7 @@ const OrdreReparation = ({
 
                     return (
                       <React.Fragment key={item.id}>
-                        <tr style={{ backgroundColor: "#FFE4D6" }}>
+                        <tr style={{ backgroundColor: "#EEE6D8" }}>
                           <td colSpan="7" className="border border-gray-300 p-2 font-bold">
                             {item.label}
                           </td>
@@ -599,190 +645,21 @@ const OrdreReparation = ({
                     );
                   })}
 
-                {includeControleTechnique && (
-                  <>
-                    <tr style={{ backgroundColor: "#FFE4D6" }}>
-                      <td colSpan="7" className="border border-gray-300 p-2 font-bold">
-                        Contrôle Technique
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 p-2">Prestation extérieure</td>
-                      <td className="border border-gray-300 p-2">-</td>
-                      <td className="border border-gray-300 p-2">
-                        Contrôle technique obligatoire
-                      </td>
-                      <td className="border border-gray-300 p-2">-</td>
-                      <td className="border border-gray-300 p-2 text-right">1</td>
-                      <td className="border border-gray-300 p-2 text-right">42.00 €</td>
-                      <td className="border border-gray-300 p-2 text-right">42.00 €</td>
-                    </tr>
-                  </>
-                )}
-                
-                {includeContrevisite && (
-                  <tr>
-                    <td className="border border-gray-300 p-2">Prestation extérieure</td>
-                    <td className="border border-gray-300 p-2">-</td>
-                    <td className="border border-gray-300 p-2 bg-orange-50 font-semibold">
-                      Contre-visite
-                    </td>
-                    <td className="border border-gray-300 p-2">-</td>
-                    <td className="border border-gray-300 p-2 text-right">1</td>
-                    <td className="border border-gray-300 p-2 text-right">10.00 €</td>
-                    <td className="border border-gray-300 p-2 text-right">10.00 €</td>
-                  </tr>
-                )}
-
-                {/* Section DSP */}
-                {Array.isArray(activeDSPItems) && activeDSPItems.length > 0 && (
-                  <>
-                    <tr style={{ backgroundColor: "#DBEAFE" }}>
-                      <td
-                        colSpan="7"
-                        className="border border-gray-300 p-2 font-bold text-blue-600"
-                      >
-                        SMART - DSP
-                      </td>
-                    </tr>
-                    {activeDSPItems.map(dspItem => {
-                      const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
-                      if (!dspConfig) return null;
-
-                      return (
-                        <tr key={dspItem.id}>
-                          <td className="border border-gray-300 p-2">Main d'œuvre DSP</td>
-                          <td className="border border-gray-300 p-2">-</td>
-                          <td className="border border-gray-300 p-2">
-                            {dspConfig.label}
-                          </td>
-                          <td className="border border-gray-300 p-2">DSP</td>
-                          <td className="border border-gray-300 p-2 text-right">
-                            {dspConfig.moQuantity} h
-                          </td>
-                          <td className="border border-gray-300 p-2 text-right">-</td>
-                          <td className="border border-gray-300 p-2 text-right">-</td>
-                        </tr>
-                      );
-                    })}
-                  </>
-                )}
-
-                {/* Section PLUME */}
-                {Array.isArray(activePlumeItems) && activePlumeItems.length > 0 && (
-                  <>
-                    <tr style={{ backgroundColor: "#FEF3C7" }}>
-                      <td
-                        colSpan="7"
-                        className="border border-gray-300 p-2 font-bold text-amber-600"
-                      >
-                        SMART - PLUME
-                      </td>
-                    </tr>
-                    {activePlumeItems.map(plumeItem => {
-                      const plumeConfig = PLUME_ITEMS.find(item => item.id === plumeItem.id);
-                      if (!plumeConfig) return null;
-
-                      return (
-                        <tr key={plumeItem.id}>
-                          <td className="border border-gray-300 p-2">Main d'œuvre Plume</td>
-                          <td className="border border-gray-300 p-2">-</td>
-                          <td className="border border-gray-300 p-2">
-                            {plumeConfig.label}
-                          </td>
-                          <td className="border border-gray-300 p-2">Lustrage</td>
-                          <td className="border border-gray-300 p-2 text-right">
-                            {plumeConfig.moQuantity} h
-                          </td>
-                          <td className="border border-gray-300 p-2 text-right">-</td>
-                          <td className="border border-gray-300 p-2 text-right">-</td>
-                        </tr>
-                      );
-                    })}
-                  </>
-                )}
-
-                {/* Section LUSTRAGE */}
-                {Array.isArray(activeLustrageItems) && activeLustrageItems.length > 0 && (
-                  <>
-                    <tr style={{ backgroundColor: "#FEF3C7" }}>
-                      <td
-                        colSpan="7"
-                        className="border border-gray-300 p-2 font-bold text-amber-600"
-                      >
-                        SMART - LUSTRAGE
-                      </td>
-                    </tr>
-                    {activeLustrageItems.map(lustrageItem => {
-                      const lustrageConfig = LUSTRAGE_ITEMS.find(
-                        item => item.id === lustrageItem.id
-                      );
-                      if (!lustrageConfig) return null;
-
-                      const forfait = forfaitData?.[lustrageItem.id] || {};
-                      const moQuantity =
-                        forfait.moQuantity !== undefined
-                          ? forfait.moQuantity
-                          : lustrageConfig.moQuantity || 0;
-                      const consommableQuantity =
-                        forfait.consommableQuantity !== undefined
-                          ? forfait.consommableQuantity
-                          : lustrageConfig.consommable || 0;
-                      const consommablePrixUnitaire =
-                        forfait.consommablePrixUnitaire !== undefined
-                          ? forfait.consommablePrixUnitaire
-                          : 1.0;
-                      const consommablePrix = consommableQuantity * consommablePrixUnitaire;
-
-                      return (
-                        <React.Fragment key={lustrageItem.id}>
-                          <tr>
-                            <td className="border border-gray-300 p-2">
-                              Main d'œuvre Lustrage
-                            </td>
-                            <td className="border border-gray-300 p-2">-</td>
-                            <td className="border border-gray-300 p-2">
-                              {lustrageConfig.label}
-                            </td>
-                            <td className="border border-gray-300 p-2">Lustrage</td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {moQuantity} h
-                            </td>
-                            <td className="border border-gray-300 p-2 text-right">-</td>
-                            <td className="border border-gray-300 p-2 text-right">-</td>
-                          </tr>
-                          {consommableQuantity > 0 && (
-                            <tr>
-                              <td className="border border-gray-300 p-2">Consommable</td>
-                              <td className="border border-gray-300 p-2">
-                                {forfait.consommableReference || "-"}
-                              </td>
-                              <td className="border border-gray-300 p-2">
-                                {forfait.consommableDesignation ||
-                                  "Consommable lustrage"}
-                              </td>
-                              <td className="border border-gray-300 p-2">-</td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {consommableQuantity}
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {consommablePrixUnitaire.toFixed(2)} €
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {consommablePrix.toFixed(2)} €
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </>
-                )}
+{(
+  (Array.isArray(activePeintureForfaits) && activePeintureForfaits.length > 0) ||
+  (Array.isArray(activePeintureSeuleForfaits) && activePeintureSeuleForfaits.length > 0)
+) && (
+  <tr className="bg-green-200">
+    <td colSpan={7} className="border border-gray-300 p-2 font-bold">
+      CARROSSERIE - FORFAITS ET PRESTATIONS
+    </td>
+  </tr>
+)}
 
                 {/* FORFAITS RÉPARATION PEINTURE */}
                 {activePeintureForfaits.length > 0 && (
                   <>
-                    <tr style={{ backgroundColor: "#FFE4D6" }}>
+                    <tr style={{ backgroundColor: "#BED3C3" }}>
                       <td
                         colSpan="7"
                         className="border border-gray-300 p-2 font-bold text-orange-600"
@@ -864,12 +741,12 @@ const OrdreReparation = ({
                 {/* FORFAITS PEINTURE SEULE */}
                 {activePeintureSeuleForfaits.length > 0 && (
                   <>
-                    <tr style={{ backgroundColor: "#E0F2FE" }}>
+                    <tr style={{ backgroundColor: "#BED3C3" }}>
                       <td
                         colSpan="7"
-                        className="border border-gray-300 p-2 font-bold text-blue-600"
+                        className="border border-gray-300 p-2 font-bold text-GREEN-600"
                       >
-                        PEINTURE SEULE
+                        PEINTURE
                       </td>
                     </tr>
                     {activePeintureSeuleForfaits.map((forfait, idx) => {
@@ -923,6 +800,162 @@ const OrdreReparation = ({
                     })}
                   </>
                 )}
+{(
+  (Array.isArray(activeDSPItems) && activeDSPItems.length > 0) ||
+  (Array.isArray(activePlumeItems) && activePlumeItems.length > 0) ||
+  (Array.isArray(activeLustrageItems) && activeLustrageItems.length > 0)
+) && (
+  <tr className="bg-blue-100">
+    <td colSpan={7} className="border border-gray-300 p-2 font-bold text-gray-600">
+      SMART - FORFAITS LUSTRAGE, DSP, PLUME
+    </td>
+  </tr>
+)}
+                {/* Section DSP */}
+                {Array.isArray(activeDSPItems) && activeDSPItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: "#DBEAFE" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-2 font-bold text-blue-600"
+                      >
+                        SMART - DSP
+                      </td>
+                    </tr>
+                    {activeDSPItems.map(dspItem => {
+                      const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
+                      if (!dspConfig) return null;
+
+                      return (
+                        <tr key={dspItem.id}>
+                          <td className="border border-gray-300 p-2">Main d'œuvre DSP</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">
+                            {dspConfig.label}
+                          </td>
+                          <td className="border border-gray-300 p-2">DSP</td>
+                          <td className="border border-gray-300 p-2 text-right">
+                            {dspConfig.moQuantity} h
+                          </td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Section PLUME */}
+                {Array.isArray(activePlumeItems) && activePlumeItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: "#DBEAFE" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-2 font-bold text-blue-600"
+                      >
+                        SMART - PLUME
+                      </td>
+                    </tr>
+                    {activePlumeItems.map(plumeItem => {
+                      const plumeConfig = PLUME_ITEMS.find(item => item.id === plumeItem.id);
+                      if (!plumeConfig) return null;
+
+                      return (
+                        <tr key={plumeItem.id}>
+                          <td className="border border-gray-300 p-2">Main d'œuvre Plume</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">
+                            {plumeConfig.label}
+                          </td>
+                          <td className="border border-gray-300 p-2">Lustrage</td>
+                          <td className="border border-gray-300 p-2 text-right">
+                            {plumeConfig.moQuantity} h
+                          </td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Section LUSTRAGE */}
+                {Array.isArray(activeLustrageItems) && activeLustrageItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: "#DBEAFE" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-2 font-bold text-blue-600"
+                      >
+                        SMART - LUSTRAGE
+                      </td>
+                    </tr>
+                    {activeLustrageItems.map(lustrageItem => {
+                      const lustrageConfig = LUSTRAGE_ITEMS.find(
+                        item => item.id === lustrageItem.id
+                      );
+                      if (!lustrageConfig) return null;
+
+                      const forfait = forfaitData?.[lustrageItem.id] || {};
+                      const moQuantity =
+                        forfait.moQuantity !== undefined
+                          ? forfait.moQuantity
+                          : lustrageConfig.moQuantity || 0;
+                      const consommableQuantity =
+                        forfait.consommableQuantity !== undefined
+                          ? forfait.consommableQuantity
+                          : lustrageConfig.consommable || 0;
+                      const consommablePrixUnitaire =
+                        forfait.consommablePrixUnitaire !== undefined
+                          ? forfait.consommablePrixUnitaire
+                          : 1.0;
+                      const consommablePrix = consommableQuantity * consommablePrixUnitaire;
+
+                      return (
+                        <React.Fragment key={lustrageItem.id}>
+                          <tr>
+                            <td className="border border-gray-300 p-2">
+                              Main d'œuvre Lustrage
+                            </td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2">
+                              {lustrageConfig.label}
+                            </td>
+                            <td className="border border-gray-300 p-2">Lustrage</td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {moQuantity} h
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">-</td>
+                            <td className="border border-gray-300 p-2 text-right">-</td>
+                          </tr>
+                          {consommableQuantity > 0 && (
+                            <tr>
+                              <td className="border border-gray-300 p-2">Consommable</td>
+                              <td className="border border-gray-300 p-2">
+                                {forfait.consommableReference || "-"}
+                              </td>
+                              <td className="border border-gray-300 p-2">
+                                {forfait.consommableDesignation ||
+                                  "Consommable lustrage"}
+                              </td>
+                              <td className="border border-gray-300 p-2">-</td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommableQuantity}
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommablePrixUnitaire.toFixed(2)} €
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommablePrix.toFixed(2)} €
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </>
+                )}
+
               {/* === LUSTRAGE 1 ÉLÉMENT (STACKABLES) === */}
                 {Object.entries(forfaitData || {})
                   .filter(([key, data]) => data.lustrage1Elem === true)
@@ -1051,14 +1084,7 @@ const OrdreReparation = ({
             </div>
           </div>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={printOrdreReparation}
-              className="print-button px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
-            >
-              🖨️ Imprimer l'ordre de réparation
-            </button>
-          </div>
+        
         </div>
       )}
     </div>

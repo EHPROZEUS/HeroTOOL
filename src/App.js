@@ -1848,7 +1848,7 @@ className={`px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 trans
             <div className="mt-4 text-center">
               <button
                 onClick={downloadOrdreReparationPDF}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg"
+              className="print-button px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
               >
                 📄 Télécharger l'ordre de réparation (PDF)
               </button>
