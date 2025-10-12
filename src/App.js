@@ -990,7 +990,7 @@ function App() {
     </h1>
   </div>
   <p className="text-sm font-bold text-gray-500 italic">
-    Développé par Loïc.L, codé par Claude.ia
+    Outil professionnel de chiffrage automobile
   </p>
 </div>
 
@@ -1458,7 +1458,17 @@ function App() {
             />
           </>
         )}
+              {/* Footer */}
+<div className="mt-8 pt-6 pb-4 border-t-2 border-gray-200 text-center">
+  <p className="text-sm text-gray-600">
+    HeroTOOL © 2025 - Développé par Loïc.L, codé par Claude.ia
+  </p>
+  <p className="text-xs text-gray-500 mt-1">
+    Version 1.0 - Reconditionnement & Devis
+  </p>
+</div>
       </div>
+
     </div>
   );
 }
