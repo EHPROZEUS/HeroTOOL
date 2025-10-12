@@ -2,6 +2,7 @@ import React from 'react';
 import { calculateVehicleAge, formatDateFr } from '../../utils/formatters';
 import { getDefaultValues } from '../../utils/calculations';
 import { DSP_ITEMS, LUSTRAGE_ITEMS, PEINTURE_FORFAITS, PEINTURE_SEULE_FORFAITS, PLUME_ITEMS } from '../../config/constants';
+import { TEXT_ITEMS_1, TEXT_ITEMS_2 } from '../../config/constants';
 
 // Lignes obligatoires à afficher en haut du tableau des prestations
 const OBLIGATORY_PRESTATIONS = [
@@ -187,6 +188,7 @@ function computeVentilation({
   result.moPeinture.ht = result.moPeinture.qty * tarifHoraire;
   result.moTolerie.ht = result.moTolerie.qty * tarifHoraire;
 
+
   return result;
 }
 
@@ -244,6 +246,25 @@ const OrdreReparation = ({
     includeControleTechnique,
     itemStates
   });
+// Styles pour éviter les coupures dans le PDF
+  const pdfStyles = `
+    @media print {
+      .no-break {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      table {
+        page-break-inside: auto;
+      }
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+      thead {
+        display: table-header-group;
+      }
+    }
+  `;
 
   return (
     <div className="mt-8 border-t-2 border-gray-300 pt-8">
@@ -284,6 +305,7 @@ const OrdreReparation = ({
           className="bg-white border-4 rounded-xl p-8 shadow-2xl"
           style={{ borderColor: '#FF6B35' }}
         >
+          <style>{pdfStyles}</style>
           <div className="text-center mb-6 pb-4 border-b-2 border-gray-300">
             <h1 className="text-2xl font-bold" style={{ color: '#FF6B35' }}>
               ORDRE DE RÉPARATION
@@ -312,124 +334,163 @@ const OrdreReparation = ({
             </div>
           )}
 
-          {/* =============== INFOS VEHICULE + VENTILATION COMPTABLE =============== */}
-          <div className="mb-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* Informations véhicule condensées */}
-              <div className="flex-1 min-w-[250px] max-w-[370px]">
-                <h2
-                  className="text-lg font-bold text-gray-800 mb-3 p-2 rounded-lg"
-                  style={{ backgroundColor: '#FFF0E6' }}
-                >
-                  Informations Véhicule
-                </h2>
-                <div className="grid grid-cols-1 gap-1 text-xs">
-                  {headerInfo?.lead && (
-                    <div className="flex">
-                      <span className="font-bold w-28">Client:</span>
-                      <span>{headerInfo.lead}</span>
-                    </div>
-                  )}
-                  {headerInfo?.immatriculation && (
-                    <div className="flex">
-                      <span className="font-bold w-28">Immatriculation:</span>
-                      <span>{headerInfo.immatriculation}</span>
-                    </div>
-                  )}
-                  {headerInfo?.vin && (
-                    <div className="flex">
-                      <span className="font-bold w-28">VIN:</span>
-                      <span className="text-xs">{headerInfo.vin}</span>
-                    </div>
-                  )}
-                  {headerInfo?.kilometres && (
-                    <div className="flex">
-                      <span className="font-bold w-28">Kilomètres:</span>
-                      <span>{headerInfo.kilometres} km</span>
-                    </div>
-                  )}
-                  {headerInfo?.dateVehicule && (
-                    <div className="flex">
-                      <span className="font-bold w-28">Âge véhicule:</span>
-                      <span>{calculateVehicleAge(headerInfo.dateVehicule)}</span>
-                    </div>
-                  )}
-                  {headerInfo?.dateVehicule && (
-                    <div className="flex">
-                      <span className="font-bold w-28">Mise en circ.:</span>
-                      <span>{formatDateFr(headerInfo.dateVehicule)}</span>
-                    </div>
-                  )}
-                  {headerInfo?.moteur && (
-                    <div className="flex">
-                      <span className="font-bold w-28">Moteur:</span>
-                      <span className="capitalize">{headerInfo.moteur}</span>
-                    </div>
-                  )}
-                  {headerInfo?.boite && (
-                    <div className="flex">
-                      <span className="font-bold w-28">Boîte:</span>
-                      <span className="capitalize">
-                        {headerInfo.boite === 'auto/cvt'
-                          ? 'Auto/CVT'
-                          : headerInfo.boite === 'dct'
-                          ? 'DCT'
-                          : headerInfo.boite}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Tableau ventilation comptable - Style plus compact */}
-              <div className="flex-1 min-w-[280px] max-w-[400px]">
-                <h2
-                  className="text-lg font-bold text-gray-800 mb-3 p-2 rounded-lg"
-                  style={{ backgroundColor: '#FFF0E6' }}
-                >
-                  Ventilation comptable
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full border border-gray-200 text-xs bg-white">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-200 p-1 text-left">
-                          Ventilation
-                        </th>
-                        <th className="border border-gray-200 p-1 text-right">
-                          MO/H<br />
-                          ou Qté
-                        </th>
-                        <th className="border border-gray-200 p-1 text-right">
-                          HT
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {VENTILATION_CATEGORIES.map(cat => (
-                        <tr key={cat.key}>
-                          <td className="border border-gray-200 p-1">{cat.label}</td>
-                          <td className="border border-gray-200 p-1 text-right">
-                            {ventilation?.[cat.key]?.qty !== undefined
-                              ? ventilation[cat.key].qty
-                              : 0}
-                          </td>
-                          <td className="border border-gray-200 p-1 text-right">
-                            {ventilation?.[cat.key]?.ht !== undefined
-                              ? Number(ventilation[cat.key].ht).toFixed(2)
-                              : "0.00"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+{/* =============== INFOS VEHICULE + VENTILATION COMPTABLE =============== */}
+<div className="mb-6 no-break"> 
+  <div className="flex flex-col md:flex-row gap-4">
+    {/* Informations véhicule condensées */}
+    <div className="flex-1 min-w-[200px] max-w-[280px]">
+      <h2
+        className="text-base font-bold text-gray-800 mb-2 p-1.5 rounded-lg"
+        style={{ backgroundColor: '#FFF0E6' }}
+      >
+        Informations Véhicule
+      </h2>
+      <div className="grid grid-cols-1 gap-0.5 text-xs">
+        {headerInfo?.lead && (
+          <div className="flex gap-1">
+            <span className="font-bold w-28">Lead: </span>
+            <span>{headerInfo.lead}</span>
           </div>
+        )}
+        {headerInfo?.immatriculation && (
+          <div className="flex gap-1">
+            <span className="font-bold w-28">Immatriculation: </span>
+            <span>{headerInfo.immatriculation}</span>
+          </div>
+        )}
+        {headerInfo?.vin && (
+          <div className="flex gap-1">
+            <span className="font-bold w-28">VIN: </span>
+            <span className="text-xs">{headerInfo.vin}</span>
+          </div>
+        )}
+        {headerInfo?.kilometres && (
+          <div className="flex gap-1">
+            <span className="font-bold w-28">Kilomètres: </span>
+            <span>{headerInfo.kilometres} km</span>
+          </div>
+        )}
+        {headerInfo?.dateVehicule && (
+          <div className="flex gap-1">
+            <span className="font-bold w-28">Âge véhicule: </span>
+            <span>{calculateVehicleAge(headerInfo.dateVehicule)}</span>
+          </div>
+        )}
+        {headerInfo?.dateVehicule && (
+          <div className="flex gap-1">
+            <span className="font-bold w-28">Mise en circ.: </span>
+            <span>{formatDateFr(headerInfo.dateVehicule)}</span>
+          </div>
+        )}
+        {headerInfo?.moteur && (
+          <div className="flex gap-1">
+            <span className="font-bold w-28 mr-2">Moteur: </span>
+            <span className="capitalize">{headerInfo.moteur}</span>
+          </div>
+        )}
+        {headerInfo?.boite && (
+          <div className="flex gap-1">
+            <span className="font-bold w-28">Boîte: </span>
+            <span className="capitalize">
+              {headerInfo.boite === 'auto/cvt'
+                ? 'Auto/CVT'
+                : headerInfo.boite === 'dct'
+                ? 'DCT'
+                : headerInfo.boite}
+            </span>
+          </div>
+        )}
+      </div>
+{/* Liste des fournisseurs avec nombre de pièces */}
+<div className="mt-3 pt-2 border-t border-gray-300">
+  <h3 className="text-xs font-bold text-gray-700 mb-1.5">Fournisseurs</h3>
+  <div className="text-xs space-y-0.5">
+    {(() => {
+      // Regrouper toutes les pièces par fournisseur
+      const fournisseurCount = {};
+      
+      // Pièces principales des forfaits mécanique
+      activeMecaniqueItems.forEach(item => {
+        const forfait = forfaitData?.[item.id];
+        if (forfait?.pieceFournisseur && forfait.pieceFournisseur.trim()) {
+          fournisseurCount[forfait.pieceFournisseur] = 
+            (fournisseurCount[forfait.pieceFournisseur] || 0) + 
+            (parseFloat(forfait.pieceQuantity) || 0);
+        }
+      });
+      
+      // Pièces supplémentaires
+      Object.values(pieceLines || {}).forEach(lines => {
+        lines.forEach(line => {
+          if (line.fournisseur && line.fournisseur.trim()) {
+            fournisseurCount[line.fournisseur] = 
+              (fournisseurCount[line.fournisseur] || 0) + 
+              (parseFloat(line.quantity) || 0);
+          }
+        });
+      });
+      
+      // Afficher les fournisseurs triés
+      const fournisseurs = Object.entries(fournisseurCount)
+        .sort(([a], [b]) => a.localeCompare(b));
+      
+      if (fournisseurs.length === 0) {
+        return <p className="text-gray-500 italic">Aucun fournisseur</p>;
+      }
+      
+      return fournisseurs.map(([fournisseur, count]) => (
+        <div key={fournisseur} className="flex gap-2">
+          <span className="font-medium">{fournisseur}:</span>
+          <span className="text-gray-600">{Math.round(count)} pièce{count > 1 ? 's' : ''}</span>
+        </div>
+      ));
+    })()}
+  </div>
+</div>
+    </div>
+    
+    {/* Tableau ventilation comptable ultra-compact */}
+    <div className="flex-1" style={{ maxWidth: '280px', minWidth: '200px' }}>
+      <h2
+        className="text-sm font-bold text-gray-800 mb-1 p-1 rounded"
+        style={{ backgroundColor: '#FFF0E6' }}
+      >
+        Ventilation comptable
+      </h2>
+      <div className="overflow-x-auto">
+        <table className="w-full border border-gray-200 bg-white" style={{ fontSize: '10px' }}>
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border border-gray-200 p-0.5 text-left">Ventilation</th>
+              <th className="border border-gray-200 p-0.5 text-right">MO/H<br/>ou Qté</th>
+              <th className="border border-gray-200 p-0.5 text-right">HT</th>
+            </tr>
+          </thead>
+          <tbody>
+            {VENTILATION_CATEGORIES.map(cat => (
+              <tr key={cat.key}>
+                <td className="border border-gray-200 p-0.5">{cat.label}</td>
+                <td className="border border-gray-200 p-0.5 text-right">
+                  {ventilation?.[cat.key]?.qty !== undefined
+                    ? ventilation[cat.key].qty.toFixed(2)
+                    : '0.00'}
+                </td>
+                <td className="border border-gray-200 p-0.5 text-right">
+                  {ventilation?.[cat.key]?.ht !== undefined
+                    ? Number(ventilation[cat.key].ht).toFixed(2)
+                    : "0.00"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
           {/* =============== FIN INFOS + VENTILATION =============== */}
 
-          <div className="mb-6">
+          <div className="mb-6 no-break">
             <h2
               className="text-lg font-bold text-gray-800 mb-3 p-2 rounded-lg"
               style={{ backgroundColor: '#FFF0E6' }}
@@ -537,7 +598,14 @@ const OrdreReparation = ({
 
                 {/* === PRESTATIONS DYNAMIQUES EXISTANTES === */}
                 {Array.isArray(pureActiveMecaniqueItems) &&
-                  pureActiveMecaniqueItems.map(item => {
+  pureActiveMecaniqueItems
+    .filter(item => {
+      // Exclure REPC et REMPC de la section Mécanique
+      const isREPC = TEXT_ITEMS_1.some(textItem => textItem.id === item.id);
+      const isREMPC = TEXT_ITEMS_2.some(textItem => textItem.id === item.id);
+      return !isREPC && !isREMPC;
+    })
+    .map(item => {
                     const forfait = forfaitData?.[item.id] || {};
                     const defaults = typeof getDefaultValues === "function" ? getDefaultValues(item.id) : {};
                     const moQuantity =
@@ -647,7 +715,8 @@ const OrdreReparation = ({
 
 {(
   (Array.isArray(activePeintureForfaits) && activePeintureForfaits.length > 0) ||
-  (Array.isArray(activePeintureSeuleForfaits) && activePeintureSeuleForfaits.length > 0)
+  (Array.isArray(activePeintureSeuleForfaits) && activePeintureSeuleForfaits.length > 0) ||
+  (Array.isArray(pureActiveMecaniqueItems) && pureActiveMecaniqueItems.length > 0)
 ) && (
   <tr className="bg-green-200">
     <td colSpan={7} className="border border-gray-300 p-2 font-bold">
@@ -655,6 +724,73 @@ const OrdreReparation = ({
     </td>
   </tr>
 )}
+{/* FORFAITS REPC/REMPC (Carrosserie) */}
+{Array.isArray(pureActiveMecaniqueItems) &&
+  pureActiveMecaniqueItems
+    .filter(item => {
+      const isREPC = TEXT_ITEMS_1.some(textItem => textItem.id === item.id);
+      const isREMPC = TEXT_ITEMS_2.some(textItem => textItem.id === item.id);
+      return isREPC || isREMPC;
+    })
+    .map(item => {
+      const forfait = forfaitData?.[item.id] || {};
+      const moQuantity = forfait.moQuantity || 0;
+      const pieceReference = forfait.pieceReference || "-";
+      const pieceQuantity = forfait.pieceQuantity || 0;
+      const piecePrix = forfait.piecePrix || 0;
+
+      return (
+        <React.Fragment key={item.id}>
+          <tr style={{ backgroundColor: "#BED3C3" }}>
+            <td colSpan="7" className="border border-gray-300 p-2 font-bold">
+              {item.label}
+            </td>
+          </tr>
+          {/* Main d'œuvre */}
+          <tr>
+            <td className="border border-gray-300 p-2">Main d'Œuvre</td>
+            <td className="border border-gray-300 p-2">-</td>
+            <td className="border border-gray-300 p-2">
+              {forfait.moDesignation || "Temps de travail"}
+            </td>
+            <td className="border border-gray-300 p-2">Carrosserie</td>
+            <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
+            <td className="border border-gray-300 p-2 text-right">-</td>
+            <td className="border border-gray-300 p-2 text-right">-</td>
+          </tr>
+          {/* Pièce */}
+          {pieceReference && pieceReference !== "-" && (
+            <tr>
+              <td className="border border-gray-300 p-2">Pièce</td>
+              <td className="border border-gray-300 p-2">{pieceReference}</td>
+              <td className="border border-gray-300 p-2">
+                {forfait.pieceDesignation || "-"}
+              </td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">{pieceQuantity}</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.piecePrixUnitaire ? `${forfait.piecePrixUnitaire} €` : "-"}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">{piecePrix} €</td>
+            </tr>
+          )}
+          {/* Pièces supplémentaires */}
+          {pieceLines?.[item.id]?.map((line, idx) => (
+            <tr key={idx}>
+              <td className="border border-gray-300 p-2">Pièce suppl.</td>
+              <td className="border border-gray-300 p-2">{line.reference}</td>
+              <td className="border border-gray-300 p-2">{line.designation || "-"}</td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">{line.quantity}</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {line.prixUnitaire ? `${line.prixUnitaire} €` : "-"}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">{line.prix} €</td>
+            </tr>
+          ))}
+        </React.Fragment>
+      );
+    })}
 
                 {/* FORFAITS RÉPARATION PEINTURE */}
                 {activePeintureForfaits.length > 0 && (
@@ -1016,7 +1152,7 @@ const OrdreReparation = ({
             </table>
           </div>
 
-          <div className="mb-6">
+          <div className="mb-6 no-break">
             <h2
               className="text-lg font-bold text-gray-800 mb-3 p-2 rounded-lg"
               style={{ backgroundColor: '#FFF0E6' }}
