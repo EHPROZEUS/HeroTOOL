@@ -994,6 +994,105 @@ export const PEINTURE_SEULE_FORFAITS = [
   }
 
 ];
+export const DEFAULT_VALUES = {
+  // ... valeurs existantes ...
+  
+  // ✅ NOUVEAU : Valeurs par défaut pour REPC
+  repc1: {
+    moQuantity: 0.25,
+    moDesignation: '',
+    moCategory: 'Carrosserie',
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: ''
+  },
+  repc2: {
+    moQuantity: 0.25,
+    moDesignation: '',
+    moCategory: 'Carrosserie',
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: ''
+  },
+  repc3: {
+    moQuantity: 0.25,
+    moDesignation: '',
+    moCategory: 'Carrosserie',
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: ''
+  },
+  repc4: {
+    moQuantity: 0.25,
+    moDesignation: '',
+    moCategory: 'Carrosserie',
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: ''
+  },
+  
+  // ✅ NOUVEAU : Valeurs par défaut pour REMPC
+  rempc1: {
+    moQuantity: 0.25,
+    moDesignation: '',
+    moCategory: 'Carrosserie',
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: ''
+  },
+  rempc2: {
+    moQuantity: 0.25,
+    moDesignation: '',
+    moCategory: 'Carrosserie',
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: ''
+  },
+  rempc3: {
+    moQuantity: 0.25,
+    moDesignation: '',
+    moCategory: 'Carrosserie',
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: ''
+  },
+  rempc4: {
+    moQuantity: 0.25,
+    moDesignation: '',
+    moCategory: 'Carrosserie',
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: ''
+  },
+  
+  default: {
+    // ... reste inchangé ...
+  }
+};
 
 // ===== EXPORTS FINAUX =====
 // Tous les items combinés
