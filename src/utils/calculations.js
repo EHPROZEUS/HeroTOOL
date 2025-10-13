@@ -1,9 +1,10 @@
 import { DEFAULT_VALUES, DSP_ITEMS, LUSTRAGE_ITEMS, PEINTURE_FORFAITS, PEINTURE_SEULE_FORFAITS, PLUME_ITEMS, } from '../config/constants';
-import { TARIF_HORAIRE_MO } from '../config/constants';
-const totalMO = totalMOHeures * TARIF_HORAIRE_MO;
+
 // Obtenir les valeurs par défaut d'un item
 export const getDefaultValues = (itemId) => {
   return DEFAULT_VALUES[itemId] || DEFAULT_VALUES.default;
+  import { TARIF_HORAIRE_MO } from '../config/constants';
+const totalMO = totalMOHeures * TARIF_HORAIRE_MO;
 };
 
 // Calculer les totaux
