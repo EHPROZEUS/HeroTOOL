@@ -460,9 +460,10 @@ export const DEFAULT_VALUES = {
 
 // ===== FORFAITS PEINTURE (Réparation + Peinture) =====
 export const PEINTURE_FORFAITS = [
+  // 1 ÉLÉMENT GÉNÉRIQUE
   {
     id: 'R-P1',
-    label: 'RÉPARATION + PEINTURE 1 ÉLÉMENT',
+    label: '1 Élément',
     mo1Designation: 'Réparation',
     mo1Quantity: 1.5,
     mo2Designation: 'Peinture',
@@ -472,9 +473,11 @@ export const PEINTURE_FORFAITS = [
     consommablePrixUnitaire: 10,
     consommablePrix: 10
   },
+  
+  // AILES
   {
     id: 'R-PAARD',
-    label: 'RÉPARATION + PEINTURE AILE ARRIÈRE DROITE',
+    label: 'Aile ARD',
     mo1Designation: 'Réparation',
     mo1Quantity: 1.5,
     mo2Designation: 'Peinture',
@@ -486,7 +489,7 @@ export const PEINTURE_FORFAITS = [
   },
   {
     id: 'R-PAARG',
-    label: 'RÉPARATION + PEINTURE AILE ARRIÈRE GAUCHE',
+    label: 'Aile ARG',
     mo1Designation: 'Réparation',
     mo1Quantity: 1.5,
     mo2Designation: 'Peinture',
@@ -498,9 +501,35 @@ export const PEINTURE_FORFAITS = [
   },
   {
     id: 'R-PAAVD',
-    label: 'RÉPARATION + PEINTURE AILE AVANT DROITE',
-        mo1Designation: 'Réparation',
+    label: 'Aile AVD',
+    mo1Designation: 'Réparation',
     mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'R-PAAVG',
+    label: 'Aile AVG',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // PORTES
+  {
+    id: 'R-PPTEAVD',
+    label: 'Porte AVD',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 2,
     mo2Designation: 'Peinture',
     mo2Quantity: 2.5,
     consommableDesignation: 'Ingrédient peinture 500 ml',
@@ -508,3 +537,430 @@ export const PEINTURE_FORFAITS = [
     consommablePrixUnitaire: 10,
     consommablePrix: 10
   },
+  {
+    id: 'R-PPTEAVG',
+    label: 'Porte AVG',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 2,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'R-PPTEARD',
+    label: 'Porte ARD',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 2,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'R-PPTEARG',
+    label: 'Porte ARG',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 2,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // ÉLÉMENTS HORIZONTAUX
+  {
+    id: 'R-PCP',
+    label: 'Capot',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 3,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 4,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'R-PAVILLON',
+    label: 'Pavillon',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 3,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 4,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'R-PH',
+    label: 'Hayon',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 2.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // PARE-CHOCS
+  {
+    id: 'R-PPCAV',
+    label: 'Pare-choc AV',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'R-PPCAR',
+    label: 'Pare-choc AR',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // BAS DE CAISSE
+  {
+    id: 'R-PBDCD',
+    label: 'Bas caisse D',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 2.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 1.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'R-PBDCG',
+    label: 'Bas caisse G',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 2.5,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 1.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // COQUES RÉTROS
+  {
+    id: 'R-PCRD',
+    label: 'Coque rétro D',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 0.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  {
+    id: 'R-PCRG',
+    label: 'Coque rétro G',
+    mo1Designation: 'Réparation',
+    mo1Quantity: 1,
+    mo2Designation: 'Peinture',
+    mo2Quantity: 0.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  
+  // PARE-BRISE
+  {
+    id: 'REMPLACEMENT-PB',
+    label: 'Rempl. pare-brise',
+    mo1Designation: 'Remplacement pare-brise',
+    mo1Quantity: 2,
+    mo2Designation: '',
+    mo2Quantity: 0,
+    consommableDesignation: 'Kit colle pare-brise',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 18.4,
+    consommablePrix: 18.4
+  }
+];
+
+export const PEINTURE_SEULE_FORFAITS = [
+  // 1 ÉLÉMENT GÉNÉRIQUE
+  {
+    id: 'P-1ELEM',
+    label: '1 Élément',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // AILES
+  {
+    id: 'P-AARD',
+    label: 'Aile ARD',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-AARG',
+    label: 'Aile ARG',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-AAVD',
+    label: 'Aile AVD',
+    moDesignation: 'Peinture',
+    moQuantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-AAVG',
+    label: 'Aile AVG',
+    moDesignation: 'Peinture',
+    moQuantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // ÉLÉMENTS HORIZONTAUX
+  {
+    id: 'P-PAVILLON',
+    label: 'Pavillon',
+    moDesignation: 'Peinture',
+    moQuantity: 4,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-CAPOT',
+    label: 'Capot',
+    moDesignation: 'Peinture',
+    moQuantity: 3,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-HAYON',
+    label: 'Hayon',
+    moDesignation: 'Peinture',
+    moQuantity: 3,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // COQUES RÉTROS
+  {
+    id: 'P-CRD',
+    label: 'Coque rétro D',
+    moDesignation: 'Peinture',
+    moQuantity: 0.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  {
+    id: 'P-CRG',
+    label: 'Coque rétro G',
+    moDesignation: 'Peinture',
+    moQuantity: 0.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  
+  // PARE-CHOCS
+  {
+    id: 'P-PCAR',
+    label: 'Pare-choc AR',
+    moDesignation: 'Peinture',
+    moQuantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-PCAV',
+    label: 'Pare-choc AV',
+    moDesignation: 'Peinture',
+    moQuantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // PORTES
+  {
+    id: 'P-PTEARD',
+    label: 'Porte ARD',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-PTEARG',
+    label: 'Porte ARG',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-PTEAVD',
+    label: 'Porte AVD',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-PTEAVG',
+    label: 'Porte AVG',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // BAS DE CAISSE
+  {
+    id: 'P-BDCD',
+    label: 'Bas caisse D',
+    moDesignation: 'Peinture',
+    moQuantity: 1.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-BDCG',
+    label: 'Bas caisse G',
+    moDesignation: 'Peinture',
+    moQuantity: 1.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // ÉLÉMENTS SPÉCIAUX
+  {
+    id: 'P-BECQUET',
+    label: 'Becquet hayon',
+    moDesignation: 'Peinture',
+    moQuantity: 1,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-AILERON',
+    label: 'Aileron AR',
+    moDesignation: 'Peinture',
+    moQuantity: 1,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  
+  // POIGNÉES DE PORTE
+  {
+    id: 'P-PGTEAVD',
+    label: 'Poignée AV D',
+    moDesignation: 'Peinture',
+    moQuantity: 1,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  {
+    id: 'P-PGTEAVG',
+    label: 'Poignée AV G',
+    moDesignation: 'Peinture',
+    moQuantity: 1,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  {
+    id: 'P-PGTEARD',
+    label: 'Poignée AR D',
+    moDesignation: 'Peinture',
+    moQuantity: 1,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  {
+    id: 'P-PGTEARG',
+    label: 'Poignée AR G',
+    moDesignation: 'Peinture',
+    moQuantity: 1,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  }
+];
