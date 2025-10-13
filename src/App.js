@@ -1234,15 +1234,15 @@ const getMauriceBadges = () => {
   pieceLines,
   includeControleTechnique,
   includeContrevisite,
-  activeDSPItems,
+  activeDSPItems
   
 );
   const moByCategory = calculateMOByCategory(
     activeMecaniqueItems,
     forfaitData,
     activeDSPItems,
-    activePlumeItems,
-    itemStates
+    activePlumeItems
+  
   );
   const piecesBySupplier = getPiecesListBySupplier(
     activeMecaniqueItems,
