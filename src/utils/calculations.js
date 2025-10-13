@@ -6,16 +6,16 @@ export const getDefaultValues = (itemId) => {
 };
 
 // Calculer les totaux
-export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems = []) => {
+export const calculateTotals = (
   activeMecaniqueItems, 
   forfaitData, 
   pieceLines, 
   includeControleTechnique, 
   includeContrevisite, 
   activeDSPItems = [],
-  itemStates = {} // NOUVEAU paramètre pour les forfaits peinture
+  itemStates = {}
 ) => {
-  const TARIF_HORAIRE = 35.8; // ✅ Correction du tarif
+  const TARIF_HORAIRE = 35.8;
   
   let totalMOHeures = 0;
   let totalPieces = 0;
