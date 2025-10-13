@@ -1,11 +1,9 @@
-// src/firebase.js - secure init (lit les vars d'env, supprime guillemets éventuels)
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getStorage } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
+import { getFirestore } from 'firebase/firestore';
 
-const clean = v => (typeof v === 'string' ? v.replace(/^["']|["']$/g, '') : v);
-
+// Configuration Firebase depuis les variables d'environnement
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -15,16 +13,18 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// Debug court (temporaire) : affiche uniquement la fin de la clé
+// Vérifier que les variables sont bien chargées
 if (!firebaseConfig.apiKey) {
-  console.error("⚠️ REACT_APP_FIREBASE_API_KEY manquante. Vérifie .env.local puis redémarre le serveur.");
+  console.error('❌ Variables Firebase manquantes ! Vérifiez votre fichier .env');
 } else {
-  console.log("Firebase apiKey chargée (last 6 chars):", firebaseConfig.apiKey.slice(-6));
+  console.log('✅ Firebase apiKey chargée (last 6 chars):', firebaseConfig.apiKey.slice(-6));
 }
 
+// Initialiser Firebase
 const app = initializeApp(firebaseConfig);
+
+// Exporter les services
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const storage = getStorage(app);
 export const db = getFirestore(app);
-export default app;

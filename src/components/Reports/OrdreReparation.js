@@ -1,18 +1,26 @@
 import React from 'react';
 import { calculateVehicleAge, formatDateFr } from '../../utils/formatters';
 import { getDefaultValues } from '../../utils/calculations';
-import { DSP_ITEMS, LUSTRAGE_ITEMS, PEINTURE_FORFAITS, PEINTURE_SEULE_FORFAITS, PLUME_ITEMS } from '../../config/constants';
-import { TEXT_ITEMS_1, TEXT_ITEMS_2 } from '../../config/constants';
-const tarifHoraire =35.8;
+import { 
+  DSP_ITEMS, 
+  LUSTRAGE_ITEMS, 
+  PEINTURE_FORFAITS, 
+  PEINTURE_SEULE_FORFAITS, 
+  PLUME_ITEMS, 
+  TEXT_ITEMS_1, 
+  TEXT_ITEMS_2 
+} from '../../config/constants';
+
+const tarifHoraire = 35.8;
 
 // Fonction pour déterminer la couleur globale du dossier selon la MO mécanique totale
 const getDossierColor = (totalMOMecanique) => {
   const total = parseFloat(totalMOMecanique) || 0;
   
-  if (total === 0) return { color: '#22C55E', label: 'VERT', bg: '#DCFCE7' }; // Vert : pas de pièces
-  if (total >= 0.01 && total <= 2.99) return { color: '#FACC15', label: 'JAUNE', bg: '#FEF9C3' }; // Jaune
-  if (total >= 3 && total <= 4.99) return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' }; // Transparent/Gris clair
-  if (total >= 5) return { color: '#EF4444', label: 'ROUGE', bg: '#FEE2E2' }; // Rouge
+  if (total === 0) return { color: '#22C55E', label: 'VERT', bg: '#DCFCE7' };
+  if (total >= 0.01 && total <= 2.99) return { color: '#FACC15', label: 'JAUNE', bg: '#FEF9C3' };
+  if (total >= 3 && total <= 4.99) return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' };
+  if (total >= 5) return { color: '#EF4444', label: 'ROUGE', bg: '#FEE2E2' };
   
   return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' };
 };
@@ -102,20 +110,18 @@ const OBLIGATORY_CLEANING = [
 // Catégories pour la ventilation comptable (dans l'ordre et style de l'image)
 const VENTILATION_CATEGORIES = [
   { key: 'moMecanique', label: 'MO MECANIQUE' },
+  { key: 'moNettoyage', label: 'MO NETTOYAGE' },
   { key: 'moPeinture', label: 'MO PEINTURE' },
   { key: 'moTolerie', label: 'MO TOLERIE' },
   { key: 'moLustrage', label: 'MO LUSTRAGE' },
   { key: 'moDSP', label: 'MO DSP' },
   { key: 'moControlling', label: 'MO CONTROLLING' },
-  { key: 'moForfaitaire', label: 'MO FORFAITAIRE' },
   { key: 'ingredientPeinture', label: 'INGREDIENT PEINTURE' },
   { key: 'fluides', label: 'FLUIDES' },
-  { key: 'piecesMecanique', label: 'PIECES MECANIQUE' },
-  { key: 'piecesRemploi', label: 'PIECES REMPLOI' },
-  { key: 'piecesTolerie', label: 'PIECES TOLERIE' },
   { key: 'pneumatiques', label: 'PNEUMATIQUES' },
-  { key: 'presSousTraitees', label: 'PRES. SOUS-TRAITEES' },
-  { key: 'recyclageDechets', label: 'RECYCLAGE DECHETS' },
+  { key: 'piecesMecanique', label: 'PIECES MECANIQUE' },
+  { key: 'piecesTolerie', label: 'PIECES TOLERIE' },
+  { key: 'presSousTraitees', label: 'PRES. SOUS-TRAITEES' }
 ];
 
 // Fonction pour ventiler les quantités et montants HT par catégorie
@@ -127,7 +133,7 @@ function computeVentilation({
   moByCategory = {},
   totals = {},
   includeControleTechnique = false,
-  itemStates = {},
+  itemStates = {}
 }) {
   // Initialisation des résultats
   const result = {};
@@ -135,81 +141,113 @@ function computeVentilation({
     result[cat.key] = { qty: 0, ht: 0 };
   });
 
-  // MO OBLIGATOIRES
-  for (const ob of OBLIGATORY_PRESTATIONS) {
-    switch (ob.moCategory) {
-      case 'Mécanique':
-        result.moMecanique.qty += ob.moQuantity;
-        break;
-      case 'Controlling':
-        result.moControlling.qty += ob.moQuantity;
-        break;
-      default:
-        break;
+  const tarifHoraire = 35.8;
+
+  // ===== 1. MO OBLIGATOIRES =====
+  OBLIGATORY_PRESTATIONS.forEach(ob => {
+    if (ob.moCategory === 'Mécanique') {
+      result.moMecanique.qty += ob.moQuantity;
+    } else if (ob.moCategory === 'Controlling') {
+      result.moControlling.qty += ob.moQuantity;
     }
-  }
+  });
 
-    // ✅ AJOUTER : MO de nettoyage obligatoire
-  for (const ob of OBLIGATORY_CLEANING) {
-    result.moMecanique.qty += ob.mo.moQuantity; // ← AJOUTER CETTE LIGNE
-  }
-  
-  // Nettoyage obligatoire (consommables sur pièces mécanique)
-  for (const ob of OBLIGATORY_CLEANING) {
-    result.piecesMecanique.ht += ob.consommable.totalPrice || 0;
-    result.piecesMecanique.qty += ob.consommable.quantity || 0;
-  }
+  // ===== 2. MO NETTOYAGE =====
+  OBLIGATORY_CLEANING.forEach(ob => {
+    result.moNettoyage.qty += ob.mo.moQuantity;
+    // Consommables de nettoyage → FLUIDES
+    result.fluides.ht += ob.consommable.totalPrice || 0;
+  });
 
-  // MO dynamiques
+  // ===== 3. MO DYNAMIQUES (depuis moByCategory) =====
   result.moMecanique.qty += moByCategory.mecanique || 0;
   result.moLustrage.qty += moByCategory.lustrage || 0;
   result.moDSP.qty += moByCategory.dsp || 0;
   result.moControlling.qty += moByCategory.controlling || 0;
-  result.moForfaitaire.qty += moByCategory.forfaitaire || 0;
   result.moPeinture.qty += moByCategory.peinture || 0;
   result.moTolerie.qty += moByCategory.tolerie || 0;
 
-  // PIECES MECANIQUE (somme totalPieces)
-  result.piecesMecanique.ht += parseFloat(totals.totalPieces) || 0;
+  // ===== 4. PIECES ET CONSOMMABLES MECANIQUE =====
+  // Séparer les pneus des autres pièces
+  activeMecaniqueItems.forEach(item => {
+    const forfait = forfaitData[item.id] || {};
+    const piecePrix = parseFloat(forfait.piecePrix) || 0;
 
-  // PRES. SOUS-TRAITEES (contrôle technique)
+    // Pneus → PNEUMATIQUES
+    if (item.id === 'pneusAvant' || item.id === 'pneusArriere' || item.id === 'pneus4') {
+      result.pneumatiques.ht += piecePrix;
+    } else {
+      // Autres pièces → PIECES MECANIQUE
+      result.piecesMecanique.ht += piecePrix;
+    }
+
+    // Consommables (huile, liquides) → FLUIDES
+    const consommablePrix = parseFloat(forfait.consommablePrix) || 0;
+    if (consommablePrix > 0) {
+      result.fluides.ht += consommablePrix;
+    }
+
+    // Pièces supplémentaires
+    if (pieceLines[item.id]) {
+      pieceLines[item.id].forEach(line => {
+        const linePrix = parseFloat(line.prix) || 0;
+        result.piecesMecanique.ht += linePrix;
+      });
+    }
+  });
+
+  // ===== 5. FORFAITS PEINTURE (INGREDIENT PEINTURE) =====
+  PEINTURE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      result.ingredientPeinture.ht += forfait.consommablePrix || 0;
+    }
+  });
+
+  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      result.ingredientPeinture.ht += forfait.consommablePrix || 0;
+    }
+  });
+
+  // ===== 6. FORFAITS CARROSSERIE (PIECES TOLERIE) =====
+  activeMecaniqueItems
+    .filter(item => {
+      const isREPC = TEXT_ITEMS_1.some(textItem => textItem.id === item.id);
+      const isREMPC = TEXT_ITEMS_2.some(textItem => textItem.id === item.id);
+      return isREPC || isREMPC;
+    })
+    .forEach(item => {
+      const forfait = forfaitData[item.id] || {};
+      const piecePrix = parseFloat(forfait.piecePrix) || 0;
+      result.piecesTolerie.ht += piecePrix;
+
+      // Pièces supplémentaires
+      if (pieceLines[item.id]) {
+        pieceLines[item.id].forEach(line => {
+          result.piecesTolerie.ht += parseFloat(line.prix) || 0;
+        });
+      }
+    });
+
+  // ===== 7. PRESTATIONS SOUS-TRAITEES =====
   if (includeControleTechnique) {
     result.presSousTraitees.qty += 1;
     result.presSousTraitees.ht += 42;
   }
-  
-  // FORFAITS PEINTURE - Consommables uniquement (les MO sont déjà dans moByCategory)
-  PEINTURE_FORFAITS.forEach(forfait => {
-    const state = itemStates[forfait.id] ?? 0;
-    if (state > 0) {
-      result.ingredientPeinture.qty += forfait.consommableQuantity || 0;
-      result.ingredientPeinture.ht += forfait.consommablePrix || 0;
-    }
-  });
 
-  // FORFAITS PEINTURE SEULE - Consommables
-  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
-    const state = itemStates[forfait.id] ?? 0;
-    if (state > 0) {
-      result.ingredientPeinture.qty += forfait.consommableQuantity || 0;
-      result.ingredientPeinture.ht += forfait.consommablePrix || 0;
-    }
-  });
-
-  // Calculer les montants HT pour toutes les MO
-  const tarifHoraire = 35.8;
+  // ===== 8. CALCUL DES MONTANTS HT POUR TOUTES LES MO =====
   result.moMecanique.ht = result.moMecanique.qty * tarifHoraire;
+  result.moNettoyage.ht = result.moNettoyage.qty * tarifHoraire;
   result.moLustrage.ht = result.moLustrage.qty * tarifHoraire;
   result.moDSP.ht = result.moDSP.qty * tarifHoraire;
   result.moControlling.ht = result.moControlling.qty * tarifHoraire;
-  result.moForfaitaire.ht = result.moForfaitaire.qty * tarifHoraire;
   result.moPeinture.ht = result.moPeinture.qty * tarifHoraire;
   result.moTolerie.ht = result.moTolerie.qty * tarifHoraire;
 
-
   return result;
 }
-
 const OrdreReparation = ({
   showOrdreReparation,
   setShowOrdreReparation,

@@ -123,6 +123,45 @@ export const calculateTotals = (
     }
   });
 
+  // ✅ NOUVEAU : Comptabiliser les forfaits depuis itemStates (pour les modifications)
+  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0 && !forfaitData[forfait.id]?.peintureSeuleForfait) {
+      // Si le forfait est activé mais pas encore dans forfaitData
+      totalMOHeures += parseFloat(forfait.moQuantity || 0);
+      totalConsommables += parseFloat(forfait.consommablePrix || 0);
+    }
+  });
+
+  PEINTURE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0 && !forfaitData[forfait.id]?.peintureForfait) {
+      // Si le forfait est activé mais pas encore dans forfaitData
+      totalMOHeures += parseFloat(forfait.mo1Quantity || 0);
+      totalMOHeures += parseFloat(forfait.mo2Quantity || 0);
+      totalConsommables += parseFloat(forfait.consommablePrix || 0);
+    }
+  });
+
+  // ✅ FORFAITS PEINTURE SEULE (manquant)
+PEINTURE_SEULE_FORFAITS.forEach(forfait => {
+  const state = itemStates[forfait.id] ?? 0;
+  if (state > 0) {
+    // Vérifier si le forfait a été modifié dans forfaitData
+    const customData = forfaitData[forfait.id];
+    
+    if (customData) {
+      // Utiliser les valeurs personnalisées
+      totalMOHeures += parseFloat(customData.moQuantity || 0);
+      totalConsommables += parseFloat(customData.consommablePrix || 0);
+    } else {
+      // Utiliser les valeurs par défaut du forfait
+      totalMOHeures += parseFloat(forfait.moQuantity || 0);
+      totalConsommables += parseFloat(forfait.consommablePrix || 0);
+    }
+  }
+});
+
   const MoTableau = 74.106;
   const totalMO = MoTableau + totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);

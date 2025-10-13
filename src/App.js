@@ -13,6 +13,8 @@ import ForfaitPeintureSeuleForm from './components/Forfaits/ForfaitPeintureSeule
 import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
+import QuoteManager from './components/QuoteManager/QuoteManager';
+
 
 import {
   HUILES_CONFIG,
@@ -277,36 +279,7 @@ const playMauriceSound = (type) => {
     return () => unsub();
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (headerInfo.lead.trim()) {
-        const data = {
-          headerInfo,
-          itemStates,
-          itemNotes,
-          forfaitData,
-          pieceLines,
-          lastMaintenance,
-          oilInfo,
-          includeControleTechnique,
-          includeContrevisite,
-          savedAt: new Date().toISOString()
-        };
-        localStorage.setItem(`herotool_quote_${headerInfo.lead}`, JSON.stringify(data));
-      }
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [
-    headerInfo,
-    itemStates,
-    itemNotes,
-    forfaitData,
-    pieceLines,
-    lastMaintenance,
-    oilInfo,
-    includeControleTechnique,
-    includeContrevisite
-  ]);
+
 
   const toggleCategory = useCallback(cat => {
     setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
@@ -813,32 +786,19 @@ if (mauriceMode) {
     includeContrevisite
   ]);
 
-  const loadQuote = useCallback(lead => {
-    if (!lead?.trim()) {
-      alert(mauriceMode ? '⚠️ Maurice dit : Donne-moi un nom, chef !' : '⚠️ Nom requis');
-      return;
-    }
-    const raw = localStorage.getItem(`herotool_quote_${lead}`);
-    if (!raw) {
-      alert(mauriceMode ? '❌ Maurice trouve rien avec ce nom...' : '❌ Aucun devis');
-      return;
-    }
-    try {
-      const data = JSON.parse(raw);
-      setHeaderInfo(data.headerInfo || {});
-      setItemStates(data.itemStates || {});
-      setItemNotes(data.itemNotes || {});
-      setForfaitData(data.forfaitData || {});
-      setPieceLines(data.pieceLines || {});
-      setLastMaintenance(data.lastMaintenance || {});
-      setOilInfo(data.oilInfo || { viscosity: '', quantity: '' });
-      setIncludeControleTechnique(data.includeControleTechnique ?? true);
-      setIncludeContrevisite(data.includeContrevisite ?? false);
-      alert(mauriceMode ? '🎩 Maurice a retrouvé ton dossier !' : '✅ Chargé');
-    } catch (e) {
-      alert(mauriceMode ? '❌ Maurice galère : ' + e.message : '❌ ' + e.message);
-    }
-  }, []);
+
+
+  const loadQuoteFromFirebase = useCallback((data) => {
+  setHeaderInfo(data.headerInfo || {});
+  setItemStates(data.itemStates || {});
+  setItemNotes(data.itemNotes || {});
+  setForfaitData(data.forfaitData || {});
+  setPieceLines(data.pieceLines || {});
+  setLastMaintenance(data.lastMaintenance || {});
+  setOilInfo(data.oilInfo || { viscosity: '', quantity: '' });
+  setIncludeControleTechnique(data.includeControleTechnique ?? true);
+  setIncludeContrevisite(data.includeContrevisite ?? false);
+}, []);
 
   // ---- Firebase authentication and upload helpers ----
   const handleFirebaseSignIn = useCallback(async () => {
@@ -1299,10 +1259,6 @@ const getMauriceBadges = () => {
     .filter(i => !LUSTRAGE_ITEMS.some(l => l.id === i.id))
     .filter(i => (forfaitData[i.id]?.moCategory || defaultCategoryForItem(i)) === 'Mécanique');
 
-  const statusDisplay = (() => {
-    if (firebaseUser) return { text: `✅ Connecté: ${firebaseUser.displayName || firebaseUser.email}`, color: 'text-green-600' };
-    return { text: '🔓 Non connecté (Firebase)', color: 'text-blue-600' };
-  })();
 
   return (
 <div className={`min-h-screen p-4 md:p-8 transition-all-smooth ${mauriceMode ? 'maurice-cursor' : ''} ${ultraMaurice ? 'ultra-maurice' : ''}`} style={{ background: colors.bg }}>      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-8">
@@ -1441,52 +1397,7 @@ const getMauriceBadges = () => {
   )}
 </div>
 
-        <div className="mb-8 p-6 rounded-xl border-2" style={{ 
-  borderColor: mauriceMode ? colors.primary : '#BBF7D0',
-  backgroundColor: mauriceMode ? '#FAF5FF' : '#F0FDF4'
-}}>
-  <h2 className="text-lg font-bold text-gray-800 mb-4">
-    {mauriceMode ? "Maurice sauvegarde ton taf" : "Sauvegardez votre progression"}
-  </h2>
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<button onClick={saveQuote} className={`px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all-smooth ${mauriceMode ? 'maurice-button-dance' : ''}`} style={{ backgroundColor: colors.btnSuccess }}>
-      {mauriceMode ? '🧙‍♂️ Maurice sauvegarde' : '💾 Sauvegarder'}
-    </button>
-    <button
-      onClick={() => {
-        const lead = prompt('Nom du Lead à charger:');
-        if (lead) loadQuote(lead);
-      }}
-className={`px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all-smooth ${mauriceMode ? 'maurice-button-dance' : ''}`}
-      style={{ backgroundColor: '#3B82F6' }}
-    >
-      {mauriceMode ? '🎩 Maurice charge' : '📂 Charger'}
-    </button>
 
-    {/* GARDE TOUT LE RESTE IDENTIQUE À PARTIR D'ICI */}
-    {firebaseUser ? (
-      <button onClick={handleFirebaseSignOut} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700">
-        🔓 Déconnexion Firebase
-      </button>
-    ) : (
-      <button onClick={handleFirebaseSignIn} className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700">
-        🔐 Connexion Firebase
-      </button>
-    )}
-
-    <div className="flex gap-2">
-      <button onClick={uploadToFirebaseStorage} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">
-        ☁️ Export Firebase Storage
-      </button>
-      <button onClick={saveToFirestore} className="px-6 py-3 bg-indigo-700 text-white rounded-lg font-semibold hover:bg-indigo-800">
-        ☁️ Enregistrer sur Firestore
-      </button>
-    </div>
-  </div>
-  <div className="mt-4 text-sm">
-    <span className={statusDisplay.color}>{statusDisplay.text}</span>
-  </div>
-</div>
 
         <VehicleInfoForm
           headerInfo={headerInfo}
@@ -1497,6 +1408,21 @@ className={`px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 trans
           toggleFreinParking={toggleFreinParking}
           toggleStartStop={toggleStartStop}
         />
+{/* 💾 Gestionnaire de devis Firebase - SYSTÈME UNIFIÉ */}
+<QuoteManager
+  headerInfo={headerInfo}
+  itemStates={itemStates}
+  itemNotes={itemNotes}
+  forfaitData={forfaitData}
+  pieceLines={pieceLines}
+  lastMaintenance={lastMaintenance}
+  oilInfo={oilInfo}
+  includeControleTechnique={includeControleTechnique}
+  includeContrevisite={includeContrevisite}
+  onLoadQuote={loadQuoteFromFirebase}
+  mauriceMode={mauriceMode}
+  colors={colors}
+/>
         <MaintenanceHistory lastMaintenance={lastMaintenance} updateLastMaintenance={updateLastMaintenance} />
         <VehicleSummary headerInfo={headerInfo} oilInfo={oilInfo} lastMaintenance={lastMaintenance} />
         <div className="mb-8">
