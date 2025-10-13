@@ -398,11 +398,27 @@ const playMauriceSound = (type) => {
     });
   }, []);
   const updateNote = useCallback((id, value) => {
-    if (['pneusAvant', 'pneusArriere', 'pneus4'].includes(id)) {
-      setItemNotes(prev => ({ ...prev, [id]: formatTireSize(value) }));
-    } else {
-      setItemNotes(prev => ({ ...prev, [id]: value }));
-    }
+  // Formatage spécial pour les pneus
+  if (['pneusAvant', 'pneusArriere', 'pneus4'].includes(id)) {
+    setItemNotes(prev => ({ ...prev, [id]: formatTireSize(value) }));
+  } else {
+    setItemNotes(prev => ({ ...prev, [id]: value }));
+  }
+  
+  // ✅ NOUVEAU : Synchroniser avec forfaitData pour REPC et REMPC
+  const isREPC = TEXT_ITEMS_1.some(item => item.id === id);
+  const isREMPC = TEXT_ITEMS_2.some(item => item.id === id);
+  
+  if (isREPC || isREMPC) {
+    setForfaitData(prev => ({
+      ...prev,
+      [id]: {
+        ...(prev[id] || {}),
+        moDesignation: value // ✅ Le texte devient la désignation
+      }
+    }));
+  }
+}, []);
   }, []);
 
   const updateLastMaintenance = useCallback((field, value) => {
