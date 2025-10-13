@@ -4,6 +4,19 @@ import { getDefaultValues } from '../../utils/calculations';
 import { DSP_ITEMS, LUSTRAGE_ITEMS, PEINTURE_FORFAITS, PEINTURE_SEULE_FORFAITS, PLUME_ITEMS } from '../../config/constants';
 import { TEXT_ITEMS_1, TEXT_ITEMS_2 } from '../../config/constants';
 const tarifHoraire =35.8;
+
+// Fonction pour déterminer la couleur globale du dossier selon la MO mécanique totale
+const getDossierColor = (totalMOMecanique) => {
+  const total = parseFloat(totalMOMecanique) || 0;
+  
+  if (total === 0) return { color: '#22C55E', label: 'VERT', bg: '#DCFCE7' }; // Vert : pas de pièces
+  if (total >= 0.01 && total <= 2.99) return { color: '#FACC15', label: 'JAUNE', bg: '#FEF9C3' }; // Jaune
+  if (total >= 3 && total <= 4.99) return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' }; // Transparent/Gris clair
+  if (total >= 5) return { color: '#EF4444', label: 'ROUGE', bg: '#FEE2E2' }; // Rouge
+  
+  return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' };
+};
+
 // Lignes obligatoires à afficher en haut du tableau des prestations
 const OBLIGATORY_PRESTATIONS = [
   {
@@ -251,6 +264,16 @@ const OrdreReparation = ({
     includeControleTechnique,
     itemStates
   });
+
+
+
+
+    // ✅ CALCUL DU TOTAL MO MÉCANIQUE
+ const totalMOMecanique = moByCategory?.mecanique || 0;
+
+  const dossierStatus = getDossierColor(totalMOMecanique);
+
+
 // Styles pour éviter les coupures dans le PDF
   const pdfStyles = `
     @media print {
@@ -304,40 +327,79 @@ const OrdreReparation = ({
         </div>
       </div>
 
-      {showOrdreReparation && (
-        <div
-          id="ordre-reparation-content"
-          className="bg-white border-4 rounded-xl p-8 shadow-2xl"
-          style={{ borderColor: '#FF6B35' }}
+{showOrdreReparation && (
+  <div
+    id="ordre-reparation-content"
+    className="bg-white border-4 rounded-xl p-8 shadow-2xl"
+    style={{ borderColor: '#FF6B35' }}
+  >
+    <style>{pdfStyles}</style>
+    
+    {/* ✅ HEADER : STATUT + TITRE ALIGNÉS */}
+    <div className="mb-6 pb-4 border-b-2 border-gray-300">
+      <div className="flex items-center justify-between">
+        {/* Statut du dossier à gauche */}
+        <div 
+          className="p-4 rounded-lg border-2 shadow-md"
+          style={{ 
+            backgroundColor: dossierStatus.bg,
+            borderColor: dossierStatus.color
+          }}
         >
-          <style>{pdfStyles}</style>
-          <div className="text-center mb-6 pb-4 border-b-2 border-gray-300">
-            <h1 className="text-2xl font-bold" style={{ color: '#FF6B35' }}>
-              ORDRE DE RÉPARATION
-            </h1>
-            <p className="text-sm text-gray-600">
-              Document généré le {new Date().toLocaleDateString('fr-FR')}
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-12 h-12 rounded-full shadow-lg"
+              style={{ backgroundColor: dossierStatus.color }}
+            ></div>
+            <div>
+              <p className="text-xs font-semibold text-gray-600 uppercase">Statut du dossier</p>
+              <p 
+                className="text-2xl font-bold"
+                style={{ color: dossierStatus.color }}
+              >
+                {dossierStatus.label}
+              </p>
+              <p className="text-sm font-medium text-gray-700">
+                MO Méca : <span className="font-bold">{totalMOMecanique.toFixed(2)}h</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Titre au centre */}
+        <div className="text-center flex-1">
+          <h1 className="text-2xl font-bold" style={{ color: '#FF6B35' }}>
+            ORDRE DE RÉPARATION
+          </h1>
+          <p className="text-sm text-gray-600">
+            Document généré le {new Date().toLocaleDateString('fr-FR')}
+          </p>
+        </div>
+
+        {/* Espace vide à droite pour équilibrer */}
+        <div style={{ width: '220px' }}></div>
+      </div>
+    </div>
+
+    {/* ALERTE CONTRE-VISITE */}
+    {includeContrevisite && (
+      <div
+        className="mb-6 p-3 border-2 rounded-lg"
+        style={{ backgroundColor: '#FFF5F0', borderColor: '#FF6B35' }}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">⚠️</span>
+          <div>
+            <p className="text-lg font-bold" style={{ color: '#FF6B35' }}>
+              CONTRE-VISITE REQUISE
+            </p>
+            <p className="text-sm text-gray-800">
+              Le véhicule nécessite une contre-visite du contrôle technique
             </p>
           </div>
-
-          {includeContrevisite && (
-            <div
-              className="mb-6 p-3 border-2 rounded-lg"
-              style={{ backgroundColor: '#FFF5F0', borderColor: '#FF6B35' }}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">⚠️</span>
-                <div>
-                  <p className="text-lg font-bold" style={{ color: '#FF6B35' }}>
-                    CONTRE-VISITE REQUISE
-                  </p>
-                  <p className="text-sm text-gray-800">
-                    Le véhicule nécessite une contre-visite du contrôle technique
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+        </div>
+      </div>
+    )}
 
 {/* =============== INFOS VEHICULE + VENTILATION COMPTABLE =============== */}
 <div className="mb-6 no-break"> 

@@ -32,7 +32,8 @@ import {
   LUSTRAGE_ITEMS,
   PEINTURE_FORFAITS,
   PEINTURE_SEULE_FORFAITS,
-  PLUME_ITEMS
+  PLUME_ITEMS,
+  DEFAULT_VALUES
 } from './config/constants';
 
 import { formatTireSize } from './utils/formatters';
@@ -131,6 +132,7 @@ function App() {
   const [expandedCategories, setExpandedCategories] = useState({
     mecanique: false,
     pneusFreins: false,
+    mecanique: false,
     dsp: false,
     lustrage: false,
     carrosserie: false,
@@ -341,11 +343,43 @@ const playMauriceSound = (type) => {
     setHeaderInfo(prev => ({ ...prev, startStop: !prev.startStop }));
   }, []);
 
-  const cycleState = useCallback(itemId => {
-    setItemStates(prev => {
-      const current = prev[itemId] ?? 0;
-      const next = (current + 1) % 3;
-      const updated = { ...prev, [itemId]: next };
+const cycleState = useCallback(itemId => {
+  setItemStates(prev => {
+    const current = prev[itemId] ?? 0;
+    const next = (current + 1) % 3;
+    const updated = { ...prev, [itemId]: next };
+
+    // ✅ INITIALISER forfaitData avec les valeurs par défaut si l'item passe à l'état 1
+    if (next === 1 && !forfaitData[itemId]) {
+      setForfaitData(prevForfait => {
+        // Ne rien faire si le forfait existe déjà
+        if (prevForfait[itemId]) return prevForfait;
+
+        // Récupérer les valeurs par défaut
+        const defaults = DEFAULT_VALUES[itemId] || DEFAULT_VALUES.default || {};
+        
+        return {
+          ...prevForfait,
+          [itemId]: {
+            moQuantity: defaults.moQuantity || '0.1',
+            moPrix: defaults.moPrix || 35.8,
+            moCategory: 'Mécanique',
+            pieceReference: defaults.pieceReference || '',
+            pieceDesignation: defaults.pieceDesignation || '',
+            pieceQuantity: defaults.pieceQuantity || '1',
+            piecePrixUnitaire: defaults.piecePrixUnitaire || '0',
+            piecePrix: defaults.piecePrix || '0',
+            pieceFournisseur: defaults.pieceFournisseur || '',
+            consommableReference: defaults.consommableReference || '',
+            consommableDesignation: defaults.consommableDesignation || '',
+            consommableQuantity: defaults.consommableQuantity || '0',
+            consommablePrixUnitaire: defaults.consommablePrixUnitaire || '0',
+            consommablePrix: defaults.consommablePrix || '0'
+          }
+        };
+      });
+    }
+
 
       // REPC/REMPC - Ajouter à forfaitData quand activés
       const isREPC = TEXT_ITEMS_1.some(item => item.id === itemId);
@@ -1503,6 +1537,31 @@ className={`px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 trans
         </div>
 
         <div className="border-t-2 border-orange-400 my-8" />
+
+<div className="mb-8">
+  <div className="flex items-center justify-between mb-6">
+    <h2 className="text-2xl font-bold text-gray-800">MECANIQUE</h2>
+    <button 
+      onClick={() => toggleCategory('mecanique')} 
+      className="px-6 py-3 text-white rounded-full font-semibold hover:opacity-90" 
+      style={{ backgroundColor: '#FF6B35' }}
+    >
+      {expandedCategories.mecanique ? 'Fermer' : 'Ouvrir'}
+    </button>
+  </div>
+  {expandedCategories.mecanique && (
+    <ChecklistSection
+      leftItems={TEXT_ITEMS_3}
+      rightItems={TEXT_ITEMS_4}
+      itemStates={itemStates}
+      itemNotes={itemNotes}
+      onCycleState={cycleState}
+      onUpdateNote={updateNote}
+    />
+  )}
+</div>
+
+<div className="border-t-2 border-orange-400 my-8" />
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">

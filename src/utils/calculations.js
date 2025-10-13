@@ -1,4 +1,11 @@
-import { DEFAULT_VALUES, DSP_ITEMS, LUSTRAGE_ITEMS } from '../config/constants';
+import { 
+  DEFAULT_VALUES,
+  DSP_ITEMS, 
+  LUSTRAGE_ITEMS, 
+  PLUME_ITEMS, 
+  PEINTURE_FORFAITS, 
+  PEINTURE_SEULE_FORFAITS 
+} from '../config/constants';
 
 // Obtenir les valeurs par défaut d'un item
 export const getDefaultValues = (itemId) => {
@@ -137,36 +144,100 @@ export const calculateMOByCategory = (
   activeMecaniqueItems = [], 
   forfaitData = {}, 
   activeDSPItems = [],
-  activePlumeItems = [], // ✅ Ajout du paramètre
-  itemStates = {} // ✅ Ajout du paramètre
+  activePlumeItems = [],
+  itemStates = {}
 ) => {
   const categories = {
-    'Mécanique': 0,
-    'Carrosserie': 0,
-    'Peinture': 0,
-    'DSP': 0,
-    'Lustrage': 0
+    mecanique: 0,
+    carrosserie: 0,
+    peinture: 0,
+    tolerie: 0,
+    dsp: 0,
+    lustrage: 0,
+    controlling: 0,
+    nettoyage: 0,
+    forfaitaire: 0
   };
 
-  const validMecaniqueItems = (activeMecaniqueItems || []).filter(item => item && item.id);
-
-  validMecaniqueItems.forEach(item => {
+  // Parcourir les items de mécanique - SEULE LA CATÉGORIE "Mécanique" compte
+  activeMecaniqueItems.forEach(item => {
     const forfait = forfaitData[item.id] || {};
-    const defaults = getDefaultValues(item.id);
-    const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : (defaults.moQuantity || 0)) || 0;
-    const category = forfait.moCategory || 'Mécanique';
-    
-    if (categories[category] !== undefined) {
-      categories[category] += moQuantity;
+    const moQty = parseFloat(forfait.moQuantity) || 0;
+    const moCategory = (forfait.moCategory || 'Mécanique').toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, ""); // Retire les accents
+
+    // Ajouter à la bonne catégorie
+    if (moCategory === 'mecanique') {
+      categories.mecanique += moQty;
+    } else if (moCategory === 'carrosserie') {
+      categories.carrosserie += moQty;
+    } else if (moCategory === 'peinture') {
+      categories.peinture += moQty;
+    } else if (moCategory === 'tolerie') {
+      categories.tolerie += moQty;
+    } else if (moCategory === 'lustrage') {
+      categories.lustrage += moQty;
+    } else if (moCategory === 'controlling') {
+      categories.controlling += moQty;
+    } else if (moCategory === 'nettoyage') {
+      categories.nettoyage += moQty;
+    } else {
+      // Par défaut, mettre dans mécanique SEULEMENT si pas de catégorie définie
+      categories.mecanique += moQty;
     }
   });
 
-  const validDSPItems = (activeDSPItems || []).filter(dspItem => dspItem && dspItem.id);
+  // Items DSP - NE PAS COMPTER dans mecanique
+  if (Array.isArray(activeDSPItems)) {
+    activeDSPItems.forEach(item => {
+      const dspConfig = DSP_ITEMS.find(d => d.id === item.id);
+      if (dspConfig) {
+        categories.dsp += parseFloat(dspConfig.moQuantity) || 0;
+      }
+    });
+  }
 
-  validDSPItems.forEach(dspItem => {
-    const dspConfig = DSP_ITEMS.find(item => item && item.id === dspItem.id);
-    if (dspConfig) {
-      categories['DSP'] += parseFloat(dspConfig.moQuantity || 0) || 0;
+  // Items Plume - NE PAS COMPTER dans mecanique (ils ont leur propre catégorie)
+  if (Array.isArray(activePlumeItems)) {
+    activePlumeItems.forEach(item => {
+      const plumeConfig = PLUME_ITEMS.find(p => p.id === item.id);
+      if (plumeConfig) {
+        const moQty = parseFloat(plumeConfig.moQuantity) || 0;
+        // Les plumes ne sont PAS de la MO mécanique
+        // Elles sont dans leur propre catégorie
+      }
+    });
+  }
+
+  // Forfaits Lustrage 1 élément - NE PAS COMPTER dans mecanique
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    if (data.lustrage1Elem === true) {
+      categories.lustrage += parseFloat(data.moQuantity) || 0;
+    }
+  });
+
+  // Forfaits Plume 1 élément - NE PAS COMPTER dans mecanique
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    if (data.plume1Elem === true) {
+      // Ne pas ajouter aux catégories, c'est un forfait spécial
+    }
+  });
+
+  // Forfaits Réparation + Peinture
+  PEINTURE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      categories.tolerie += parseFloat(forfait.mo1Quantity) || 0;
+      categories.peinture += parseFloat(forfait.mo2Quantity) || 0;
+    }
+  });
+
+  // Forfaits Peinture Seule
+  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      categories.peinture += parseFloat(forfait.moQuantity) || 0;
     }
   });
 
