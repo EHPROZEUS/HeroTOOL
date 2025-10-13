@@ -135,6 +135,11 @@ function computeVentilation({
         break;
     }
   }
+
+    // ✅ AJOUTER : MO de nettoyage obligatoire
+  for (const ob of OBLIGATORY_CLEANING) {
+    result.moMecanique.qty += ob.mo.moQuantity; // ← AJOUTER CETTE LIGNE
+  }
   
   // Nettoyage obligatoire (consommables sur pièces mécanique)
   for (const ob of OBLIGATORY_CLEANING) {
