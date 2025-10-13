@@ -3,8 +3,7 @@ import { calculateVehicleAge, formatDateFr } from '../../utils/formatters';
 import { getDefaultValues } from '../../utils/calculations';
 import { DSP_ITEMS, LUSTRAGE_ITEMS, PEINTURE_FORFAITS, PEINTURE_SEULE_FORFAITS, PLUME_ITEMS } from '../../config/constants';
 import { TEXT_ITEMS_1, TEXT_ITEMS_2 } from '../../config/constants';
-import { TARIF_HORAIRE_MO } from '../../config/constants';
-const tarifHoraire = TARIF_HORAIRE_MO;
+const tarifHoraire =35.8;
 // Lignes obligatoires à afficher en haut du tableau des prestations
 const OBLIGATORY_PRESTATIONS = [
   {
