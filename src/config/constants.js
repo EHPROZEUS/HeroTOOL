@@ -1249,10 +1249,6 @@ export const DEFAULT_VALUES = {
     piecePrix: 0,
     pieceFournisseur: ''
   },
-  
-  default: {
-    // ... reste inchangé ...
-  }
 };
 
 // ===== EXPORTS FINAUX =====
