@@ -236,11 +236,23 @@ export const LUSTRAGE_ITEMS = [
 
 // ===== FORFAITS PLUME =====
 export const PLUME_ITEMS = [
-  { id: 'PLUME1', label: 'Plume 1 élément', moQuantity: 0.2 },
-  { id: 'PLUME2', label: 'Plume 2 éléments', moQuantity: 0.4 },
-  { id: 'PLUME3', label: 'Plume 3 éléments', moQuantity: 0.6 },
-  { id: 'PLUME4', label: 'Plume 4 éléments', moQuantity: 0.8 }
+  { id: 'PLUAARD', label: 'Plume aile arrière droite', moQuantity: 0.2 },
+  { id: 'PLUAARG', label: 'Plume aile arrière gauche', moQuantity: 0.2 },
+  { id: 'PLUAAVD', label: 'Plume aile avant droite', moQuantity: 0.2 },
+  { id: 'PLUAAVG', label: 'Plume aile avant gauche', moQuantity: 0.2 },
+  { id: 'PLUPAVILLON', label: 'Plume pavillon', moQuantity: 0.2 },
+  { id: 'PLUCP', label: 'Plume capot', moQuantity: 0.2 },
+  { id: 'PLUCRD', label: 'Plume coque rétro droite', moQuantity: 0.2 },
+  { id: 'PLUCRG', label: 'Plume coque rétro gauche', moQuantity: 0.2 },
+  { id: 'PLUH', label: 'Plume hayon', moQuantity: 0.2 },
+  { id: 'PLUPCAR', label: 'Plume pare choc arrière', moQuantity: 0.2 },
+  { id: 'PLUPCAV', label: 'Plume pare choc avant', moQuantity: 0.2 },
+  { id: 'PLUPTEARD', label: 'Plume porte arrière droite', moQuantity: 0.2 },
+  { id: 'PLUPTEARG', label: 'Plume porte arrière gauche', moQuantity: 0.2 },
+  { id: 'PLUPTEAVD', label: 'Plume porte avant droite', moQuantity: 0.2 },
+  { id: 'PLUPTEAVG', label: 'Plume porte avant gauche', moQuantity: 0.2 }
 ];
+
 
 // ===== TOUS LES ITEMS COMBINÉS =====
 export const ALL_ITEMS = [
