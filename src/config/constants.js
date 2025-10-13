@@ -248,7 +248,24 @@ export const getPiecesListBySupplier = (activeMecaniqueItems = [], forfaitData =
         prixTotal: forfait.piecePrix || defaults.piecePrix || 0
       });
     }
+// ===== FORFAITS PEINTURE SEULE =====
+export const PEINTURE_SEULE_FORFAITS = [
+  {
+    id: 'P-1ELEM',
+    label: 'PEINTURE 1 ÉLÉMENT',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  }
+];
 
+// ===== FORFAITS PLUME =====
+export const PLUME_ITEMS = [
+  { id: 'PLUME1', label: 'Plume 1 élément', moQuantity: 0.2 }
+];
     // Ajouter les pièces supplémentaires
     if (pieceLines[item.id]) {
       pieceLines[item.id].forEach(line => {
