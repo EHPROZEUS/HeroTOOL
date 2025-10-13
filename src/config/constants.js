@@ -128,7 +128,118 @@ export const calculateTotals = (
       totalMOHeures += parseFloat(data.mo2Quantity || 0); // Peinture
       totalConsommables += parseFloat(data.consommablePrix || 0);
     }
-    
+
+    // ===== FORFAITS PEINTURE SEULE =====
+export const PEINTURE_SEULE_FORFAITS = [
+  {
+    id: 'P-1ELEM',
+    label: 'PEINTURE 1 ÉLÉMENT',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-AARD',
+    label: 'PEINTURE AILE ARRIÈRE DROITE',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-AARG',
+    label: 'PEINTURE AILE ARRIÈRE GAUCHE',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-AAVD',
+    label: 'PEINTURE AILE AVANT DROITE',
+    moDesignation: 'Peinture',
+    moQuantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-AAVG',
+    label: 'PEINTURE AILE AVANT GAUCHE',
+    moDesignation: 'Peinture',
+    moQuantity: 2,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-PAVILLON',
+    label: 'PEINTURE PAVILLON',
+    moDesignation: 'Peinture',
+    moQuantity: 4,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-CP',
+    label: 'PEINTURE CAPOT',
+    moDesignation: 'Peinture',
+    moQuantity: 4,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  },
+  {
+    id: 'P-CRD',
+    label: 'PEINTURE COQUE RÉTRO DROITE',
+    moDesignation: 'Peinture',
+    moQuantity: 0.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  {
+    id: 'P-CRG',
+    label: 'PEINTURE COQUE RÉTRO GAUCHE',
+    moDesignation: 'Peinture',
+    moQuantity: 0.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 0.5,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 5
+  },
+  {
+    id: 'P-H',
+    label: 'PEINTURE HAYON',
+    moDesignation: 'Peinture',
+    moQuantity: 2.5,
+    consommableDesignation: 'Ingrédient peinture 500 ml',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 10,
+    consommablePrix: 10
+  }
+];
+
+// ===== FORFAITS PLUME =====
+export const PLUME_ITEMS = [
+  { id: 'PLUME1', label: 'Plume 1 élément', moQuantity: 0.2 },
+  { id: 'PLUME2', label: 'Plume 2 éléments', moQuantity: 0.4 },
+  { id: 'PLUME3', label: 'Plume 3 éléments', moQuantity: 0.6 },
+  { id: 'PLUME4', label: 'Plume 4 éléments', moQuantity: 0.8 }
+];
     // Forfaits lustrage 1 élément (stackables)
     if (data.lustrage1Elem === true) {
       totalMOHeures += parseFloat(data.moQuantity || 0);
