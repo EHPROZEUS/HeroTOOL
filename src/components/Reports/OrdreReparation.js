@@ -1188,7 +1188,7 @@ const OrdreReparation = ({
                   className="flex justify-between text-lg font-bold"
                   style={{ color: '#FF6B35' }}
                 >
-                  <span>TOTAL HT (sans prestations ext.):</span>
+                  <span>TOTAL PIECES HT (sans prestations ext.):</span>
                   <span>
                     {totals?.totalHTSansPrestations !== undefined
                       ? totals.totalHTSansPrestations
