@@ -1235,7 +1235,7 @@ const getMauriceBadges = () => {
   includeControleTechnique,
   includeContrevisite,
   activeDSPItems,
-  itemStates // ✅ Ajout du nouveau paramètre
+  
 );
   const moByCategory = calculateMOByCategory(
     activeMecaniqueItems,
