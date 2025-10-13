@@ -6,35 +6,108 @@ export const getDefaultValues = (itemId) => {
 };
 
 // Calculer les totaux
-export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems = [], activePlumeItems = []) => {
-
+export const calculateTotals = (
+  activeMecaniqueItems, 
+  forfaitData, 
+  pieceLines, 
+  includeControleTechnique, 
+  includeContrevisite, 
+  activeDSPItems = [],
+  itemStates = {} // NOUVEAU paramètre pour les forfaits peinture
+) => {
+  const TARIF_HORAIRE = 71.6; // ✅ Correction du tarif
+  
   let totalMOHeures = 0;
   let totalPieces = 0;
   let totalConsommables = 0;
 
-  // Identifier les items de lustrage parmi les items de mécanique
+  // ========================================
+  // 1. MO OBLIGATOIRES (Prestations fixes)
+  // ========================================
+  const OBLIGATORY_PRESTATIONS = [
+    { moQuantity: 0.10 }, // PLAQUE IMT
+    { moQuantity: 0.10 }, // ESSAI
+    { moQuantity: 0.10 }, // PEC
+    { moQuantity: 0.10 }, // LG
+    { moQuantity: 0.50 }, // PHOTOS (Controlling)
+  ];
+  
+  OBLIGATORY_PRESTATIONS.forEach(item => {
+    totalMOHeures += item.moQuantity;
+  });
+
+  // ========================================
+  // 2. NETTOYAGE OBLIGATOIRE
+  // ========================================
+  const OBLIGATORY_CLEANING = [
+    { moQuantity: 0.75, consommablePrix: 3.70 }, // Nettoyage intérieur
+    { moQuantity: 0.42, consommablePrix: 3.70 }, // Nettoyage extérieur
+  ];
+  
+  OBLIGATORY_CLEANING.forEach(item => {
+    totalMOHeures += item.moQuantity;
+    totalConsommables += item.consommablePrix;
+  });
+
+  // ========================================
+  // 3. ITEMS DE LUSTRAGE
+  // ========================================
   const activeLustrageItems = activeMecaniqueItems.filter(item => 
     LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
   );
   
-  // Items de mécanique sans les items de lustrage
+  activeLustrageItems.forEach(lustrageItem => {
+    const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
+    if (lustrageConfig) {
+      const forfait = forfaitData[lustrageItem.id] || {};
+      
+      // Main d'œuvre
+      const moQuantity = parseFloat(
+        forfait.moQuantity !== undefined 
+          ? forfait.moQuantity 
+          : lustrageConfig.moQuantity
+      ) || 0;
+      totalMOHeures += moQuantity;
+      
+      // Consommables
+      const consommableQuantity = parseFloat(
+        forfait.consommableQuantity !== undefined 
+          ? forfait.consommableQuantity 
+          : lustrageConfig.consommable
+      ) || 0;
+      const consommablePrixUnitaire = parseFloat(forfait.consommablePrixUnitaire || 1.00);
+      totalConsommables += consommableQuantity * consommablePrixUnitaire;
+    }
+  });
+
+  // ========================================
+  // 4. ITEMS DE MÉCANIQUE (hors lustrage)
+  // ========================================
   const pureMecaniqueItems = activeMecaniqueItems.filter(item => 
     !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
   );
-
-  // Calcul pour les items de mécanique (hors lustrage)
+  
   pureMecaniqueItems.forEach(item => {
     const forfait = forfaitData[item.id] || {};
     const defaults = getDefaultValues(item.id);
     
-    const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : defaults.moQuantity) || 0;
-    const piecePrix = parseFloat(forfait.piecePrix !== undefined ? forfait.piecePrix : defaults.piecePrix) || 0;
-    const consommablePrix = parseFloat(forfait.consommablePrix || 0) || 0;
+    const moQuantity = parseFloat(
+      forfait.moQuantity !== undefined 
+        ? forfait.moQuantity 
+        : defaults.moQuantity
+    ) || 0;
+    const piecePrix = parseFloat(
+      forfait.piecePrix !== undefined 
+        ? forfait.piecePrix 
+        : defaults.piecePrix
+    ) || 0;
+    const consommablePrix = parseFloat(forfait.consommablePrix || 0);
     
     totalMOHeures += moQuantity;
     totalPieces += piecePrix;
     totalConsommables += consommablePrix;
     
+    // Pièces supplémentaires
     if (pieceLines[item.id]) {
       pieceLines[item.id].forEach(line => {
         totalPieces += parseFloat(line.prix || 0) || 0;
@@ -42,26 +115,9 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
     }
   });
 
-  // Calcul pour les items de lustrage
-  activeLustrageItems.forEach(lustrageItem => {
-    const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
-    if (lustrageConfig) {
-      const forfait = forfaitData[lustrageItem.id] || {};
-      
-      // Main d'œuvre
-      const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : lustrageConfig.moQuantity) || 0;
-      totalMOHeures += moQuantity;
-      
-      // Consommables
-      const consommableQuantity = parseFloat(forfait.consommableQuantity !== undefined ? forfait.consommableQuantity : lustrageConfig.consommable) || 0;
-      const consommablePrixUnitaire = parseFloat(forfait.consommablePrixUnitaire || 1.00);
-      const consommablePrix = consommableQuantity * consommablePrixUnitaire;
-      
-      totalConsommables += consommablePrix;
-    }
-  });
-
-  // Calcul pour les items DSP
+  // ========================================
+  // 5. ITEMS DSP
+  // ========================================
   activeDSPItems.forEach(dspItem => {
     const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
     if (dspConfig) {
@@ -70,37 +126,50 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
     }
   });
 
-  // Calcul pour les items PLUME
-  activePlumeItems.forEach(plumeItem => {
-    const plumeConfig = PLUME_ITEMS.find(item => item.id === plumeItem.id);
-    if (plumeConfig) {
-      totalMOHeures += plumeConfig.moQuantity;
-      totalConsommables += plumeConfig.consommable;
+  // ========================================
+  // 6. FORFAITS PEINTURE (PEINTURE_FORFAITS)
+  // ========================================
+  const PEINTURE_FORFAITS = [
+    // Importez depuis constants.js ou définissez localement
+    // Pour l'instant, je vais les chercher dans forfaitData avec une logique générique
+  ];
+  
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    // Détection des forfaits peinture par leurs propriétés
+    if (data.mo1Quantity || data.mo2Quantity) {
+      const state = itemStates[key] ?? 0;
+      if (state > 0) { // Actif
+        totalMOHeures += parseFloat(data.mo1Quantity || 0); // Tolerie
+        totalMOHeures += parseFloat(data.mo2Quantity || 0); // Peinture
+        totalConsommables += parseFloat(data.consommablePrix || 0);
+      }
     }
   });
 
-  // Calcul pour Lustrage 1 élément (stackables)
+  // ========================================
+  // 7. FORFAITS LUSTRAGE/PLUME 1 ÉLÉMENT
+  // ========================================
   Object.entries(forfaitData).forEach(([key, data]) => {
     if (data.lustrage1Elem === true) {
-      const moQty = parseFloat(data.moQuantity || 0);
-      totalMOHeures += moQty;
-      
+      totalMOHeures += parseFloat(data.moQuantity || 0);
       const consQty = parseFloat(data.consommableQuantity || 0);
       const consPU = parseFloat(data.consommablePrixUnitaire || 0);
-      totalConsommables += (consQty * consPU);
+      totalConsommables += consQty * consPU;
     }
-  });
-
-  // Calcul pour Plume 1 élément (stackables)
-  Object.entries(forfaitData).forEach(([key, data]) => {
+    
     if (data.plume1Elem === true) {
-      const moQty = parseFloat(data.moQuantity || 0);
-      totalMOHeures += moQty;
+      totalMOHeures += parseFloat(data.moQuantity || 0);
     }
   });
 
-  const totalMO = totalMOHeures * 35.8;
-  const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
+  // ========================================
+  // 8. CALCUL FINAL
+  // ========================================
+  const totalMO = totalMOHeures * TARIF_HORAIRE;
+  const prestationsExterieures = 
+    (includeControleTechnique ? 42 : 0) + 
+    (includeContrevisite ? 10 : 0);
+  
   const totalHTSansPrestations = totalMO + totalPieces + totalConsommables;
   const totalHT = totalHTSansPrestations + prestationsExterieures;
 
