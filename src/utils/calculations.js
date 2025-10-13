@@ -116,7 +116,7 @@ export const calculateTotals = (
     }
   });
 
-  const totalMO = OBLIGATORY_PRESTATIONS + totalMOHeures * 35.8;
+  const totalMO = moQuantity: 2.07 + totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
   const totalHTSansPrestations = 7.4 + totalPieces + totalConsommables;
   const totalHT = totalHTSansPrestations + prestationsExterieures;
