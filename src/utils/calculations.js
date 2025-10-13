@@ -7,31 +7,32 @@ export const getDefaultValues = (itemId) => {
 
 // Calculer les totaux
 export const calculateTotals = (
-  activeMecaniqueItems, 
-  forfaitData, 
-  pieceLines, 
-  includeControleTechnique, 
-  includeContrevisite, 
+  activeMecaniqueItems = [], 
+  forfaitData = {}, 
+  pieceLines = {}, 
+  includeControleTechnique = false, 
+  includeContrevisite = false, 
   activeDSPItems = []
 ) => {
   let totalMOHeures = 0;
   let totalPieces = 0;
   let totalConsommables = 0;
 
+  // 🔧 CORRECTION: Filtrer d'abord les items undefined/null
+  const validMecaniqueItems = (activeMecaniqueItems || []).filter(item => item && item.id);
+
   // Identifier les items de lustrage parmi les items de mécanique
-  const activeLustrageItems = activeMecaniqueItems.filter(item => 
-    item && LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
+  const activeLustrageItems = validMecaniqueItems.filter(item => 
+    LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
   );
   
   // Items de mécanique sans les items de lustrage
-  const pureMecaniqueItems = activeMecaniqueItems.filter(item => 
-    item && !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
+  const pureMecaniqueItems = validMecaniqueItems.filter(item => 
+    !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
   );
 
   // Calcul pour les items de mécanique (hors lustrage)
   pureMecaniqueItems.forEach(item => {
-    if (!item) return; // Sécurité supplémentaire
-    
     const forfait = forfaitData[item.id] || {};
     const defaults = getDefaultValues(item.id);
     
@@ -52,8 +53,6 @@ export const calculateTotals = (
 
   // Calcul pour les items de lustrage
   activeLustrageItems.forEach(lustrageItem => {
-    if (!lustrageItem) return; // Sécurité supplémentaire
-    
     const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
     if (lustrageConfig) {
       const forfait = forfaitData[lustrageItem.id] || {};
@@ -71,20 +70,21 @@ export const calculateTotals = (
     }
   });
 
-  // 🔧 CORRECTION ICI - Calcul pour les items DSP avec vérifications de sécurité
-  activeDSPItems
-    .filter(dspItem => dspItem && dspItem.id) // Filtrer les items undefined/null
-    .forEach(dspItem => {
-      const dspConfig = DSP_ITEMS.find(item => item && item.id === dspItem.id);
-      if (dspConfig) {
-        totalMOHeures += parseFloat(dspConfig.moQuantity) || 0;
-        totalConsommables += parseFloat(dspConfig.consommable) || 0;
-      }
-    });
+  // 🔧 CORRECTION: Filtrer les items DSP undefined/null
+  const validDSPItems = (activeDSPItems || []).filter(dspItem => dspItem && dspItem.id);
+  
+  // Calcul pour les items DSP
+  validDSPItems.forEach(dspItem => {
+    const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
+    if (dspConfig) {
+      totalMOHeures += parseFloat(dspConfig.moQuantity) || 0;
+      totalConsommables += parseFloat(dspConfig.consommable) || 0;
+    }
+  });
 
   // Calcul pour les forfaits peinture et autres forfaits dynamiques
   Object.entries(forfaitData).forEach(([key, data]) => {
-    if (!data) return; // Sécurité supplémentaire
+    if (!data) return;
     
     // Forfaits peinture (réparation + peinture)
     if (data.peintureForfait) {
@@ -123,7 +123,7 @@ export const calculateTotals = (
 };
 
 // Calculer les heures de MO par catégorie
-export const calculateMOByCategory = (activeMecaniqueItems, forfaitData, activeDSPItems = []) => {
+export const calculateMOByCategory = (activeMecaniqueItems = [], forfaitData = {}, activeDSPItems = []) => {
   const categories = {
     'Mécanique': 0,
     'Carrosserie': 0,
@@ -132,84 +132,87 @@ export const calculateMOByCategory = (activeMecaniqueItems, forfaitData, activeD
     'Lustrage': 0
   };
 
-  // Calcul pour les items de mécanique
-  activeMecaniqueItems
-    .filter(item => item && item.id) // Filtrer les items undefined/null
-    .forEach(item => {
-      const forfait = forfaitData[item.id] || {};
-      const defaults = getDefaultValues(item.id);
-      const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : defaults.moQuantity) || 0;
-      const category = forfait.moCategory || 'Mécanique';
-      
-      if (categories[category] !== undefined) {
-        categories[category] += moQuantity;
-      }
-    });
+  // 🔧 CORRECTION: Filtrer les items undefined/null
+  const validMecaniqueItems = (activeMecaniqueItems || []).filter(item => item && item.id);
 
-  // 🔧 CORRECTION ICI - Calcul pour les items DSP avec vérifications
-  activeDSPItems
-    .filter(dspItem => dspItem && dspItem.id) // Filtrer les items undefined/null
-    .forEach(dspItem => {
-      const dspConfig = DSP_ITEMS.find(item => item && item.id === dspItem.id);
-      if (dspConfig) {
-        categories['DSP'] += parseFloat(dspConfig.moQuantity) || 0;
-      }
-    });
+  // Calcul pour les items de mécanique
+  validMecaniqueItems.forEach(item => {
+    const forfait = forfaitData[item.id] || {};
+    const defaults = getDefaultValues(item.id);
+    const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : defaults.moQuantity) || 0;
+    const category = forfait.moCategory || 'Mécanique';
+    
+    if (categories[category] !== undefined) {
+      categories[category] += moQuantity;
+    }
+  });
+
+  // 🔧 CORRECTION: Filtrer les items DSP undefined/null
+  const validDSPItems = (activeDSPItems || []).filter(dspItem => dspItem && dspItem.id);
+
+  // Calcul pour les items DSP
+  validDSPItems.forEach(dspItem => {
+    const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
+    if (dspConfig) {
+      categories['DSP'] += parseFloat(dspConfig.moQuantity) || 0;
+    }
+  });
 
   return categories;
 };
 
 // Obtenir la liste des pièces par fournisseur
-export const getPiecesListBySupplier = (activeMecaniqueItems, forfaitData, pieceLines) => {
+export const getPiecesListBySupplier = (activeMecaniqueItems = [], forfaitData = {}, pieceLines = {}) => {
   const piecesBySupplier = {};
 
-  activeMecaniqueItems
-    .filter(item => item && item.id) // Filtrer les items undefined/null
-    .forEach(item => {
-      const forfait = forfaitData[item.id] || {};
-      const defaults = getDefaultValues(item.id);
+  // 🔧 CORRECTION: Filtrer les items undefined/null
+  const validMecaniqueItems = (activeMecaniqueItems || []).filter(item => item && item.id);
+
+  validMecaniqueItems.forEach(item => {
+    const forfait = forfaitData[item.id] || {};
+    const defaults = getDefaultValues(item.id);
+    
+    const pieceReference = forfait.pieceReference !== undefined ? forfait.pieceReference : defaults.pieceReference;
+    if (pieceReference && item.id !== 'miseANiveau') {
+      const supplier = forfait.pieceFournisseur !== undefined ? forfait.pieceFournisseur : (defaults.pieceFournisseur || 'Non défini');
+      const quantity = forfait.pieceQuantity !== undefined ? forfait.pieceQuantity : defaults.pieceQuantity;
       
-      const pieceReference = forfait.pieceReference !== undefined ? forfait.pieceReference : defaults.pieceReference;
-      if (pieceReference && item.id !== 'miseANiveau') {
-        const supplier = forfait.pieceFournisseur !== undefined ? forfait.pieceFournisseur : (defaults.pieceFournisseur || 'Non défini');
-        const quantity = forfait.pieceQuantity !== undefined ? forfait.pieceQuantity : defaults.pieceQuantity;
+      if (!piecesBySupplier[supplier]) {
+        piecesBySupplier[supplier] = [];
+      }
+      
+      piecesBySupplier[supplier].push({
+        itemId: item.id,
+        itemLabel: item.label,
+        reference: pieceReference,
+        designation: forfait.pieceDesignation || defaults.pieceDesignation || '',
+        quantity: quantity,
+        prixUnitaire: forfait.piecePrixUnitaire || defaults.piecePrixUnitaire || 0,
+        prixTotal: forfait.piecePrix || defaults.piecePrix || 0
+      });
+    }
+
+    // Ajouter les pièces supplémentaires
+    if (pieceLines[item.id]) {
+      pieceLines[item.id].forEach(line => {
+        if (!line) return;
         
+        const supplier = line.fournisseur || 'Non défini';
         if (!piecesBySupplier[supplier]) {
           piecesBySupplier[supplier] = [];
         }
-        
         piecesBySupplier[supplier].push({
           itemId: item.id,
           itemLabel: item.label,
-          reference: pieceReference,
-          designation: forfait.pieceDesignation || defaults.pieceDesignation || '',
-          quantity: quantity,
-          prixUnitaire: forfait.piecePrixUnitaire || defaults.piecePrixUnitaire || 0,
-          prixTotal: forfait.piecePrix || defaults.piecePrix || 0
+          reference: line.reference,
+          designation: line.designation || '',
+          quantity: line.quantity,
+          prixUnitaire: line.prixUnitaire || 0,
+          prixTotal: line.prix || 0
         });
-      }
-
-      // Ajouter les pièces supplémentaires
-      if (pieceLines[item.id]) {
-        pieceLines[item.id].forEach(line => {
-          if (!line) return; // Sécurité
-          
-          const supplier = line.fournisseur || 'Non défini';
-          if (!piecesBySupplier[supplier]) {
-            piecesBySupplier[supplier] = [];
-          }
-          piecesBySupplier[supplier].push({
-            itemId: item.id,
-            itemLabel: item.label,
-            reference: line.reference,
-            designation: line.designation || '',
-            quantity: line.quantity,
-            prixUnitaire: line.prixUnitaire || 0,
-            prixTotal: line.prix || 0
-          });
-        });
-      }
-    });
+      });
+    }
+  });
 
   return piecesBySupplier;
 };
