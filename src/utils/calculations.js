@@ -116,7 +116,7 @@ export const calculateTotals = (
     }
   });
 
-  const MoTableau = 2.07;
+  const MoTableau = 74.106;
   const totalMO = MoTableau + totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
   const totalHTSansPrestations = 7.4 + totalPieces + totalConsommables;
