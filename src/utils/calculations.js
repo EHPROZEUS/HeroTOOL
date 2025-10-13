@@ -7,15 +7,6 @@ export const getDefaultValues = (itemId) => {
 
 // Calculer les totaux
 export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, includeControleTechnique, includeContrevisite, activeDSPItems = []) => {
-  let totalMOHeures = 0;
-  // ... reste du code ...
-  
-  const totalMO = totalMOHeures * 35.8; // ✅ ICI, DANS LA FONCTION
-  // ...
-};
-
-// Calculer les totaux
-export const calculateTotals = (
   activeMecaniqueItems, 
   forfaitData, 
   pieceLines, 
