@@ -1,4 +1,4 @@
-import { DEFAULT_VALUES, DSP_ITEMS, LUSTRAGE_ITEMS, PEINTURE_FORFAITS, PEINTURE_SEULE_FORFAITS, PLUME_ITEMS, PEINTURE_FORFAITS,PEINTURE_SEULE_FORFAITS } from '../config/constants';
+import { DEFAULT_VALUES, DSP_ITEMS, LUSTRAGE_ITEMS, PEINTURE_FORFAITS, PEINTURE_SEULE_FORFAITS, PLUME_ITEMS, } from '../config/constants';
 
 // Obtenir les valeurs par défaut d'un item
 export const getDefaultValues = (itemId) => {
