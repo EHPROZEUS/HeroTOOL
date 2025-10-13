@@ -1,3 +1,4 @@
+export const TARIF_HORAIRE_MO = 35.8;
 // Couleurs AutoHero
 export const COLORS = {
   primary: '#FF6B35',        // Orange AutoHero
