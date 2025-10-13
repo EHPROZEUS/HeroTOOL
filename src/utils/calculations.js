@@ -15,7 +15,7 @@ export const calculateTotals = (activeMecaniqueItems, forfaitData, pieceLines, i
   activeDSPItems = [],
   itemStates = {} // NOUVEAU paramètre pour les forfaits peinture
 ) => {
-  const TARIF_HORAIRE = 71.6; // ✅ Correction du tarif
+  const TARIF_HORAIRE = 35.8; // ✅ Correction du tarif
   
   let totalMOHeures = 0;
   let totalPieces = 0;
