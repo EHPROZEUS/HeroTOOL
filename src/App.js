@@ -1214,14 +1214,14 @@ const getMauriceBadges = () => {
     .map(([key, data]) => ({ id: key, ...data }));
 
   const totals = calculateTotals(
-    activeMecaniqueItems,
-    forfaitData,
-    pieceLines,
-    includeControleTechnique,
-    includeContrevisite,
-    activeDSPItems,
-    activePlumeItems
-  );
+  activeMecaniqueItems,
+  forfaitData,
+  pieceLines,
+  includeControleTechnique,
+  includeContrevisite,
+  activeDSPItems,
+  itemStates // ✅ Ajout du nouveau paramètre
+);
   const moByCategory = calculateMOByCategory(
     activeMecaniqueItems,
     forfaitData,
