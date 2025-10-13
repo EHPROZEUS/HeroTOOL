@@ -76,6 +76,29 @@ export const calculateTotals = (
     }
   });
 
+  // Calcul pour les forfaits peinture et autres forfaits dynamiques
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    // Forfaits peinture (réparation + peinture)
+    if (data.peintureForfait) {
+      totalMOHeures += parseFloat(data.mo1Quantity || 0); // Tolerie
+      totalMOHeures += parseFloat(data.mo2Quantity || 0); // Peinture
+      totalConsommables += parseFloat(data.consommablePrix || 0);
+    }
+    
+    // Forfaits lustrage 1 élément (stackables)
+    if (data.lustrage1Elem === true) {
+      totalMOHeures += parseFloat(data.moQuantity || 0);
+      const consQty = parseFloat(data.consommableQuantity || 0);
+      const consPU = parseFloat(data.consommablePrixUnitaire || 0);
+      totalConsommables += consQty * consPU;
+    }
+    
+    // Forfaits plume 1 élément (stackables)
+    if (data.plume1Elem === true) {
+      totalMOHeures += parseFloat(data.moQuantity || 0);
+    }
+  });
+
   const totalMO = totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
   const totalHTSansPrestations = totalMO + totalPieces + totalConsommables;
