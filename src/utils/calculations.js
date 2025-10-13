@@ -167,7 +167,7 @@ export const calculateTotals = (
   // 8. CALCUL FINAL
   // ========================================
   const totalMO = totalMOHeures * TARIF_HORAIRE;
-  const prestationsExterieures = 
+  const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0); 
     (includeControleTechnique ? 42 : 0) + 
     (includeContrevisite ? 10 : 0);
   
