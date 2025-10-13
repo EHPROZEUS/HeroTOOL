@@ -397,13 +397,13 @@ const playMauriceSound = (type) => {
       return updated;
     });
   }, []);
- const updateNote = useCallback((id, value) => {
+const updateNote = useCallback((id, value) => {
+  // Formatage spécial pour les pneus
   if (['pneusAvant', 'pneusArriere', 'pneus4'].includes(id)) {
     setItemNotes(prev => ({ ...prev, [id]: formatTireSize(value) }));
   } else {
     setItemNotes(prev => ({ ...prev, [id]: value }));
   }
-}, []);
   
   // ✅ NOUVEAU : Synchroniser avec forfaitData pour REPC et REMPC
   const isREPC = TEXT_ITEMS_1.some(item => item.id === id);
@@ -414,12 +414,11 @@ const playMauriceSound = (type) => {
       ...prev,
       [id]: {
         ...(prev[id] || {}),
-        moDesignation: value // ✅ Le texte devient la désignation
+        moDesignation: value
       }
     }));
   }
 }, []);
-  }, []);
 
   const updateLastMaintenance = useCallback((field, value) => {
     setLastMaintenance(prev => ({ ...prev, [field]: value }));
