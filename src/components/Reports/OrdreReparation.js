@@ -184,7 +184,7 @@ function computeVentilation({
   });
 
   // Calculer les montants HT pour toutes les MO
-  const tarifHoraire = 71.6;
+  const tarifHoraire = 35.8;
   result.moMecanique.ht = result.moMecanique.qty * tarifHoraire;
   result.moLustrage.ht = result.moLustrage.qty * tarifHoraire;
   result.moDSP.ht = result.moDSP.qty * tarifHoraire;
