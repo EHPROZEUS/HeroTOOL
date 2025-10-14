@@ -581,114 +581,126 @@ const updateNote = useCallback((id, value) => {
   }, []);
 
   // ✅ FONCTION CORRIGÉE - Support multi-pièces
-  const dispatchPieces = useCallback(() => {
-    if (!parsedPieces.length) {
-      alert('Aucune pièce à dispatcher.');
-      return;
-    }
-    const sansForfait = parsedPieces.filter(p => !p.targetForfait);
-    if (sansForfait.length) {
-      const ok = window.confirm(
-        `${sansForfait.length} pièce(s) sans forfait cible seront ignorées. Continuer ?`
-      );
-      if (!ok) return;
-    }
+// Remplace la fonction dispatchPieces existante par ce bloc
+const dispatchPieces = useCallback(() => {
+  if (!parsedPieces.length) {
+    alert('Aucune pièce à dispatcher.');
+    return;
+  }
+  const sansForfait = parsedPieces.filter(p => !p.targetForfait);
+  if (sansForfait.length) {
+    const ok = window.confirm(
+      `${sansForfait.length} pièce(s) sans forfait cible seront ignorées. Continuer ?`
+    );
+    if (!ok) return;
+  }
 
-    // Grouper les pièces par forfait
-    const piecesByForfait = {};
-    parsedPieces.forEach(piece => {
-      if (!piece.targetForfait || !piece.reference) return;
-      if (!piecesByForfait[piece.targetForfait]) {
-        piecesByForfait[piece.targetForfait] = [];
+  // Grouper les pièces par forfait
+  const piecesByForfait = {};
+  parsedPieces.forEach(piece => {
+    if (!piece.targetForfait || !piece.reference) return;
+    if (!piecesByForfait[piece.targetForfait]) {
+      piecesByForfait[piece.targetForfait] = [];
+    }
+    piecesByForfait[piece.targetForfait].push(piece);
+  });
+
+  // Dispatcher : 1ère pièce → forfaitData, autres → pieceLines
+  setForfaitData(prev => {
+    const nextData = { ...prev };
+
+    Object.entries(piecesByForfait).forEach(([forfaitId, pieces]) => {
+      const existing = nextData[forfaitId] || {};
+
+      // La première pièce va dans le forfait principal
+      const firstPiece = pieces[0];
+      let qty = 1;
+      if (typeof firstPiece.quantity === 'string' && firstPiece.quantity.trim() !== '') {
+        qty = parseFloat(firstPiece.quantity.replace(',', '.'));
+        if (isNaN(qty)) qty = 1;
+      } else if (typeof firstPiece.quantity === 'number') {
+        qty = firstPiece.quantity;
       }
-      piecesByForfait[piece.targetForfait].push(piece);
+
+      let pu = 0;
+      if (typeof firstPiece.prixUnitaire === 'string' && firstPiece.prixUnitaire.trim() !== '') {
+        pu = parseFloat(firstPiece.prixUnitaire.replace(',', '.'));
+        if (isNaN(pu)) pu = 0;
+      } else if (typeof firstPiece.prixUnitaire === 'number') {
+        pu = firstPiece.prixUnitaire;
+      }
+
+      const prix = +(qty * pu || 0); // nombre
+
+      nextData[forfaitId] = {
+        ...existing,
+        pieceReference: firstPiece.reference,
+        pieceDesignation: firstPiece.designation || existing.pieceDesignation || '',
+        pieceQuantity: qty ? qty.toString() : '',
+        piecePrixUnitaire: pu ? +pu.toFixed(2) : '',
+        piecePrix: prix ? +prix.toFixed(2) : '',
+        pieceFournisseur: firstPiece.fournisseur || existing.pieceFournisseur || ''
+      };
     });
 
-    // Dispatcher : 1ère pièce → forfaitData, autres → pieceLines
-    setForfaitData(prev => {
-      const nextData = { ...prev };
+    return nextData;
+  });
 
-      Object.entries(piecesByForfait).forEach(([forfaitId, pieces]) => {
-        const existing = nextData[forfaitId] || {};
+  // Ajouter les pièces supplémentaires (2ème, 3ème, etc.) dans pieceLines
+  setPieceLines(prev => {
+    const nextLines = { ...prev };
 
-        // La première pièce va dans le forfait principal
-        const firstPiece = pieces[0];
-        let qty = 1;
-        if (typeof firstPiece.quantity === 'string' && firstPiece.quantity.trim() !== '') {
-          qty = parseFloat(firstPiece.quantity.replace(',', '.'));
-          if (isNaN(qty)) qty = 1;
+    Object.entries(piecesByForfait).forEach(([forfaitId, pieces]) => {
+      // Ignorer la première pièce (déjà dans forfaitData)
+      const additionalPieces = pieces.slice(1);
+
+      if (additionalPieces.length > 0) {
+        if (!nextLines[forfaitId]) {
+          nextLines[forfaitId] = [];
         }
-        let pu = 0;
-        if (typeof firstPiece.prixUnitaire === 'string' && firstPiece.prixUnitaire.trim() !== '') {
-          pu = parseFloat(firstPiece.prixUnitaire.replace(',', '.'));
-          if (isNaN(pu)) pu = 0;
-        }
-        const prix = (qty * pu).toFixed(2);
 
-        nextData[forfaitId] = {
-          ...existing,
-          pieceReference: firstPiece.reference,
-          pieceDesignation: firstPiece.designation || existing.pieceDesignation || '',
-          pieceQuantity: qty ? qty.toString() : '',
-          piecePrixUnitaire: pu ? pu.toFixed(2) : '',
-          piecePrix: prix,
-          pieceFournisseur: firstPiece.fournisseur || existing.pieceFournisseur || ''
-        };
-      });
-
-      return nextData;
-    });
-
-    // Ajouter les pièces supplémentaires (2ème, 3ème, etc.) dans pieceLines
-    setPieceLines(prev => {
-      const nextLines = { ...prev };
-
-      Object.entries(piecesByForfait).forEach(([forfaitId, pieces]) => {
-        // Ignorer la première pièce (déjà dans forfaitData)
-        const additionalPieces = pieces.slice(1);
-
-        if (additionalPieces.length > 0) {
-          // Créer ou compléter le tableau de pièces supplémentaires
-          if (!nextLines[forfaitId]) {
-            nextLines[forfaitId] = [];
+        additionalPieces.forEach(piece => {
+          let qty = 1;
+          if (typeof piece.quantity === 'string' && piece.quantity.trim() !== '') {
+            qty = parseFloat(piece.quantity.replace(',', '.'));
+            if (isNaN(qty)) qty = 1;
+          } else if (typeof piece.quantity === 'number') {
+            qty = piece.quantity;
           }
 
-          additionalPieces.forEach(piece => {
-            let qty = 1;
-            if (typeof piece.quantity === 'string' && piece.quantity.trim() !== '') {
-              qty = parseFloat(piece.quantity.replace(',', '.'));
-              if (isNaN(qty)) qty = 1;
-            }
-            let pu = 0;
-            if (typeof piece.prixUnitaire === 'string' && piece.prixUnitaire.trim() !== '') {
-              pu = parseFloat(piece.prixUnitaire.replace(',', '.'));
-              if (isNaN(pu)) pu = 0;
-            }
-            const prix = (qty * pu).toFixed(2);
+          let pu = 0;
+          if (typeof piece.prixUnitaire === 'string' && piece.prixUnitaire.trim() !== '') {
+            pu = parseFloat(piece.prixUnitaire.replace(',', '.'));
+            if (isNaN(pu)) pu = 0;
+          } else if (typeof piece.prixUnitaire === 'number') {
+            pu = piece.prixUnitaire;
+          }
 
-            nextLines[forfaitId].push({
-              reference: piece.reference,
-              designation: piece.designation || '',
-              fournisseur: piece.fournisseur || '',
-              quantity: qty.toString(),
-              prixUnitaire: pu.toFixed(2),
-              prix: prix
-            });
+          const prix = +(qty * pu || 0);
+
+          nextLines[forfaitId].push({
+            reference: piece.reference,
+            designation: piece.designation || '',
+            fournisseur: piece.fournisseur || '',
+            quantity: qty.toString(),
+            prixUnitaire: pu ? +pu.toFixed(2) : '',
+            prix: prix ? +prix.toFixed(2) : ''
           });
-        }
-      });
-
-      return nextLines;
+        });
+      }
     });
 
-    setImportText('');
-    setParsedPieces([]);
-    setShowImportModule(false);
+    return nextLines;
+  });
 
-    const totalPieces = parsedPieces.length;
-    const totalForfaits = Object.keys(piecesByForfait).length;
-    alert(mauriceMode ? `✨ Maurice a importé ${totalPieces} pièce(s) dans ${totalForfaits} forfait(s), nickel !` : `✓ ${totalPieces} pièce(s) importée(s) vers ${totalForfaits} forfait(s)`);
-  }, [parsedPieces]);
+  setImportText('');
+  setParsedPieces([]);
+  setShowImportModule(false);
+
+  const totalPieces = parsedPieces.length;
+  const totalForfaits = Object.keys(piecesByForfait).length;
+  alert(mauriceMode ? `✨ Maurice a importé ${totalPieces} pièce(s) dans ${totalForfaits} forfait(s), nickel !` : `✓ ${totalPieces} pièce(s) importée(s) vers ${totalForfaits} forfait(s)`);
+}, [parsedPieces]);
 
   const countRP1 = Object.keys(forfaitData).filter(
     k => forfaitData[k]?.peintureForfait === "R-P1"
