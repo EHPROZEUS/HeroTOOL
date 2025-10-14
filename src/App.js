@@ -944,7 +944,7 @@ const handleLogoClick = () => {
   const newClicks = mauriceClicks + 1;
   setMauriceClicks(newClicks);
 
-  if (newClicks === 10) {
+  if (newClicks === 6) {
   const newMode = !mauriceMode;
   setMauricMode(newMode);
   localStorage.setItem('mauriceMode', newMode);
@@ -975,7 +975,7 @@ const handleLogoClick = () => {
       setShowConfetti(false);
       setMauriceClicks(0);
     }, 3000);
-  } else if (newClicks < 10) {
+  } else if (newClicks < 6) {
     setTimeout(() => setMauriceClicks(0), 2000);
   }
 };
