@@ -195,7 +195,7 @@ const QuoteManager = ({
         {/* Bouton Charger */}
         <button
           onClick={() => setShowQuoteList(!showQuoteList)}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all"
+          className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
         >
           📂 {showQuoteList ? 'Masquer' : 'Charger un devis'}
         </button>
@@ -203,7 +203,7 @@ const QuoteManager = ({
         {/* Bouton Rafraîchir la liste */}
         <button
           onClick={loadQuotesList}
-          className="px-6 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all"
+          className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
         >
           🔄 Rafraîchir la liste
         </button>
