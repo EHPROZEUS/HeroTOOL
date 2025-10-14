@@ -348,6 +348,36 @@ export const DEFAULT_VALUES = {
     consommablePrixUnitaire: 5,
     consommablePrix: 5
   },
+   courroieDistribution: {
+    moQuantity: 3.6,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+    courroieAccessoire: {
+    moQuantity: 0.5,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
   pneusAvant: {
     moQuantity: 0.5,
     moPrix: 35.8,
