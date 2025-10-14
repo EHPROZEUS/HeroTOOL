@@ -36,7 +36,7 @@ export const calculateTotals = (
   includeControleTechnique = false, 
   includeContrevisite = false, 
   activeDSPItems = [],
-  itemStates = {} // ✅ Ajout du paramètre
+  itemStates = {}
 ) => {
   let totalMOHeures = 0;
   let totalPieces = 0;
@@ -44,26 +44,27 @@ export const calculateTotals = (
 
   const validMecaniqueItems = (activeMecaniqueItems || []).filter(item => item && item.id);
 
+  // Sépare lustrage/méca pour éviter les doublons
   const activeLustrageItems = validMecaniqueItems.filter(item => 
     LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
   );
-  
   const pureMecaniqueItems = validMecaniqueItems.filter(item => 
     !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
   );
 
+  // 1. MO des items méca actifs (hors lustrage)
   pureMecaniqueItems.forEach(item => {
     const forfait = forfaitData[item.id] || {};
     const defaults = getDefaultValues(item.id);
-    
     const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : (defaults.moQuantity || 0)) || 0;
-    const piecePrix = parseFloat(forfait.piecePrix !== undefined ? forfait.piecePrix : (defaults.piecePrix || 0)) || 0;
-    const consommablePrix = parseFloat(forfait.consommablePrix || 0) || 0;
-    
     totalMOHeures += moQuantity;
+
+    // Pièces + consommables
+    const piecePrix = parseFloat(forfait.piecePrix !== undefined ? forfait.piecePrix : (defaults.piecePrix || 0)) || 0;
     totalPieces += piecePrix;
+    const consommablePrix = parseFloat(forfait.consommablePrix || 0) || 0;
     totalConsommables += consommablePrix;
-    
+
     if (pieceLines[item.id]) {
       pieceLines[item.id].forEach(line => {
         totalPieces += parseFloat(line.prix || 0) || 0;
@@ -71,24 +72,24 @@ export const calculateTotals = (
     }
   });
 
+  // 2. MO des items lustrage actifs
   activeLustrageItems.forEach(lustrageItem => {
     const lustrageConfig = LUSTRAGE_ITEMS.find(item => item.id === lustrageItem.id);
     if (lustrageConfig) {
       const forfait = forfaitData[lustrageItem.id] || {};
-      
       const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : (lustrageConfig.moQuantity || 0)) || 0;
       totalMOHeures += moQuantity;
-      
+
+      // Consommables lustrage
       const consommableQuantity = parseFloat(forfait.consommableQuantity !== undefined ? forfait.consommableQuantity : (lustrageConfig.consommable || 0)) || 0;
       const consommablePrixUnitaire = parseFloat(forfait.consommablePrixUnitaire || 1.00);
       const consommablePrix = consommableQuantity * consommablePrixUnitaire;
-      
       totalConsommables += consommablePrix;
     }
   });
 
+  // 3. MO des items DSP actifs
   const validDSPItems = (activeDSPItems || []).filter(dspItem => dspItem && dspItem.id);
-  
   validDSPItems.forEach(dspItem => {
     const dspConfig = DSP_ITEMS.find(item => item && item.id === dspItem.id);
     if (dspConfig) {
@@ -97,72 +98,45 @@ export const calculateTotals = (
     }
   });
 
+  // 4. MO des forfaits PEINTURE_FORFAITS et PEINTURE_SEULE_FORFAITS uniquement si activés (itemStates)
+  PEINTURE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      // Si overridé dans forfaitData, prendre la valeur personnalisée, sinon défaut
+      const data = forfaitData[forfait.id] || {};
+      const mo1 = parseFloat(data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity || 0) || 0;
+      const mo2 = parseFloat(data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity || 0) || 0;
+      totalMOHeures += mo1 + mo2;
+      totalConsommables += parseFloat(data.consommablePrix !== undefined ? data.consommablePrix : forfait.consommablePrix || 0) || 0;
+    }
+  });
+
+  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      const data = forfaitData[forfait.id] || {};
+      const mo = parseFloat(data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity || 0) || 0;
+      totalMOHeures += mo;
+      totalConsommables += parseFloat(data.consommablePrix !== undefined ? data.consommablePrix : forfait.consommablePrix || 0) || 0;
+    }
+  });
+
+  // 5. (OPTIONNEL) Si tu veux ajouter la gestion plume1Elem/lustrage1Elem, tu peux (idem, UNIQUEMENT si activé)
   Object.entries(forfaitData).forEach(([key, data]) => {
-    if (!data) return;
-    
-    if (data.peintureForfait) {
-      totalMOHeures += parseFloat(data.mo1Quantity || 0);
-      totalMOHeures += parseFloat(data.mo2Quantity || 0);
-      totalConsommables += parseFloat(data.consommablePrix || 0);
-    }
-    
-    if (data.peintureSeuleForfait) {
-      totalMOHeures += parseFloat(data.moQuantity || 0);
-      totalConsommables += parseFloat(data.consommablePrix || 0);
-    }
-    
     if (data.lustrage1Elem === true) {
       totalMOHeures += parseFloat(data.moQuantity || 0);
       const consQty = parseFloat(data.consommableQuantity || 0);
       const consPU = parseFloat(data.consommablePrixUnitaire || 0);
       totalConsommables += consQty * consPU;
     }
-    
     if (data.plume1Elem === true) {
       totalMOHeures += parseFloat(data.moQuantity || 0);
     }
   });
 
-  // ✅ NOUVEAU : Comptabiliser les forfaits depuis itemStates (pour les modifications)
-  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
-    const state = itemStates[forfait.id] ?? 0;
-    if (state > 0 && !forfaitData[forfait.id]?.peintureSeuleForfait) {
-      // Si le forfait est activé mais pas encore dans forfaitData
-      totalMOHeures += parseFloat(forfait.moQuantity || 0);
-      totalConsommables += parseFloat(forfait.consommablePrix || 0);
-    }
-  });
+  // FIN — aucun autre ajout de MO, uniquement ce qui est activé sur le devis en cours
 
-  PEINTURE_FORFAITS.forEach(forfait => {
-    const state = itemStates[forfait.id] ?? 0;
-    if (state > 0 && !forfaitData[forfait.id]?.peintureForfait) {
-      // Si le forfait est activé mais pas encore dans forfaitData
-      totalMOHeures += parseFloat(forfait.mo1Quantity || 0);
-      totalMOHeures += parseFloat(forfait.mo2Quantity || 0);
-      totalConsommables += parseFloat(forfait.consommablePrix || 0);
-    }
-  });
-
-  // ✅ FORFAITS PEINTURE SEULE (manquant)
-PEINTURE_SEULE_FORFAITS.forEach(forfait => {
-  const state = itemStates[forfait.id] ?? 0;
-  if (state > 0) {
-    // Vérifier si le forfait a été modifié dans forfaitData
-    const customData = forfaitData[forfait.id];
-    
-    if (customData) {
-      // Utiliser les valeurs personnalisées
-      totalMOHeures += parseFloat(customData.moQuantity || 0);
-      totalConsommables += parseFloat(customData.consommablePrix || 0);
-    } else {
-      // Utiliser les valeurs par défaut du forfait
-      totalMOHeures += parseFloat(forfait.moQuantity || 0);
-      totalConsommables += parseFloat(forfait.consommablePrix || 0);
-    }
-  }
-});
-
-  const MoTableau = 74.106;
+  const MoTableau = 74.106; // (si encore utile dans ton calcul)
   const totalMO = MoTableau + totalMOHeures * 35.8;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
   const totalHTSansPrestations = totalPieces + totalConsommables;
