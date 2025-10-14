@@ -17,8 +17,8 @@ const tarifHoraire = 35.8;
 const getDossierColor = (totalMOMecanique) => {
   const total = parseFloat(totalMOMecanique) || 0;
   
-  if (total === 0) return { color: '#22C55E', label: 'VERT', bg: '#DCFCE7' };
-  if (total >= 0.01 && total <= 2.99) return { color: '#FACC15', label: 'JAUNE', bg: '#FEF9C3' };
+  if (total >= 0.01 && total <= 0.2) return { color: '#22C55E', label: 'VERT', bg: '#DCFCE7' };
+  if (total >= 0.21 && total <= 2.99) return { color: '#FACC15', label: 'JAUNE', bg: '#FEF9C3' };
   if (total >= 3 && total <= 4.99) return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' };
   if (total >= 5) return { color: '#EF4444', label: 'ROUGE', bg: '#FEE2E2' };
   
