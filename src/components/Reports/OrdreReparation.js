@@ -789,31 +789,31 @@ const OrdreReparation = ({
                             </td>
                           </tr>
                         ))}
-                        {item.id === "filtreHuile" && forfait.consommableReference && (
-                          <tr>
-                            <td className="border border-gray-300 p-2">Consommable</td>
-                            <td className="border border-gray-300 p-2">
-                              {forfait.consommableReference}
-                            </td>
-                            <td className="border border-gray-300 p-2">
-                              {forfait.consommableDesignation || "Huile moteur"}
-                            </td>
-                            <td className="border border-gray-300 p-2">-</td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {forfait.consommableQuantity || 0} L
-                            </td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {forfait.consommablePrixUnitaire !== undefined
-                                ? `${forfait.consommablePrixUnitaire} €`
-                                : "-"}
-                            </td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {forfait.consommablePrix !== undefined
-                                ? `${forfait.consommablePrix} €`
-                                : "-"}
-                            </td>
-                          </tr>
-                        )}
+                        {forfait.consommableReference && parseFloat(forfait.consommableQuantity) > 0 && (
+  <tr>
+    <td className="border border-gray-300 p-2">Consommable</td>
+    <td className="border border-gray-300 p-2">
+      {forfait.consommableReference}
+    </td>
+    <td className="border border-gray-300 p-2">
+      {forfait.consommableDesignation || "-"}
+    </td>
+    <td className="border border-gray-300 p-2">-</td>
+    <td className="border border-gray-300 p-2 text-right">
+      {forfait.consommableQuantity}
+    </td>
+    <td className="border border-gray-300 p-2 text-right">
+      {forfait.consommablePrixUnitaire !== undefined
+        ? `${forfait.consommablePrixUnitaire} €`
+        : "-"}
+    </td>
+    <td className="border border-gray-300 p-2 text-right">
+      {forfait.consommablePrix !== undefined
+        ? `${forfait.consommablePrix} €`
+        : "-"}
+    </td>
+  </tr>
+)}
                       </React.Fragment>
                     );
                   })}
