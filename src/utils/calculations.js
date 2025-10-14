@@ -267,8 +267,7 @@ export const calculateMOByCategory = (
     }
   });
 
-  return categories;
-};
+
 
   // Parcourir les items de mécanique - SEULE LA CATÉGORIE "Mécanique" compte
   activeMecaniqueItems.forEach(item => {
