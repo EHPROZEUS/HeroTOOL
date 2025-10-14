@@ -244,33 +244,26 @@ export const calculateMOByCategory = (
 
 
   // Parcourir les items de mécanique - SEULE LA CATÉGORIE "Mécanique" compte
-  activeMecaniqueItems.forEach(item => {
-    const forfait = forfaitData[item.id] || {};
-    const moQty = parseFloat(forfait.moQuantity) || 0;
-    const moCategory = (forfait.moCategory || 'Mécanique').toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, ""); // Retire les accents
+const CLEANING_IDS = ['nettoyage-interieur', 'nettoyage-exterieur'];
 
-    // Ajouter à la bonne catégorie
-    if (moCategory === 'mecanique') {
-      categories.mecanique += moQty;
-    } else if (moCategory === 'carrosserie') {
-      categories.carrosserie += moQty;
-    } else if (moCategory === 'peinture') {
-      categories.peinture += moQty;
-    } else if (moCategory === 'tolerie') {
-      categories.tolerie += moQty;
-    } else if (moCategory === 'lustrage') {
-      categories.lustrage += moQty;
-    } else if (moCategory === 'controlling') {
-      categories.controlling += moQty;
-    } else if (moCategory === 'nettoyage') {
-      categories.nettoyage += moQty;
-    } else {
-      // Par défaut, mettre dans mécanique SEULEMENT si pas de catégorie définie
-      categories.mecanique += moQty;
-    }
-  });
+activeMecaniqueItems.forEach(item => {
+  const forfait = forfaitData[item.id] || {};
+  const moQty = parseFloat(forfait.moQuantity) || 0;
+
+  // Si c'est un item de nettoyage, on force la catégorie à "controlling"
+  if (CLEANING_IDS.includes(item.id)) {
+    categories.controlling += moQty;
+    return;
+  }
+
+  // Sinon, ventilation classique selon la catégorie
+  const cat = detectCategory(item, forfait);
+  if (cat in categories) {
+    categories[cat] += moQty;
+  } else {
+    categories.mecanique += moQty;
+  }
+});
 
   // Items DSP - NE PAS COMPTER dans mecanique
   if (Array.isArray(activeDSPItems)) {
