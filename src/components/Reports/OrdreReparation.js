@@ -82,7 +82,7 @@ const OBLIGATORY_CLEANING = [
       totalPrice: 3.70,
     },
     mo: {
-      type: "MO",
+      type: "MO CONTROLLING PHOTOS",
       designation: "Main d'oeuvre",
       moCategory: "Nettoyage",
       moQuantity: 0.75,
@@ -99,7 +99,7 @@ const OBLIGATORY_CLEANING = [
       totalPrice: 3.70,
     },
     mo: {
-      type: "MO",
+      type: "MO CONTROLLING PHOTOS",
       designation: "Main d'oeuvre",
       moCategory: "Nettoyage",
       moQuantity: 0.42,
