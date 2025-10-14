@@ -7,6 +7,14 @@ import {
   PEINTURE_SEULE_FORFAITS 
 } from '../config/constants';
 
+const parseNumber = (v) => {
+  if (v === undefined || v === null || v === '') return 0;
+  if (typeof v === 'number') return v;
+  // remplacer espaces insécables et virgules
+  const s = String(v).replace(/\u00A0|\u202F/g, '').replace(/\s/g, '').replace(',', '.');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+};
 // Obtenir les valeurs par défaut d'un item
 export const getDefaultValues = (itemId) => {
   const defaults = DEFAULT_VALUES[itemId] || DEFAULT_VALUES.default || {};
@@ -72,11 +80,11 @@ export const calculateTotals = (
     totalMOHeures += moQuantity;
 
     // Pièce (forfait) - prix déjà calculé si fourni dans forfaitData
-    const piecePrix = parseFloat(forfait.piecePrix !== undefined ? forfait.piecePrix : (defaults.piecePrix || 0)) || 0;
+    const piecePrix = parseNumber(forfait.piecePrix !== undefined ? forfait.piecePrix : (defaults.piecePrix || 0));
     totalPieces += piecePrix;
 
     // Consommable (forfait)
-    const consommablePrix = parseFloat(forfait.consommablePrix !== undefined ? forfait.consommablePrix : (defaults.consommablePrix || 0)) || 0;
+    const consommablePrix = parseNumber(forfait.consommablePrix !== undefined ? forfait.consommablePrix : (defaults.consommablePrix || 0));
     totalConsommables += consommablePrix;
 
     // Pièces supplémentaires (dispatchées vers pieceLines)
