@@ -180,8 +180,8 @@ PEINTURE_SEULE_FORFAITS.forEach(forfait => {
 
 // Calculer les heures de MO par catégorie
 export const calculateMOByCategory = (
-  activeMecaniqueItems = [], 
-  forfaitData = {}, 
+  activeMecaniqueItems = [],
+  forfaitData = {},
   activeDSPItems = [],
   activePlumeItems = [],
   itemStates = {}
@@ -197,6 +197,78 @@ export const calculateMOByCategory = (
     nettoyage: 0,
     forfaitaire: 0
   };
+
+  // Utilitaire pour détecter la catégorie métier d'un item
+  const detectCategory = (item, forfait = {}) => {
+    // Priorité aux champs explicites
+    let cat = (forfait.moCategory || item.moCategory || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (cat) return cat;
+    // Sinon heuristique sur le groupe
+    if (LUSTRAGE_ITEMS.some(l => l.id === item.id)) return "lustrage";
+    if (PLUME_ITEMS.some(p => p.id === item.id)) return "plume";
+    if (DSP_ITEMS.some(d => d.id === item.id)) return "dsp";
+    return "mecanique";
+  };
+
+  // 1. Ventilation des items mécaniques (hors DSP/Plume)
+  activeMecaniqueItems.forEach(item => {
+    const forfait = forfaitData[item.id] || {};
+    const moQty = parseFloat(forfait.moQuantity) || 0;
+    const cat = detectCategory(item, forfait);
+    if (cat in categories) {
+      categories[cat] += moQty;
+    } else {
+      categories.mecanique += moQty; // fallback
+    }
+  });
+
+  // 2. Ventilation des DSP
+  if (Array.isArray(activeDSPItems)) {
+    activeDSPItems.forEach(item => {
+      const dspConfig = DSP_ITEMS.find(d => d.id === item.id);
+      if (dspConfig) {
+        categories.dsp += parseFloat(dspConfig.moQuantity) || 0;
+      }
+    });
+  }
+
+  // 3. Ventilation des Plumes (catégorie dédiée ou à ajouter si besoin)
+  if (Array.isArray(activePlumeItems)) {
+    activePlumeItems.forEach(item => {
+      const plumeConfig = PLUME_ITEMS.find(p => p.id === item.id);
+      if (plumeConfig) {
+        // Ajoute ici si tu veux une catégorie "plume"
+        // categories.plume = (categories.plume || 0) + parseFloat(plumeConfig.moQuantity) || 0;
+      }
+    });
+  }
+
+  // 4. Forfaits Lustrage 1 élément
+  Object.entries(forfaitData).forEach(([key, data]) => {
+    if (data.lustrage1Elem === true) {
+      categories.lustrage += parseFloat(data.moQuantity) || 0;
+    }
+  });
+
+  // 5. Forfaits Réparation Peinture
+  PEINTURE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      categories.tolerie += parseFloat(forfait.mo1Quantity) || 0;
+      categories.peinture += parseFloat(forfait.mo2Quantity) || 0;
+    }
+  });
+
+  // 6. Forfaits Peinture seule
+  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      categories.peinture += parseFloat(forfait.moQuantity) || 0;
+    }
+  });
+
+  return categories;
+};
 
   // Parcourir les items de mécanique - SEULE LA CATÉGORIE "Mécanique" compte
   activeMecaniqueItems.forEach(item => {
