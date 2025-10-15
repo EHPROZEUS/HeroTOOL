@@ -165,12 +165,12 @@ export const calculateTotals = (
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
   const totalHTSansPrestations = totalPieces + totalConsommables;
   const totalHT = totalHTSansPrestations + prestationsExterieures;
-
+  const consoNett = 7.4;
   return {
     totalMOHeures: totalMOHeures.toFixed(2),
     totalMO: totalMO.toFixed(2),
     totalPieces: totalPieces.toFixed(2),
-    totalConsommables: 7.4 + totalConsommables.toFixed(2),
+    totalConsommables: consoNett + totalConsommables.toFixed(2),
     totalHTSansPrestations: totalHTSansPrestations.toFixed(2),
     totalHT: totalHT.toFixed(2)
   };
