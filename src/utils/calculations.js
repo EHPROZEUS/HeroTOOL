@@ -62,19 +62,21 @@ export const calculateTotals = (
   const validMecaniqueItems = (activeMecaniqueItems || []).filter(i => i && i.id);
   const validDSPItems = (activeDSPItems || []).filter(i => i && i.id);
 
-  const activeIds = new Set([
-    ...validMecaniqueItems.map(i => i.id),
-    ...validDSPItems.map(i => i.id),
-    ... (Array.isArray(PLUME_ITEMS) ? [] : [])
-  ]);
+  // activeIds : sert à éviter double-comptage des forfaits déjà pris via activeMecaniqueItems
+  // on initialise avec mécaniques seulement (ne pas empêcher DSP d'ajouter ses heures)
+  const activeIds = new Set(validMecaniqueItems.map(i => i.id));
 
   validMecaniqueItems.forEach(item => {
     const id = item.id;
     const forfait = forfaitData[id] || {};
     const defaults = getDefaultValues(id);
 
-    // MO
-    const moQuantity = parseFloat(forfait.moQuantity !== undefined ? forfait.moQuantity : (defaults.moQuantity || 0)) || 0;
+    // MO : priorité forfait -> item -> defaults
+    const moQuantity = parseNumber(
+      forfait.moQuantity !== undefined
+        ? forfait.moQuantity
+        : (item && item.moQuantity !== undefined ? item.moQuantity : defaults.moQuantity || 0)
+    ) || 0;
     totalMOHeures += moQuantity;
 
     // Pièce (forfait)
@@ -93,20 +95,26 @@ export const calculateTotals = (
     }
   });
 
-  // DSP
+  // DSP : priorité forfait -> item -> config (et ne pas être bloqué par activeIds initialisé aux mécaniques)
   validDSPItems.forEach(dspItem => {
     const id = dspItem.id;
     const forfait = forfaitData[id] || {};
-    if (forfait && forfait.moQuantity !== undefined) {
-      if (!activeIds.has(id)) {
-        totalMOHeures += parseFloat(forfait.moQuantity || 0) || 0;
-        totalConsommables += parseNumber(forfait.consommablePrix || 0);
-        activeIds.add(id);
-      }
+
+    const moFromForfaitOrItem = parseNumber(
+      forfait.moQuantity !== undefined
+        ? forfait.moQuantity
+        : (dspItem && dspItem.moQuantity !== undefined ? dspItem.moQuantity : 0)
+    ) || 0;
+
+    if (moFromForfaitOrItem > 0) {
+      // ajouter les heures DSP (même si id figure ailleurs)
+      totalMOHeures += moFromForfaitOrItem;
+      totalConsommables += parseNumber(forfait.consommablePrix || 0);
+      activeIds.add(id);
     } else {
       const dspConfig = DSP_ITEMS.find(d => d.id === id);
       if (dspConfig) {
-        totalMOHeures += parseFloat(dspConfig.moQuantity || 0) || 0;
+        totalMOHeures += parseNumber(dspConfig.moQuantity || 0) || 0;
         totalConsommables += parseNumber(dspConfig.consommable || 0);
       }
     }
@@ -117,8 +125,8 @@ export const calculateTotals = (
     const state = itemStates[forfait.id] ?? 0;
     if (state > 0 && !activeIds.has(forfait.id)) {
       const data = forfaitData[forfait.id] || {};
-      const mo1 = parseFloat(data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity || 0) || 0;
-      const mo2 = parseFloat(data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity || 0) || 0;
+      const mo1 = parseNumber(data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity || 0) || 0;
+      const mo2 = parseNumber(data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity || 0) || 0;
       totalMOHeures += mo1 + mo2;
       totalConsommables += parseNumber(data.consommablePrix !== undefined ? data.consommablePrix : forfait.consommablePrix || 0);
       activeIds.add(forfait.id);
@@ -129,7 +137,7 @@ export const calculateTotals = (
     const state = itemStates[forfait.id] ?? 0;
     if (state > 0 && !activeIds.has(forfait.id)) {
       const data = forfaitData[forfait.id] || {};
-      const mo = parseFloat(data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity || 0) || 0;
+      const mo = parseNumber(data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity || 0) || 0;
       totalMOHeures += mo;
       totalConsommables += parseNumber(data.consommablePrix !== undefined ? data.consommablePrix : forfait.consommablePrix || 0);
       activeIds.add(forfait.id);
@@ -141,14 +149,14 @@ export const calculateTotals = (
     if (!key) return;
     if (activeIds.has(key)) return;
     if (data.lustrage1Elem === true) {
-      totalMOHeures += parseFloat(data.moQuantity || 0) || 0;
+      totalMOHeures += parseNumber(data.moQuantity || 0) || 0;
       const consQty = parseNumber(data.consommableQuantity || 0);
       const consPU = parseNumber(data.consommablePrixUnitaire || 0);
       totalConsommables += consQty * consPU;
       activeIds.add(key);
     }
     if (data.plume1Elem === true) {
-      totalMOHeures += parseFloat(data.moQuantity || 0) || 0;
+      totalMOHeures += parseNumber(data.moQuantity || 0) || 0;
       activeIds.add(key);
     }
   });
@@ -212,7 +220,10 @@ export const calculateMOByCategory = (
   // Parcourir les items actifs
   (activeMecaniqueItems || []).forEach(item => {
     const forfait = forfaitData[item.id] || {};
-    const moQty = parseFloat(forfait.moQuantity) || 0;
+    // priorité : forfait.moQuantity -> item.moQuantity -> 0
+    const moQty = parseNumber(
+      forfait.moQuantity !== undefined ? forfait.moQuantity : (item.moQuantity !== undefined ? item.moQuantity : 0)
+    ) || 0;
 
     // Si item de nettoyage, on le ventile directement en controlling
     if (CLEANING_IDS.includes(item.id)) {
@@ -233,8 +244,14 @@ export const calculateMOByCategory = (
 
   // DSP items
   (activeDSPItems || []).forEach(item => {
+    // priorité : item.moQuantity -> DSP_ITEMS config
+    const moFromItem = parseNumber(item.moQuantity || 0) || 0;
     const dspConfig = DSP_ITEMS.find(d => d.id === item.id);
-    if (dspConfig) categories.dsp += parseFloat(dspConfig.moQuantity || 0) || 0;
+    if (dspConfig) {
+      categories.dsp += parseNumber(dspConfig.moQuantity || 0) + moFromItem;
+    } else {
+      categories.dsp += moFromItem;
+    }
   });
 
   // Plume items
@@ -242,7 +259,8 @@ export const calculateMOByCategory = (
     const plumeConfig = PLUME_ITEMS.find(p => p.id === item.id);
     if (plumeConfig) {
       // si tu veux les compter dans une catégorie dédiée, ajouter categories.plume
-      // aujourd'hui on ignore leur contribution ici (elles sont comptées dans calculateTotals)
+      // ici on ajoute leur moQuantity si présent sur l'item
+      categories.mecanique += parseNumber(item.moQuantity || plumeConfig.moQuantity || 0) || 0;
     }
   });
 
@@ -250,15 +268,15 @@ export const calculateMOByCategory = (
   PEINTURE_FORFAITS.forEach(forfait => {
     const state = itemStates[forfait.id] ?? 0;
     if (state > 0) {
-      categories.tolerie += parseFloat(forfait.mo1Quantity || 0) || 0;
-      categories.peinture += parseFloat(forfait.mo2Quantity || 0) || 0;
+      categories.tolerie += parseNumber(forfait.mo1Quantity || 0) || 0;
+      categories.peinture += parseNumber(forfait.mo2Quantity || 0) || 0;
     }
   });
 
   PEINTURE_SEULE_FORFAITS.forEach(forfait => {
     const state = itemStates[forfait.id] ?? 0;
     if (state > 0) {
-      categories.peinture += parseFloat(forfait.moQuantity || 0) || 0;
+      categories.peinture += parseNumber(forfait.moQuantity || 0) || 0;
     }
   });
 
