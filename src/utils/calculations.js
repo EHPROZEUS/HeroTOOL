@@ -163,14 +163,14 @@ export const calculateTotals = (
   const HOURLY = 35.8; // taux horaire (garder identique à ton app ou importer depuis config)
   const totalMO = MoTableau + totalMOHeures * HOURLY;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
-  const totalHTSansPrestations = 7.4 + totalPieces + totalConsommables;
+  const totalHTSansPrestations = totalPieces + totalConsommables;
   const totalHT = totalHTSansPrestations + prestationsExterieures;
 
   return {
     totalMOHeures: totalMOHeures.toFixed(2),
     totalMO: totalMO.toFixed(2),
     totalPieces: totalPieces.toFixed(2),
-    totalConsommables: totalConsommables.toFixed(2),
+    totalConsommables: 7.4 + totalConsommables.toFixed(2),
     totalHTSansPrestations: totalHTSansPrestations.toFixed(2),
     totalHT: totalHT.toFixed(2)
   };
