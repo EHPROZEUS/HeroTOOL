@@ -90,7 +90,6 @@ const OBLIGATORY_CLEANING = [
     consommablePrixUnitaire: 3.7,
     consommablePrix: 3.7
   },
-  },
   {
     id: 'nettoyage-exterieur',
     type: "NETTOYAGE EXTERIEUR",
