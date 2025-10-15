@@ -303,134 +303,11 @@ const OrdreReparation = ({
     itemStates
   });
 
-  // === INSERTED BLOCK: fallback computation of moByCategory ===
-  // Copiez-collez tel quel : ce bloc reconstruit les heures MO si moByCategory fourni est incomplet.
-  const computeFallbackMoByCategory = () => {
-    const res = {
-      mecanique: 0,
-      lustrage: 0,
-      dsp: 0,
-      controlling: 0,
-      peinture: 0,
-      tolerie: 0,
-      nettoyage: 0
-    };
-
-    const safeNum = v => {
-      if (v === undefined || v === null || v === '') return 0;
-      if (typeof v === 'number') return v;
-      const s = String(v).replace(/\u00A0|\u202F/g, '').replace(/\s/g, '').replace(',', '.');
-      const n = parseFloat(s);
-      return isNaN(n) ? 0 : n;
-    };
-
-    // 1) Prestations obligatoires
-    OBLIGATORY_PRESTATIONS.forEach(ob => {
-      const q = safeNum(ob.moQuantity);
-      const cat = (ob.moCategory || '').toString().toLowerCase();
-      if (cat.includes('mécanique') || cat.includes('mecanique')) res.mecanique += q;
-      else if (cat.includes('controlling')) res.controlling += q;
-      else if (cat.includes('nettoyage')) res.nettoyage += q;
-      else res.mecanique += q;
-    });
-
-    // 2) Nettoyages obligatoires
-    OBLIGATORY_CLEANING.forEach(ob => {
-      const q = safeNum(ob.mo?.moQuantity);
-      res.nettoyage += q;
-    });
-
-    // 3) Items mécaniques actifs (forfaitData -> item -> defaults)
-    (activeMecaniqueItems || []).forEach(item => {
-      const id = item.id;
-      const forfait = (forfaitData && forfaitData[id]) || {};
-      const defaults = typeof getDefaultValues === 'function' ? getDefaultValues(id) : {};
-
-      const moQty = safeNum(
-        forfait.moQuantity !== undefined ? forfait.moQuantity
-          : (item && item.moQuantity !== undefined ? item.moQuantity
-            : defaults.moQuantity)
-      );
-
-      const catRaw = (forfait.moCategory || defaults.moCategory || item.moCategory || '').toString().toLowerCase();
-      const cat = catRaw.normalize ? catRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : catRaw;
-
-      if (cat.includes('lustrage')) res.lustrage += moQty;
-      else if (cat.includes('dsp')) res.dsp += moQty;
-      else if (cat.includes('controlling')) res.controlling += moQty;
-      else if (cat.includes('peinture')) res.peinture += moQty;
-      else if (cat.includes('tolerie') || cat.includes('tôlerie')) res.tolerie += moQty;
-      else if (cat.includes('nettoyage')) res.nettoyage += moQty;
-      else res.mecanique += moQty;
-    });
-
-    // 4) DSP actifs (forfaitData -> item -> config)
-    (activeDSPItems || []).forEach(dspItem => {
-      const id = dspItem.id;
-      const forfait = (forfaitData && forfaitData[id]) || {};
-      const moFromForfaitOrItem = safeNum(
-        forfait.moQuantity !== undefined ? forfait.moQuantity
-          : (dspItem && dspItem.moQuantity !== undefined ? dspItem.moQuantity : 0)
-      );
-      if (moFromForfaitOrItem > 0) {
-        res.dsp += moFromForfaitOrItem;
-      } else {
-        const dspConfig = DSP_ITEMS.find(d => d.id === id);
-        if (dspConfig) res.dsp += safeNum(dspConfig.moQuantity);
-      }
-    });
-
-    // 5) Forfaits peinture activés via itemStates
-    PEINTURE_FORFAITS.forEach(forfait => {
-      const state = itemStates[forfait.id] ?? 0;
-      if (state > 0) {
-        const data = forfaitData[forfait.id] || {};
-        res.tolerie += safeNum(data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity);
-        res.peinture += safeNum(data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity);
-      }
-    });
-    PEINTURE_SEULE_FORFAITS.forEach(forfait => {
-      const state = itemStates[forfait.id] ?? 0;
-      if (state > 0) {
-        const data = forfaitData[forfait.id] || {};
-        res.peinture += safeNum(data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity);
-      }
-    });
-
-    // 6) Forfaits dynamiques (lustrage1Elem / plume1Elem)
-    Object.entries(forfaitData || {}).forEach(([key, data]) => {
-      if (!key) return;
-      if (data.lustrage1Elem === true) {
-        res.lustrage += safeNum(data.moQuantity || 0);
-      }
-      if (data.plume1Elem === true) {
-        res.mecanique += safeNum(data.moQuantity || 0);
-      }
-    });
-
-    return res;
-  };
-
-  const fallbackMoByCategory = computeFallbackMoByCategory();
-
-  // Prioritise le moByCategory fourni par le parent si il contient des données valides,
-  // sinon utilise le fallback reconstruit localement.
-  const finalMoByCategory = {
-    mecanique: (typeof moByCategory?.mecanique === 'number' && moByCategory.mecanique > 0) ? moByCategory.mecanique : fallbackMoByCategory.mecanique,
-    lustrage: (typeof moByCategory?.lustrage === 'number' && moByCategory.lustrage > 0) ? moByCategory.lustrage : fallbackMoByCategory.lustrage,
-    dsp: (typeof moByCategory?.dsp === 'number' && moByCategory.dsp > 0) ? moByCategory.dsp : fallbackMoByCategory.dsp,
-    controlling: (typeof moByCategory?.controlling === 'number' && moByCategory.controlling > 0) ? moByCategory.controlling : fallbackMoByCategory.controlling,
-    peinture: (typeof moByCategory?.peinture === 'number' && moByCategory.peinture > 0) ? moByCategory.peinture : fallbackMoByCategory.peinture,
-    tolerie: (typeof moByCategory?.tolerie === 'number' && moByCategory.tolerie > 0) ? moByCategory.tolerie : fallbackMoByCategory.tolerie,
-    nettoyage: (typeof moByCategory?.nettoyage === 'number' && moByCategory.nettoyage > 0) ? moByCategory.nettoyage : fallbackMoByCategory.nettoyage
-  };
-  // === END INSERTED BLOCK ===
-
 
 
 
     // ✅ CALCUL DU TOTAL MO MÉCANIQUE
- const totalMOMecanique = finalMoByCategory.mecanique || 0;
+ const totalMOMecanique = moByCategory?.mecanique || 0;
 
   const dossierStatus = getDossierColor(totalMOMecanique);
 
@@ -816,7 +693,566 @@ const OrdreReparation = ({
                     </tr>
                   </React.Fragment>
                 ))}
-{/* ... le reste du fichier inchangé ... */}
+{Array.isArray(pureActiveMecaniqueItems) && pureActiveMecaniqueItems.length > 0 && (
+  <tr className="bg-amber-100">
+    <td colSpan={7} className="border border-gray-300 p-2 font-bold">
+      MECANIQUE - FORFAITS ET PRESTATIONS
+    </td>
+  </tr>
+)}
+
+                {/* === PRESTATIONS DYNAMIQUES EXISTANTES === */}
+                {Array.isArray(pureActiveMecaniqueItems) &&
+  pureActiveMecaniqueItems
+    .filter(item => {
+      // Exclure REPC et REMPC de la section Mécanique
+      const isREPC = TEXT_ITEMS_1.some(textItem => textItem.id === item.id);
+      const isREMPC = TEXT_ITEMS_2.some(textItem => textItem.id === item.id);
+      return !isREPC && !isREMPC;
+    })
+    .map(item => {
+                    const forfait = forfaitData?.[item.id] || {};
+                    const defaults = typeof getDefaultValues === "function" ? getDefaultValues(item.id) : {};
+                    const moQuantity =
+                      forfait.moQuantity !== undefined
+                        ? forfait.moQuantity
+                        : defaults.moQuantity || 0;
+                    const pieceReference =
+                      forfait.pieceReference !== undefined
+                        ? forfait.pieceReference
+                        : defaults.pieceReference || "-";
+                    const pieceQuantity =
+                      forfait.pieceQuantity !== undefined
+                        ? forfait.pieceQuantity
+                        : defaults.pieceQuantity || 0;
+                    const piecePrix =
+                      forfait.piecePrix !== undefined
+                        ? forfait.piecePrix
+                        : defaults.piecePrix || 0;
+                    const moCategory = forfait.moCategory || "Mécanique";
+
+                    return (
+                      <React.Fragment key={item.id}>
+                        <tr style={{ backgroundColor: "#EEE6D8" }}>
+                          <td colSpan="7" className="border border-gray-300 p-2 font-bold">
+                            {item.label}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-300 p-2">Main d'œuvre</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">
+                            {forfait.moDesignation || "Temps de travail"}
+                          </td>
+                          <td className="border border-gray-300 p-2">{moCategory}</td>
+                          <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                        {item.id !== "miseANiveau" && pieceReference && (
+                          <tr>
+                            <td className="border border-gray-300 p-2">Pièce</td>
+                            <td className="border border-gray-300 p-2">{pieceReference}</td>
+                            <td className="border border-gray-300 p-2">
+                              {forfait.pieceDesignation || "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {pieceQuantity}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {forfait.piecePrixUnitaire !== undefined
+                                ? `${forfait.piecePrixUnitaire} €`
+                                : "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {piecePrix} €
+                            </td>
+                          </tr>
+                        )}
+                        {pieceLines?.[item.id]?.map((line, idx) => (
+                          <tr key={idx}>
+                            <td className="border border-gray-300 p-2">Pièce suppl.</td>
+                            <td className="border border-gray-300 p-2">{line.reference}</td>
+                            <td className="border border-gray-300 p-2">
+                              {line.designation || "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {line.quantity}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {line.prixUnitaire !== undefined ? `${line.prixUnitaire} €` : "-"}
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {line.prix} €
+                            </td>
+                          </tr>
+                        ))}
+                        {forfait.consommableReference && parseFloat(forfait.consommableQuantity) > 0 && (
+  <tr>
+    <td className="border border-gray-300 p-2">Consommable</td>
+    <td className="border border-gray-300 p-2">
+      {forfait.consommableReference}
+    </td>
+    <td className="border border-gray-300 p-2">
+      {forfait.consommableDesignation || "-"}
+    </td>
+    <td className="border border-gray-300 p-2">-</td>
+    <td className="border border-gray-300 p-2 text-right">
+      {forfait.consommableQuantity}
+    </td>
+    <td className="border border-gray-300 p-2 text-right">
+      {forfait.consommablePrixUnitaire !== undefined
+        ? `${forfait.consommablePrixUnitaire} €`
+        : "-"}
+    </td>
+    <td className="border border-gray-300 p-2 text-right">
+      {forfait.consommablePrix !== undefined
+        ? `${forfait.consommablePrix} €`
+        : "-"}
+    </td>
+  </tr>
+)}
+                      </React.Fragment>
+                    );
+                  })}
+
+{(
+  (Array.isArray(activePeintureForfaits) && activePeintureForfaits.length > 0) ||
+  (Array.isArray(activePeintureSeuleForfaits) && activePeintureSeuleForfaits.length > 0) ||
+  (Array.isArray(pureActiveMecaniqueItems) && pureActiveMecaniqueItems.length > 0)
+) && (
+  <tr className="bg-green-200">
+    <td colSpan={7} className="border border-gray-300 p-2 font-bold">
+      CARROSSERIE - FORFAITS ET PRESTATIONS
+    </td>
+  </tr>
+)}
+{/* FORFAITS REPC/REMPC (Carrosserie) */}
+{Array.isArray(pureActiveMecaniqueItems) &&
+  pureActiveMecaniqueItems
+    .filter(item => {
+      const isREPC = TEXT_ITEMS_1.some(textItem => textItem.id === item.id);
+      const isREMPC = TEXT_ITEMS_2.some(textItem => textItem.id === item.id);
+      return isREPC || isREMPC;
+    })
+    .map(item => {
+      const forfait = forfaitData?.[item.id] || {};
+      const moQuantity = forfait.moQuantity || 0;
+      const pieceReference = forfait.pieceReference || "-";
+      const pieceQuantity = forfait.pieceQuantity || 0;
+      const piecePrix = forfait.piecePrix || 0;
+
+      return (
+        <React.Fragment key={item.id}>
+          <tr style={{ backgroundColor: "#BED3C3" }}>
+            <td colSpan="7" className="border border-gray-300 p-2 font-bold">
+              {item.label}
+            </td>
+          </tr>
+          {/* Main d'œuvre */}
+          <tr>
+            <td className="border border-gray-300 p-2">Main d'Œuvre</td>
+            <td className="border border-gray-300 p-2">-</td>
+            <td className="border border-gray-300 p-2">
+              {forfait.moDesignation || "Temps de travail"}
+            </td>
+            <td className="border border-gray-300 p-2">Carrosserie</td>
+            <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
+            <td className="border border-gray-300 p-2 text-right">-</td>
+            <td className="border border-gray-300 p-2 text-right">-</td>
+          </tr>
+          {/* Pièce */}
+          {pieceReference && pieceReference !== "-" && (
+            <tr>
+              <td className="border border-gray-300 p-2">Pièce</td>
+              <td className="border border-gray-300 p-2">{pieceReference}</td>
+              <td className="border border-gray-300 p-2">
+                {forfait.pieceDesignation || "-"}
+              </td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">{pieceQuantity}</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.piecePrixUnitaire ? `${forfait.piecePrixUnitaire} €` : "-"}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">{piecePrix} €</td>
+            </tr>
+          )}
+          {/* Pièces supplémentaires */}
+          {pieceLines?.[item.id]?.map((line, idx) => (
+            <tr key={idx}>
+              <td className="border border-gray-300 p-2">Pièce suppl.</td>
+              <td className="border border-gray-300 p-2">{line.reference}</td>
+              <td className="border border-gray-300 p-2">{line.designation || "-"}</td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">{line.quantity}</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {line.prixUnitaire ? `${line.prixUnitaire} €` : "-"}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">{line.prix} €</td>
+            </tr>
+          ))}
+        </React.Fragment>
+      );
+    })}
+
+                {/* FORFAITS RÉPARATION PEINTURE */}
+                {activePeintureForfaits.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: "#BED3C3" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-2 font-bold text-orange-600"
+                      >
+                        RÉPARATION + PEINTURE
+                      </td>
+                    </tr>
+                    {activePeintureForfaits.map((forfait, idx) => {
+                      const state = itemStates[forfait.id] ?? 0;
+                      
+                      return (
+                        <React.Fragment key={`peinture-${forfait.id}-${idx}`}>
+                          {/* MO RÉPARATION (Tolerie) */}
+                          {forfait.mo1Quantity > 0 && (
+                            <tr className={state === 2 ? 'bg-green-50' : ''}>
+                              <td className="border border-gray-300 p-2">
+                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                                  MO TOLERIE {forfait.label.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="border border-gray-300 p-2 text-center">-</td>
+                              <td className="border border-gray-300 p-2">{forfait.mo1Designation}</td>
+                              <td className="border border-gray-300 p-2">Tolerie</td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.mo1Quantity.toFixed(2)} h
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">-</td>
+                              <td className="border border-gray-300 p-2 text-right">-</td>
+                            </tr>
+                          )}
+                          
+                          {/* MO PEINTURE */}
+                          {forfait.mo2Quantity > 0 && (
+                            <tr className={state === 2 ? 'bg-green-50' : ''}>
+                              <td className="border border-gray-300 p-2">
+                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                                  MO PEINTURE {forfait.label.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="border border-gray-300 p-2 text-center">-</td>
+                              <td className="border border-gray-300 p-2">{forfait.mo2Designation}</td>
+                              <td className="border border-gray-300 p-2">Peinture</td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.mo2Quantity.toFixed(2)} h
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">-</td>
+                              <td className="border border-gray-300 p-2 text-right">-</td>
+                            </tr>
+                          )}
+                          
+                          {/* CONSOMMABLE */}
+                          {forfait.consommableQuantity > 0 && (
+                            <tr className={state === 2 ? 'bg-green-50' : ''}>
+                              <td className="border border-gray-300 p-2">
+                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                                  CONSOMMABLE {forfait.label.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="border border-gray-300 p-2 text-center">CONSO</td>
+                              <td className="border border-gray-300 p-2">{forfait.consommableDesignation}</td>
+                              <td className="border border-gray-300 p-2">-</td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.consommableQuantity.toFixed(2)}
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.consommablePrixUnitaire.toFixed(2)} €
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.consommablePrix.toFixed(2)} €
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* FORFAITS PEINTURE SEULE */}
+                {activePeintureSeuleForfaits.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: "#BED3C3" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-2 font-bold text-GREEN-600"
+                      >
+                        PEINTURE
+                      </td>
+                    </tr>
+                    {activePeintureSeuleForfaits.map((forfait, idx) => {
+                      const state = itemStates[forfait.id] ?? 0;
+                      
+                      return (
+                        <React.Fragment key={`peinture-seule-${forfait.id}-${idx}`}>
+                          {/* MO PEINTURE */}
+                          {forfait.moQuantity > 0 && (
+                            <tr className={state === 2 ? 'bg-green-50' : ''}>
+                              <td className="border border-gray-300 p-2">
+                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                                  MO PEINTURE {forfait.label.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="border border-gray-300 p-2 text-center">-</td>
+                              <td className="border border-gray-300 p-2">{forfait.moDesignation}</td>
+                              <td className="border border-gray-300 p-2">Peinture</td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.moQuantity.toFixed(2)} h
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">-</td>
+                              <td className="border border-gray-300 p-2 text-right">-</td>
+                            </tr>
+                          )}
+                          
+                          {/* CONSOMMABLE */}
+                          {forfait.consommableQuantity > 0 && (
+                            <tr className={state === 2 ? 'bg-green-50' : ''}>
+                              <td className="border border-gray-300 p-2">
+                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                                  CONSOMMABLE {forfait.label.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="border border-gray-300 p-2 text-center">CONSO</td>
+                              <td className="border border-gray-300 p-2">{forfait.consommableDesignation}</td>
+                              <td className="border border-gray-300 p-2">-</td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.consommableQuantity.toFixed(2)}
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.consommablePrixUnitaire.toFixed(2)} €
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {forfait.consommablePrix.toFixed(2)} €
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </>
+                )}
+{(
+  (Array.isArray(activeDSPItems) && activeDSPItems.length > 0) ||
+  (Array.isArray(activePlumeItems) && activePlumeItems.length > 0) ||
+  (Array.isArray(activeLustrageItems) && activeLustrageItems.length > 0)
+) && (
+  <tr className="bg-blue-100">
+    <td colSpan={7} className="border border-gray-300 p-2 font-bold text-gray-600">
+      SMART - FORFAITS LUSTRAGE, DSP, PLUME
+    </td>
+  </tr>
+)}
+                {/* Section DSP */}
+                {Array.isArray(activeDSPItems) && activeDSPItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: "#DBEAFE" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-2 font-bold text-blue-600"
+                      >
+                        SMART - DSP
+                      </td>
+                    </tr>
+                    {activeDSPItems.map(dspItem => {
+                      const dspConfig = DSP_ITEMS.find(item => item.id === dspItem.id);
+                      if (!dspConfig) return null;
+
+                      return (
+                        <tr key={dspItem.id}>
+                          <td className="border border-gray-300 p-2">Main d'œuvre DSP</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">
+                            {dspConfig.label}
+                          </td>
+                          <td className="border border-gray-300 p-2">DSP</td>
+                          <td className="border border-gray-300 p-2 text-right">
+                            {dspConfig.moQuantity} h
+                          </td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Section PLUME */}
+                {Array.isArray(activePlumeItems) && activePlumeItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: "#DBEAFE" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-2 font-bold text-blue-600"
+                      >
+                        SMART - PLUME
+                      </td>
+                    </tr>
+                    {activePlumeItems.map(plumeItem => {
+                      const plumeConfig = PLUME_ITEMS.find(item => item.id === plumeItem.id);
+                      if (!plumeConfig) return null;
+
+                      return (
+                        <tr key={plumeItem.id}>
+                          <td className="border border-gray-300 p-2">Main d'œuvre Plume</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">
+                            {plumeConfig.label}
+                          </td>
+                          <td className="border border-gray-300 p-2">Lustrage</td>
+                          <td className="border border-gray-300 p-2 text-right">
+                            {plumeConfig.moQuantity} h
+                          </td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
+
+                {/* Section LUSTRAGE */}
+                {Array.isArray(activeLustrageItems) && activeLustrageItems.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: "#DBEAFE" }}>
+                      <td
+                        colSpan="7"
+                        className="border border-gray-300 p-2 font-bold text-blue-600"
+                      >
+                        SMART - LUSTRAGE
+                      </td>
+                    </tr>
+                    {activeLustrageItems.map(lustrageItem => {
+                      const lustrageConfig = LUSTRAGE_ITEMS.find(
+                        item => item.id === lustrageItem.id
+                      );
+                      if (!lustrageConfig) return null;
+
+                      const forfait = forfaitData?.[lustrageItem.id] || {};
+                      const moQuantity =
+                        forfait.moQuantity !== undefined
+                          ? forfait.moQuantity
+                          : lustrageConfig.moQuantity || 0;
+                      const consommableQuantity =
+                        forfait.consommableQuantity !== undefined
+                          ? forfait.consommableQuantity
+                          : lustrageConfig.consommable || 0;
+                      const consommablePrixUnitaire =
+                        forfait.consommablePrixUnitaire !== undefined
+                          ? forfait.consommablePrixUnitaire
+                          : 1.0;
+                      const consommablePrix = consommableQuantity * consommablePrixUnitaire;
+
+                      return (
+                        <React.Fragment key={lustrageItem.id}>
+                          <tr>
+                            <td className="border border-gray-300 p-2">
+                              Main d'œuvre Lustrage
+                            </td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2">
+                              {lustrageConfig.label}
+                            </td>
+                            <td className="border border-gray-300 p-2">Lustrage</td>
+                            <td className="border border-gray-300 p-2 text-right">
+                              {moQuantity} h
+                            </td>
+                            <td className="border border-gray-300 p-2 text-right">-</td>
+                            <td className="border border-gray-300 p-2 text-right">-</td>
+                          </tr>
+                          {consommableQuantity > 0 && (
+                            <tr>
+                              <td className="border border-gray-300 p-2">Consommable</td>
+                              <td className="border border-gray-300 p-2">
+                                {forfait.consommableReference || "-"}
+                              </td>
+                              <td className="border border-gray-300 p-2">
+                                {forfait.consommableDesignation ||
+                                  "Consommable lustrage"}
+                              </td>
+                              <td className="border border-gray-300 p-2">-</td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommableQuantity}
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommablePrixUnitaire.toFixed(2)} €
+                              </td>
+                              <td className="border border-gray-300 p-2 text-right">
+                                {consommablePrix.toFixed(2)} €
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </>
+                )}
+
+              {/* === LUSTRAGE 1 ÉLÉMENT (STACKABLES) === */}
+                {Object.entries(forfaitData || {})
+                  .filter(([key, data]) => data.lustrage1Elem === true)
+                  .map(([key, data]) => {
+                    const moQty = parseFloat(data.moQuantity || 0);
+                    const consQty = parseFloat(data.consommableQuantity || 0);
+                    const consPU = parseFloat(data.consommablePrixUnitaire || 0);
+                    
+                    return (
+                      <React.Fragment key={key}>
+                        {/* MO Lustrage */}
+                        <tr>
+                          <td className="border border-gray-300 p-2">LUSTRAGE</td>
+                          <td className="border border-gray-300 p-2">-</td>
+                          <td className="border border-gray-300 p-2">{data.moDesignation || 'Lustrage 1 élément'}</td>
+                          <td className="border border-gray-300 p-2">Lustrage</td>
+                          <td className="border border-gray-300 p-2 text-right">{moQty} h</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                          <td className="border border-gray-300 p-2 text-right">-</td>
+                        </tr>
+                        {/* Consommable Lustrage */}
+                        {consQty > 0 && (
+                          <tr>
+                            <td className="border border-gray-300 p-2">LUSTRAGE</td>
+                            <td className="border border-gray-300 p-2">CONSO</td>
+                            <td className="border border-gray-300 p-2">Consommable lustrage</td>
+                            <td className="border border-gray-300 p-2">-</td>
+                            <td className="border border-gray-300 p-2 text-right">{consQty}</td>
+                            <td className="border border-gray-300 p-2 text-right">{consPU.toFixed(2)} €</td>
+                            <td className="border border-gray-300 p-2 text-right">{(consQty * consPU).toFixed(2)} €</td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })
+                }
+
+                {/* === PLUME 1 ÉLÉMENT (STACKABLES) === */}
+                {Object.entries(forfaitData || {})
+                  .filter(([key, data]) => data.plume1Elem === true)
+                  .map(([key, data]) => {
+                    const moQty = parseFloat(data.moQuantity || 0);
+                    
+                    return (
+                      <tr key={key}>
+                        <td className="border border-gray-300 p-2">PLUME</td>
+                        <td className="border border-gray-300 p-2">-</td>
+                        <td className="border border-gray-300 p-2">{data.moDesignation || 'Plume 1 élément'}</td>
+                        <td className="border border-gray-300 p-2">Mécanique</td>
+                        <td className="border border-gray-300 p-2 text-right">{moQty} h</td>
+                        <td className="border border-gray-300 p-2 text-right">-</td>
+                        <td className="border border-gray-300 p-2 text-right">-</td>
+                      </tr>
+                    );
+                  })
+                }
               </tbody>
             </table>
           </div>
@@ -831,7 +1267,7 @@ const OrdreReparation = ({
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-300">
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="font-semibold">Total Main d'oeuvre:</span>
+                  <span className="font-semibold">Total Main d'œuvre:</span>
                   <span>{totals?.totalMO !== undefined ? totals.totalMO : "0.00"} €</span>
                 </div>
                 <div className="flex justify-between">
