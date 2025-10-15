@@ -56,6 +56,7 @@ export const calculateTotals = (
   let totalConsommables = 0;
 
   const MANDATORY_CONSOMMABLES = 7.4; // <-- montant obligatoire à ajouter aux consommables
+  const HOURLY = 35.8; // tarif horaire (1.0h = 35.8€)
 
   const CLEANING_IDS = ['nettoyage-interieur', 'nettoyage-exterieur'];
 
@@ -63,7 +64,6 @@ export const calculateTotals = (
   const validDSPItems = (activeDSPItems || []).filter(i => i && i.id);
 
   // activeIds : sert à éviter double-comptage des forfaits déjà pris via activeMecaniqueItems
-  // on initialise avec mécaniques seulement (ne pas empêcher DSP d'ajouter ses heures)
   const activeIds = new Set(validMecaniqueItems.map(i => i.id));
 
   validMecaniqueItems.forEach(item => {
@@ -95,7 +95,7 @@ export const calculateTotals = (
     }
   });
 
-  // DSP : priorité forfait -> item -> config (et ne pas être bloqué par activeIds initialisé aux mécaniques)
+  // DSP : priorité forfait -> item -> config
   validDSPItems.forEach(dspItem => {
     const id = dspItem.id;
     const forfait = forfaitData[id] || {};
@@ -107,7 +107,6 @@ export const calculateTotals = (
     ) || 0;
 
     if (moFromForfaitOrItem > 0) {
-      // ajouter les heures DSP (même si id figure ailleurs)
       totalMOHeures += moFromForfaitOrItem;
       totalConsommables += parseNumber(forfait.consommablePrix || 0);
       activeIds.add(id);
@@ -164,20 +163,21 @@ export const calculateTotals = (
   // --- Ajouter le consommable obligatoire AVANT formatage ---
   totalConsommables += MANDATORY_CONSOMMABLES;
 
-  const MoTableau = 74.106;
-  const HOURLY = 35.8;
-  const totalMO = MoTableau + totalMOHeures * HOURLY;
+  // Calculs finaux
+  // NOTE: totalMO est maintenant calculé uniquement à partir des heures * tarif horaire
+  const totalMO = totalMOHeures * HOURLY;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
   const totalHTSansPrestations = totalPieces + totalConsommables;
   const totalHT = totalHTSansPrestations + prestationsExterieures;
  
   return {
-    totalMOHeures: totalMOHeures.toFixed(2),
-    totalMO: totalMO.toFixed(2),
-    totalPieces: totalPieces.toFixed(2),
-    totalConsommables: totalConsommables.toFixed(2), // maintenant inclut +7.40
-    totalHTSansPrestations: totalHTSansPrestations.toFixed(2),
-    totalHT: totalHT.toFixed(2)
+    // renvoyer des numbers arrondis (pratiques pour l'UI/exports)
+    totalMOHeures: Number(totalMOHeures.toFixed(2)),
+    totalMO: Number(totalMO.toFixed(2)),
+    totalPieces: Number(totalPieces.toFixed(2)),
+    totalConsommables: Number(totalConsommables.toFixed(2)), // inclut +7.40
+    totalHTSansPrestations: Number(totalHTSansPrestations.toFixed(2)),
+    totalHT: Number(totalHT.toFixed(2))
   };
 };
 
