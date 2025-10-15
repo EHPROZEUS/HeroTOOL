@@ -72,21 +72,24 @@ const OBLIGATORY_PRESTATIONS = [
 // Lignes obligatoires de nettoyage (avec consommables + MO)
 const OBLIGATORY_CLEANING = [
   {
-    id: 'nettoyage-interieur',
+   id: 'nettoyage-interieur',
     type: "NETTOYAGE INTERIEUR",
-    consommable: {
-      reference: "CONSO",
-      designation: "Consommables",
-      quantity: 1.00,
-      unitPrice: 3.70,
-      totalPrice: 3.70,
-    },
+    moQuantity: 0.75,
     mo: {
       type: "MO CONTROLLING PHOTOS",
-      designation: "Main d'oeuvre",
-      moCategory: "Nettoyage",
-      moQuantity: 0.75,
-    },
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 0,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: 'CONSO',
+    consommableDesignation: 'Consommables',
+    consommableQuantity: 1,
+    consommablePrixUnitaire: 3.7,
+    consommablePrix: 3.7
+  },
   },
   {
     id: 'nettoyage-exterieur',
