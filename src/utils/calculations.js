@@ -164,7 +164,7 @@ export const calculateTotals = (
   const totalMO = MoTableau + totalMOHeures * HOURLY;
   const prestationsExterieures = (includeControleTechnique ? 42 : 0) + (includeContrevisite ? 10 : 0);
   const totalHTSansPrestations = totalPieces + totalConsommables;
-  const totalHT = totalHTSansPrestations + prestationsExterieures;
+  const totalHT = 7.4 + totalHTSansPrestations + prestationsExterieures;
 
   return {
     totalMOHeures: totalMOHeures.toFixed(2),
