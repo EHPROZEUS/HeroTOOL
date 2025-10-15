@@ -87,6 +87,7 @@ const OBLIGATORY_CLEANING = [
       moCategory: "Nettoyage",
       moQuantity: 0.75,
     },
+  },
   {
     id: 'nettoyage-exterieur',
     type: "NETTOYAGE EXTERIEUR",
