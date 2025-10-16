@@ -124,6 +124,121 @@ const VENTILATION_CATEGORIES = [
   { key: 'presSousTraitees', label: 'PRES. SOUS-TRAITEES' }
 ];
 
+// safeNum : normalise les entrées (nombre, string avec virgule/espaces)
+const safeNum = v => {
+  if (v === undefined || v === null || v === '') return 0;
+  if (typeof v === 'number') return v;
+  const s = String(v).replace(/\u00A0|\u202F/g, '').replace(/\s/g, '').replace(',', '.');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+};
+
+// computeMoByCategory : reconstruit moByCategory depuis toutes les sources (fallback)
+const computeMoByCategory = ({
+  activeMecaniqueItems = [],
+  activeDSPItems = [],
+  forfaitData = {},
+  itemStates = {}
+}) => {
+  const res = {
+    mecanique: 0,
+    lustrage: 0,
+    dsp: 0,
+    controlling: 0,
+    peinture: 0,
+    tolerie: 0,
+    nettoyage: 0
+  };
+
+  // 1) Prestations obligatoires
+  OBLIGATORY_PRESTATIONS.forEach(ob => {
+    const q = safeNum(ob.moQuantity);
+    const cat = (ob.moCategory || '').toString().toLowerCase();
+    if (cat.includes('mécanique') || cat.includes('mecanique')) res.mecanique += q;
+    else if (cat.includes('controlling')) res.controlling += q;
+    else if (cat.includes('nettoyage')) res.nettoyage += q;
+    else res.mecanique += q;
+  });
+
+  // 2) Nettoyages obligatoires
+  OBLIGATORY_CLEANING.forEach(ob => {
+    const q = safeNum(ob.mo?.moQuantity);
+    res.nettoyage += q;
+  });
+
+  // 3) Items mécaniques actifs (forfaitData -> item -> defaults)
+  (activeMecaniqueItems || []).forEach(item => {
+    if (!item || !item.id) return;
+    const id = item.id;
+    const forfait = (forfaitData && forfaitData[id]) || {};
+    const defaults = typeof getDefaultValues === 'function' ? getDefaultValues(id) : {};
+
+    const moQty = safeNum(
+      forfait.moQuantity !== undefined ? forfait.moQuantity
+        : (item && item.moQuantity !== undefined ? item.moQuantity
+          : defaults.moQuantity)
+    );
+
+    const catRaw = (forfait.moCategory || defaults.moCategory || item.moCategory || '').toString().toLowerCase();
+    const cat = catRaw.normalize ? catRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : catRaw;
+
+    if (cat.includes('lustrage')) res.lustrage += moQty;
+    else if (cat.includes('dsp')) res.dsp += moQty;
+    else if (cat.includes('controlling')) res.controlling += moQty;
+    else if (cat.includes('peinture')) res.peinture += moQty;
+    else if (cat.includes('tolerie') || cat.includes('tôlerie')) res.tolerie += moQty;
+    else if (cat.includes('nettoyage')) res.nettoyage += moQty;
+    else res.mecanique += moQty;
+  });
+
+  // 4) DSP actifs (forfaitData -> item -> config)
+  (activeDSPItems || []).forEach(dspItem => {
+    if (!dspItem || !dspItem.id) return;
+    const id = dspItem.id;
+    const forfait = (forfaitData && forfaitData[id]) || {};
+    const moFromForfaitOrItem = safeNum(
+      forfait.moQuantity !== undefined ? forfait.moQuantity
+        : (dspItem && dspItem.moQuantity !== undefined ? dspItem.moQuantity : 0)
+    );
+    if (moFromForfaitOrItem > 0) {
+      res.dsp += moFromForfaitOrItem;
+    } else {
+      const dspConfig = DSP_ITEMS.find(d => d.id === id);
+      if (dspConfig) res.dsp += safeNum(dspConfig.moQuantity);
+    }
+  });
+
+  // 5) Forfaits peinture activés via itemStates
+  PEINTURE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      const data = forfaitData[forfait.id] || {};
+      res.tolerie += safeNum(data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity);
+      res.peinture += safeNum(data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity);
+    }
+  });
+  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
+    const state = itemStates[forfait.id] ?? 0;
+    if (state > 0) {
+      const data = forfaitData[forfait.id] || {};
+      res.peinture += safeNum(data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity);
+    }
+  });
+
+  // 6) Forfaits dynamiques (lustrage1Elem / plume1Elem)
+  Object.entries(forfaitData || {}).forEach(([key, data]) => {
+    if (!key) return;
+    if (data.lustrage1Elem === true) {
+      res.lustrage += safeNum(data.moQuantity || 0);
+    }
+    if (data.plume1Elem === true) {
+      res.mecanique += safeNum(data.moQuantity || 0);
+    }
+  });
+
+  return res;
+};
+
 // Fonction pour ventiler les quantités et montants HT par catégorie
 function computeVentilation({
   activeMecaniqueItems = [],
@@ -141,7 +256,17 @@ function computeVentilation({
     result[cat.key] = { qty: 0, ht: 0 };
   });
 
-  const tarifHoraire = 35.8;
+  // Utilise moByCategory fourni si il contient des données valides (>0), sinon reconstruit
+  const fallback = computeMoByCategory({ activeMecaniqueItems, activeDSPItems, forfaitData, itemStates });
+  const finalMo = {
+    mecanique: (typeof moByCategory?.mecanique === 'number' && moByCategory.mecanique > 0) ? moByCategory.mecanique : fallback.mecanique,
+    lustrage: (typeof moByCategory?.lustrage === 'number' && moByCategory.lustrage > 0) ? moByCategory.lustrage : fallback.lustrage,
+    dsp: (typeof moByCategory?.dsp === 'number' && moByCategory.dsp > 0) ? moByCategory.dsp : fallback.dsp,
+    controlling: (typeof moByCategory?.controlling === 'number' && moByCategory.controlling > 0) ? moByCategory.controlling : fallback.controlling,
+    peinture: (typeof moByCategory?.peinture === 'number' && moByCategory.peinture > 0) ? moByCategory.peinture : fallback.peinture,
+    tolerie: (typeof moByCategory?.tolerie === 'number' && moByCategory.tolerie > 0) ? moByCategory.tolerie : fallback.tolerie,
+    nettoyage: (typeof moByCategory?.nettoyage === 'number' && moByCategory.nettoyage > 0) ? moByCategory.nettoyage : fallback.nettoyage
+  };
 
   // ===== 1. MO OBLIGATOIRES =====
   OBLIGATORY_PRESTATIONS.forEach(ob => {
@@ -159,19 +284,21 @@ function computeVentilation({
     result.fluides.ht += ob.consommable.totalPrice || 0;
   });
 
-  // ===== 3. MO DYNAMIQUES (depuis moByCategory) =====
-  result.moMecanique.qty += moByCategory.mecanique || 0;
-  result.moLustrage.qty += moByCategory.lustrage || 0;
-  result.moDSP.qty += moByCategory.dsp || 0;
-  result.moControlling.qty += moByCategory.controlling || 0;
-  result.moPeinture.qty += moByCategory.peinture || 0;
-  result.moTolerie.qty += moByCategory.tolerie || 0;
+  // ===== 3. MO DYNAMIQUES (depuis finalMo) =====
+  result.moMecanique.qty += finalMo.mecanique || 0;
+  result.moLustrage.qty += finalMo.lustrage || 0;
+  result.moDSP.qty += finalMo.dsp || 0;
+  result.moControlling.qty += finalMo.controlling || 0;
+  result.moPeinture.qty += finalMo.peinture || 0;
+  result.moTolerie.qty += finalMo.tolerie || 0;
+  result.moNettoyage.qty += finalMo.nettoyage || 0;
 
   // ===== 4. PIECES ET CONSOMMABLES MECANIQUE =====
   // Séparer les pneus des autres pièces
-  activeMecaniqueItems.forEach(item => {
+  (activeMecaniqueItems || []).forEach(item => {
+    if (!item || !item.id) return;
     const forfait = forfaitData[item.id] || {};
-    const piecePrix = parseFloat(forfait.piecePrix) || 0;
+    const piecePrix = safeNum(forfait.piecePrix) || 0;
 
     // Pneus → PNEUMATIQUES
     if (item.id === 'pneusAvant' || item.id === 'pneusArriere' || item.id === 'pneus4') {
@@ -182,7 +309,7 @@ function computeVentilation({
     }
 
     // Consommables (huile, liquides) → FLUIDES
-    const consommablePrix = parseFloat(forfait.consommablePrix) || 0;
+    const consommablePrix = safeNum(forfait.consommablePrix) || 0;
     if (consommablePrix > 0) {
       result.fluides.ht += consommablePrix;
     }
@@ -190,7 +317,7 @@ function computeVentilation({
     // Pièces supplémentaires
     if (pieceLines[item.id]) {
       pieceLines[item.id].forEach(line => {
-        const linePrix = parseFloat(line.prix) || 0;
+        const linePrix = safeNum(line.prix) || 0;
         result.piecesMecanique.ht += linePrix;
       });
     }
@@ -200,19 +327,19 @@ function computeVentilation({
   PEINTURE_FORFAITS.forEach(forfait => {
     const state = itemStates[forfait.id] ?? 0;
     if (state > 0) {
-      result.ingredientPeinture.ht += forfait.consommablePrix || 0;
+      result.ingredientPeinture.ht += safeNum(forfait.consommablePrix || 0);
     }
   });
 
   PEINTURE_SEULE_FORFAITS.forEach(forfait => {
     const state = itemStates[forfait.id] ?? 0;
     if (state > 0) {
-      result.ingredientPeinture.ht += forfait.consommablePrix || 0;
+      result.ingredientPeinture.ht += safeNum(forfait.consommablePrix || 0);
     }
   });
 
   // ===== 6. FORFAITS CARROSSERIE (PIECES TOLERIE) =====
-  activeMecaniqueItems
+  (activeMecaniqueItems || [])
     .filter(item => {
       const isREPC = TEXT_ITEMS_1.some(textItem => textItem.id === item.id);
       const isREMPC = TEXT_ITEMS_2.some(textItem => textItem.id === item.id);
@@ -220,13 +347,13 @@ function computeVentilation({
     })
     .forEach(item => {
       const forfait = forfaitData[item.id] || {};
-      const piecePrix = parseFloat(forfait.piecePrix) || 0;
+      const piecePrix = safeNum(forfait.piecePrix) || 0;
       result.piecesTolerie.ht += piecePrix;
 
       // Pièces supplémentaires
       if (pieceLines[item.id]) {
         pieceLines[item.id].forEach(line => {
-          result.piecesTolerie.ht += parseFloat(line.prix) || 0;
+          result.piecesTolerie.ht += safeNum(line.prix) || 0;
         });
       }
     });
@@ -238,16 +365,17 @@ function computeVentilation({
   }
 
   // ===== 8. CALCUL DES MONTANTS HT POUR TOUTES LES MO =====
-  result.moMecanique.ht = result.moMecanique.qty * tarifHoraire;
-  result.moNettoyage.ht = result.moNettoyage.qty * tarifHoraire;
-  result.moLustrage.ht = result.moLustrage.qty * tarifHoraire;
-  result.moDSP.ht = result.moDSP.qty * tarifHoraire;
-  result.moControlling.ht = result.moControlling.qty * tarifHoraire;
-  result.moPeinture.ht = result.moPeinture.qty * tarifHoraire;
-  result.moTolerie.ht = result.moTolerie.qty * tarifHoraire;
+  result.moMecanique.ht = Number((safeNum(result.moMecanique.qty) * tarifHoraire).toFixed(2));
+  result.moNettoyage.ht = Number((safeNum(result.moNettoyage.qty) * tarifHoraire).toFixed(2));
+  result.moLustrage.ht = Number((safeNum(result.moLustrage.qty) * tarifHoraire).toFixed(2));
+  result.moDSP.ht = Number((safeNum(result.moDSP.qty) * tarifHoraire).toFixed(2));
+  result.moControlling.ht = Number((safeNum(result.moControlling.qty) * tarifHoraire).toFixed(2));
+  result.moPeinture.ht = Number((safeNum(result.moPeinture.qty) * tarifHoraire).toFixed(2));
+  result.moTolerie.ht = Number((safeNum(result.moTolerie.qty) * tarifHoraire).toFixed(2));
 
   return result;
 }
+
 const OrdreReparation = ({
   showOrdreReparation,
   setShowOrdreReparation,
@@ -264,94 +392,8 @@ const OrdreReparation = ({
   totals = {},
   moByCategory = {},
   printOrdreReparation,
-  itemStates = {},
-  updateForfaitField
+  itemStates = {}
 }) => {
-    // ---------- MODE ÉDITION INLINE POUR LES QUANTITÉS MO ----------
-  const [editingMO, setEditingMO] = React.useState(false);
-  const [editingValues, setEditingValues] = React.useState({}); // { forfaitKey: { moQuantity, mo1Quantity, mo2Quantity } }
-
-  const startEditingMO = () => {
-    const init = {};
-    Object.entries(forfaitData || {}).forEach(([k, fd]) => {
-      init[k] = {
-        moQuantity: fd?.moQuantity !== undefined ? String(fd.moQuantity) : undefined,
-        mo1Quantity: fd?.mo1Quantity !== undefined ? String(fd.mo1Quantity) : undefined,
-        mo2Quantity: fd?.mo2Quantity !== undefined ? String(fd.mo2Quantity) : undefined
-      };
-    });
-    setEditingValues(init);
-    setEditingMO(true);
-  };
-
-  const handleMOInputChange = (forfaitKey, field, value) => {
-    setEditingValues(prev => ({
-      ...prev,
-      [forfaitKey]: {
-        ...(prev[forfaitKey] || {}),
-        [field]: value
-      }
-    }));
-  };
-
-  // commit d'un champ unique (appelé onBlur ou Enter)
-  const commitMOField = (forfaitKey, field) => {
-    if (!updateForfaitField) return;
-    const raw = editingValues?.[forfaitKey]?.[field];
-    if (raw === undefined) return;
-    const v = parseFloat(String(raw).replace(',', '.'));
-    if (isNaN(v)) return;
-    updateForfaitField(forfaitKey, field, v.toString());
-    // mettre à jour l'input affiché (format 2 décimales)
-    setEditingValues(prev => ({
-      ...prev,
-      [forfaitKey]: {
-        ...(prev[forfaitKey] || {}),
-        [field]: v.toFixed(2)
-      }
-    }));
-  };
-
-  // sauver tout (bouton sauvegarder)
-  const saveMOEdits = () => {
-    if (!updateForfaitField) return;
-    Object.entries(editingValues || {}).forEach(([key, vals]) => {
-      if (!vals) return;
-      ['moQuantity','mo1Quantity','mo2Quantity'].forEach(field => {
-        const raw = vals[field];
-        if (raw === undefined) return;
-        const v = parseFloat(String(raw).replace(',', '.'));
-        if (!isNaN(v)) updateForfaitField(key, field, v.toString());
-      });
-    });
-    setEditingMO(false);
-    setEditingValues({});
-  };
-
-  const cancelMOEdits = () => {
-    setEditingMO(false);
-    setEditingValues({});
-  };
-
-  // Helper pour afficher soit texte soit input inline (blur / Enter commit)
-  const renderMOInput = (forfaitKey, field, displayValue) => {
-    const hasField = editingValues?.[forfaitKey] && editingValues[forfaitKey][field] !== undefined;
-    if (!editingMO || !hasField) {
-      return `${(parseFloat(displayValue) || 0).toFixed(2)} h`;
-    }
-    return (
-      <input
-        type="number"
-        min="0"
-        step="0.01"
-        value={editingValues[forfaitKey][field]}
-        onChange={(e) => handleMOInputChange(forfaitKey, field, e.target.value)}
-        onBlur={() => commitMOField(forfaitKey, field)}
-        onKeyDown={(e) => { if (e.key === 'Enter') { e.currentTarget.blur(); } }}
-        className="w-20 text-right px-2 py-1 border rounded"
-      />
-    );
-  };
   // Identifie les items de lustrage actifs
   const activeLustrageItems = Array.isArray(activeMecaniqueItems)
     ? activeMecaniqueItems.filter(item =>
@@ -377,7 +419,7 @@ const OrdreReparation = ({
       )
     : [];
 
-  // Calcul ventilation comptable
+  // Calcul ventilation comptable (computeVentilation prend en charge fallback moByCategory)
   const ventilation = computeVentilation({
     activeMecaniqueItems,
     activeDSPItems,
@@ -389,16 +431,24 @@ const OrdreReparation = ({
     itemStates
   });
 
+  // Reconstruire finalMoByCategory ici pour affichage / statut dossier
+  // (computeMoByCategory retourne la reconstruction complète)
+  const fallbackMo = computeMoByCategory({ activeMecaniqueItems, activeDSPItems, forfaitData, itemStates });
+  const finalMoByCategory = {
+    mecanique: (typeof moByCategory?.mecanique === 'number' && moByCategory.mecanique > 0) ? moByCategory.mecanique : fallbackMo.mecanique,
+    lustrage: (typeof moByCategory?.lustrage === 'number' && moByCategory.lustrage > 0) ? moByCategory.lustrage : fallbackMo.lustrage,
+    dsp: (typeof moByCategory?.dsp === 'number' && moByCategory.dsp > 0) ? moByCategory.dsp : fallbackMo.dsp,
+    controlling: (typeof moByCategory?.controlling === 'number' && moByCategory.controlling > 0) ? moByCategory.controlling : fallbackMo.controlling,
+    peinture: (typeof moByCategory?.peinture === 'number' && moByCategory.peinture > 0) ? moByCategory.peinture : fallbackMo.peinture,
+    tolerie: (typeof moByCategory?.tolerie === 'number' && moByCategory.tolerie > 0) ? moByCategory.tolerie : fallbackMo.tolerie,
+    nettoyage: (typeof moByCategory?.nettoyage === 'number' && moByCategory.nettoyage > 0) ? moByCategory.nettoyage : fallbackMo.nettoyage
+  };
 
-
-
-    // ✅ CALCUL DU TOTAL MO MÉCANIQUE
- const totalMOMecanique = moByCategory?.mecanique || 0;
-
+  // ✅ CALCUL DU TOTAL MO MÉCANIQUE (utilise finalMoByCategory)
+  const totalMOMecanique = finalMoByCategory.mecanique || 0;
   const dossierStatus = getDossierColor(totalMOMecanique);
 
-
-// Styles pour éviter les coupures dans le PDF
+  // Styles pour éviter les coupures dans le PDF
   const pdfStyles = `
     @media print {
       .no-break {
@@ -601,22 +651,22 @@ const OrdreReparation = ({
       const fournisseurCount = {};
       
       // Pièces principales des forfaits mécanique
-      activeMecaniqueItems.forEach(item => {
+      (activeMecaniqueItems || []).forEach(item => {
         const forfait = forfaitData?.[item.id];
         if (forfait?.pieceFournisseur && forfait.pieceFournisseur.trim()) {
           fournisseurCount[forfait.pieceFournisseur] = 
             (fournisseurCount[forfait.pieceFournisseur] || 0) + 
-            (parseFloat(forfait.pieceQuantity) || 0);
+            (safeNum(forfait.pieceQuantity) || 0);
         }
       });
       
       // Pièces supplémentaires
       Object.values(pieceLines || {}).forEach(lines => {
         lines.forEach(line => {
-          if (line.fournisseur && line.fournisseur.trim()) {
+          if (line && line.fournisseur && line.fournisseur.trim()) {
             fournisseurCount[line.fournisseur] = 
               (fournisseurCount[line.fournisseur] || 0) + 
-              (parseFloat(line.quantity) || 0);
+              (safeNum(line.quantity) || 0);
           }
         });
       });
@@ -663,7 +713,7 @@ const OrdreReparation = ({
                 <td className="border border-gray-200 p-0.5">{cat.label}</td>
                 <td className="border border-gray-200 p-0.5 text-right">
                   {ventilation?.[cat.key]?.qty !== undefined
-                    ? ventilation[cat.key].qty.toFixed(2)
+                    ? Number(ventilation[cat.key].qty).toFixed(2)
                     : '0.00'}
                 </td>
                 <td className="border border-gray-200 p-0.5 text-right">
@@ -779,16 +829,16 @@ const OrdreReparation = ({
                     </tr>
                   </React.Fragment>
                 ))}
-{Array.isArray(pureActiveMecaniqueItems) && pureActiveMecaniqueItems.length > 0 && (
+{/* === LE RESTE DU TABLEAU (MÉCANIQUE, CARROSSERIE, DSP, LUSTRAGE, PLUME...) === */}
+{/* Section MECANIQUE - FORFAITS ET PRESTATIONS */}
+{(Array.isArray(pureActiveMecaniqueItems) && pureActiveMecaniqueItems.length > 0) && (
   <tr className="bg-amber-100">
     <td colSpan={7} className="border border-gray-300 p-2 font-bold">
       MECANIQUE - FORFAITS ET PRESTATIONS
     </td>
   </tr>
 )}
-
-                {/* === PRESTATIONS DYNAMIQUES EXISTANTES === */}
-                {Array.isArray(pureActiveMecaniqueItems) &&
+{Array.isArray(pureActiveMecaniqueItems) &&
   pureActiveMecaniqueItems
     .filter(item => {
       // Exclure REPC et REMPC de la section Mécanique
@@ -797,113 +847,114 @@ const OrdreReparation = ({
       return !isREPC && !isREMPC;
     })
     .map(item => {
-                    const forfait = forfaitData?.[item.id] || {};
-                    const defaults = typeof getDefaultValues === "function" ? getDefaultValues(item.id) : {};
-                    const moQuantity =
-                      forfait.moQuantity !== undefined
-                        ? forfait.moQuantity
-                        : defaults.moQuantity || 0;
-                    const pieceReference =
-                      forfait.pieceReference !== undefined
-                        ? forfait.pieceReference
-                        : defaults.pieceReference || "-";
-                    const pieceQuantity =
-                      forfait.pieceQuantity !== undefined
-                        ? forfait.pieceQuantity
-                        : defaults.pieceQuantity || 0;
-                    const piecePrix =
-                      forfait.piecePrix !== undefined
-                        ? forfait.piecePrix
-                        : defaults.piecePrix || 0;
-                    const moCategory = forfait.moCategory || "Mécanique";
+      const forfait = forfaitData?.[item.id] || {};
+      const defaults = typeof getDefaultValues === "function" ? getDefaultValues(item.id) : {};
+      const moQuantity =
+        forfait.moQuantity !== undefined
+          ? forfait.moQuantity
+          : defaults.moQuantity || 0;
+      const pieceReference =
+        forfait.pieceReference !== undefined
+          ? forfait.pieceReference
+          : defaults.pieceReference || "-";
+      const pieceQuantity =
+        forfait.pieceQuantity !== undefined
+          ? forfait.pieceQuantity
+          : defaults.pieceQuantity || 0;
+      const piecePrix =
+        forfait.piecePrix !== undefined
+          ? forfait.piecePrix
+          : defaults.piecePrix || 0;
+      const moCategory = forfait.moCategory || "Mécanique";
 
-                    return (
-                      <React.Fragment key={item.id}>
-                        <tr style={{ backgroundColor: "#EEE6D8" }}>
-                          <td colSpan="7" className="border border-gray-300 p-2 font-bold">
-                            {item.label}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="border border-gray-300 p-2">Main d'œuvre</td>
-                          <td className="border border-gray-300 p-2">-</td>
-                          <td className="border border-gray-300 p-2">
-                            {forfait.moDesignation || "Temps de travail"}
-                          </td>
-                          <td className="border border-gray-300 p-2">{moCategory}</td>
-                          <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
-                          <td className="border border-gray-300 p-2 text-right">-</td>
-                          <td className="border border-gray-300 p-2 text-right">-</td>
-                        </tr>
-                        {item.id !== "miseANiveau" && pieceReference && (
-                          <tr>
-                            <td className="border border-gray-300 p-2">Pièce</td>
-                            <td className="border border-gray-300 p-2">{pieceReference}</td>
-                            <td className="border border-gray-300 p-2">
-                              {forfait.pieceDesignation || "-"}
-                            </td>
-                            <td className="border border-gray-300 p-2">-</td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {pieceQuantity}
-                            </td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {forfait.piecePrixUnitaire !== undefined
-                                ? `${forfait.piecePrixUnitaire} €`
-                                : "-"}
-                            </td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {piecePrix} €
-                            </td>
-                          </tr>
-                        )}
-                        {pieceLines?.[item.id]?.map((line, idx) => (
-                          <tr key={idx}>
-                            <td className="border border-gray-300 p-2">Pièce suppl.</td>
-                            <td className="border border-gray-300 p-2">{line.reference}</td>
-                            <td className="border border-gray-300 p-2">
-                              {line.designation || "-"}
-                            </td>
-                            <td className="border border-gray-300 p-2">-</td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {line.quantity}
-                            </td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {line.prixUnitaire !== undefined ? `${line.prixUnitaire} €` : "-"}
-                            </td>
-                            <td className="border border-gray-300 p-2 text-right">
-                              {line.prix} €
-                            </td>
-                          </tr>
-                        ))}
-                        {forfait.consommableReference && parseFloat(forfait.consommableQuantity) > 0 && (
-  <tr>
-    <td className="border border-gray-300 p-2">Consommable</td>
-    <td className="border border-gray-300 p-2">
-      {forfait.consommableReference}
-    </td>
-    <td className="border border-gray-300 p-2">
-      {forfait.consommableDesignation || "-"}
-    </td>
-    <td className="border border-gray-300 p-2">-</td>
-    <td className="border border-gray-300 p-2 text-right">
-      {forfait.consommableQuantity}
-    </td>
-    <td className="border border-gray-300 p-2 text-right">
-      {forfait.consommablePrixUnitaire !== undefined
-        ? `${forfait.consommablePrixUnitaire} €`
-        : "-"}
-    </td>
-    <td className="border border-gray-300 p-2 text-right">
-      {forfait.consommablePrix !== undefined
-        ? `${forfait.consommablePrix} €`
-        : "-"}
-    </td>
-  </tr>
-)}
-                      </React.Fragment>
-                    );
-                  })}
+      return (
+        <React.Fragment key={item.id}>
+          <tr style={{ backgroundColor: "#EEE6D8" }}>
+            <td colSpan="7" className="border border-gray-300 p-2 font-bold">
+              {item.label}
+            </td>
+          </tr>
+          <tr>
+            <td className="border border-gray-300 p-2">Main d'œuvre</td>
+            <td className="border border-gray-300 p-2">-</td>
+            <td className="border border-gray-300 p-2">
+              {forfait.moDesignation || "Temps de travail"}
+            </td>
+            <td className="border border-gray-300 p-2">{moCategory}</td>
+            <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
+            <td className="border border-gray-300 p-2 text-right">-</td>
+            <td className="border border-gray-300 p-2 text-right">-</td>
+          </tr>
+          {item.id !== "miseANiveau" && pieceReference && (
+            <tr>
+              <td className="border border-gray-300 p-2">Pièce</td>
+              <td className="border border-gray-300 p-2">{pieceReference}</td>
+              <td className="border border-gray-300 p-2">
+                {forfait.pieceDesignation || "-"}
+              </td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {pieceQuantity}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.piecePrixUnitaire !== undefined
+                  ? `${forfait.piecePrixUnitaire} €`
+                  : "-"}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {piecePrix} €
+              </td>
+            </tr>
+          )}
+          {pieceLines?.[item.id]?.map((line, idx) => (
+            <tr key={idx}>
+              <td className="border border-gray-300 p-2">Pièce suppl.</td>
+              <td className="border border-gray-300 p-2">{line.reference}</td>
+              <td className="border border-gray-300 p-2">
+                {line.designation || "-"}
+              </td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {line.quantity}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {line.prixUnitaire !== undefined ? `${line.prixUnitaire} €` : "-"}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {line.prix} €
+              </td>
+            </tr>
+          ))}
+          {forfait.consommableReference && safeNum(forfait.consommableQuantity) > 0 && (
+            <tr>
+              <td className="border border-gray-300 p-2">Consommable</td>
+              <td className="border border-gray-300 p-2">
+                {forfait.consommableReference}
+              </td>
+              <td className="border border-gray-300 p-2">
+                {forfait.consommableDesignation || "-"}
+              </td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommableQuantity}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommablePrixUnitaire !== undefined
+                  ? `${forfait.consommablePrixUnitaire} €`
+                  : "-"}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommablePrix !== undefined
+                  ? `${forfait.consommablePrix} €`
+                  : "-"}
+              </td>
+            </tr>
+          )}
+        </React.Fragment>
+      );
+    })}
 
+{/* CARROSSERIE - REPC/REMPC */}
 {(
   (Array.isArray(activePeintureForfaits) && activePeintureForfaits.length > 0) ||
   (Array.isArray(activePeintureSeuleForfaits) && activePeintureSeuleForfaits.length > 0) ||
@@ -1030,7 +1081,7 @@ const OrdreReparation = ({
                               <td className="border border-gray-300 p-2">{forfait.mo2Designation}</td>
                               <td className="border border-gray-300 p-2">Peinture</td>
                               <td className="border border-gray-300 p-2 text-right">
-                                {forfait.mo2Quantity.toFixed(2)} h 
+                                {forfait.mo2Quantity.toFixed(2)} h
                               </td>
                               <td className="border border-gray-300 p-2 text-right">-</td>
                               <td className="border border-gray-300 p-2 text-right">-</td>
@@ -1133,7 +1184,7 @@ const OrdreReparation = ({
   (Array.isArray(activeLustrageItems) && activeLustrageItems.length > 0)
 ) && (
   <tr className="bg-blue-100">
-    <td colSpan={7} className="border border-gray-300 p-2 font-bold text-gray-600">
+    <td colSpan={7} className="border border-gray-300 p-0 font-bold text-gray-600">
       SMART - FORFAITS LUSTRAGE, DSP, PLUME
     </td>
   </tr>
@@ -1287,9 +1338,9 @@ const OrdreReparation = ({
                 {Object.entries(forfaitData || {})
                   .filter(([key, data]) => data.lustrage1Elem === true)
                   .map(([key, data]) => {
-                    const moQty = parseFloat(data.moQuantity || 0);
-                    const consQty = parseFloat(data.consommableQuantity || 0);
-                    const consPU = parseFloat(data.consommablePrixUnitaire || 0);
+                    const moQty = safeNum(data.moQuantity || 0);
+                    const consQty = safeNum(data.consommableQuantity || 0);
+                    const consPU = safeNum(data.consommablePrixUnitaire || 0);
                     
                     return (
                       <React.Fragment key={key}>
@@ -1324,7 +1375,7 @@ const OrdreReparation = ({
                 {Object.entries(forfaitData || {})
                   .filter(([key, data]) => data.plume1Elem === true)
                   .map(([key, data]) => {
-                    const moQty = parseFloat(data.moQuantity || 0);
+                    const moQty = safeNum(data.moQuantity || 0);
                     
                     return (
                       <tr key={key}>
@@ -1353,7 +1404,7 @@ const OrdreReparation = ({
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-300">
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="font-semibold">Total Main d'œuvre:</span>
+                  <span className="font-semibold">Total Main d'oeuvre:</span>
                   <span>{totals?.totalMO !== undefined ? totals.totalMO : "0.00"} €</span>
                 </div>
                 <div className="flex justify-between">

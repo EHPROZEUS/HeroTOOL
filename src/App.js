@@ -1858,7 +1858,6 @@ const getMauriceBadges = () => {
               printOrdreReparation={printOrdreReparation}
               itemStates={itemStates}
               activePeintureForfaits={activePeintureForfaits}
-              updateForfaitField={updateForfaitField}
             />
             <div className="mt-4 text-center">
               <button
