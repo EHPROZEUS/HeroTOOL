@@ -1240,14 +1240,16 @@ const getMauriceBadges = () => {
   pieceLines,
   includeControleTechnique,
   includeContrevisite,
-  activeDSPItems
+  activeDSPItems,
+  itemStates
   
 );
   const moByCategory = calculateMOByCategory(
     activeMecaniqueItems,
     forfaitData,
     activeDSPItems,
-    activePlumeItems
+    activePlumeItems,
+    itemStates
   
   );
   const piecesBySupplier = getPiecesListBySupplier(
@@ -1856,6 +1858,7 @@ const getMauriceBadges = () => {
               printOrdreReparation={printOrdreReparation}
               itemStates={itemStates}
               activePeintureForfaits={activePeintureForfaits}
+              updateForfaitField={updateForfaitField}
             />
             <div className="mt-4 text-center">
               <button

@@ -264,8 +264,94 @@ const OrdreReparation = ({
   totals = {},
   moByCategory = {},
   printOrdreReparation,
-  itemStates = {}
+  itemStates = {},
+  updateForfaitField
 }) => {
+    // ---------- MODE ÉDITION INLINE POUR LES QUANTITÉS MO ----------
+  const [editingMO, setEditingMO] = React.useState(false);
+  const [editingValues, setEditingValues] = React.useState({}); // { forfaitKey: { moQuantity, mo1Quantity, mo2Quantity } }
+
+  const startEditingMO = () => {
+    const init = {};
+    Object.entries(forfaitData || {}).forEach(([k, fd]) => {
+      init[k] = {
+        moQuantity: fd?.moQuantity !== undefined ? String(fd.moQuantity) : undefined,
+        mo1Quantity: fd?.mo1Quantity !== undefined ? String(fd.mo1Quantity) : undefined,
+        mo2Quantity: fd?.mo2Quantity !== undefined ? String(fd.mo2Quantity) : undefined
+      };
+    });
+    setEditingValues(init);
+    setEditingMO(true);
+  };
+
+  const handleMOInputChange = (forfaitKey, field, value) => {
+    setEditingValues(prev => ({
+      ...prev,
+      [forfaitKey]: {
+        ...(prev[forfaitKey] || {}),
+        [field]: value
+      }
+    }));
+  };
+
+  // commit d'un champ unique (appelé onBlur ou Enter)
+  const commitMOField = (forfaitKey, field) => {
+    if (!updateForfaitField) return;
+    const raw = editingValues?.[forfaitKey]?.[field];
+    if (raw === undefined) return;
+    const v = parseFloat(String(raw).replace(',', '.'));
+    if (isNaN(v)) return;
+    updateForfaitField(forfaitKey, field, v.toString());
+    // mettre à jour l'input affiché (format 2 décimales)
+    setEditingValues(prev => ({
+      ...prev,
+      [forfaitKey]: {
+        ...(prev[forfaitKey] || {}),
+        [field]: v.toFixed(2)
+      }
+    }));
+  };
+
+  // sauver tout (bouton sauvegarder)
+  const saveMOEdits = () => {
+    if (!updateForfaitField) return;
+    Object.entries(editingValues || {}).forEach(([key, vals]) => {
+      if (!vals) return;
+      ['moQuantity','mo1Quantity','mo2Quantity'].forEach(field => {
+        const raw = vals[field];
+        if (raw === undefined) return;
+        const v = parseFloat(String(raw).replace(',', '.'));
+        if (!isNaN(v)) updateForfaitField(key, field, v.toString());
+      });
+    });
+    setEditingMO(false);
+    setEditingValues({});
+  };
+
+  const cancelMOEdits = () => {
+    setEditingMO(false);
+    setEditingValues({});
+  };
+
+  // Helper pour afficher soit texte soit input inline (blur / Enter commit)
+  const renderMOInput = (forfaitKey, field, displayValue) => {
+    const hasField = editingValues?.[forfaitKey] && editingValues[forfaitKey][field] !== undefined;
+    if (!editingMO || !hasField) {
+      return `${(parseFloat(displayValue) || 0).toFixed(2)} h`;
+    }
+    return (
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        value={editingValues[forfaitKey][field]}
+        onChange={(e) => handleMOInputChange(forfaitKey, field, e.target.value)}
+        onBlur={() => commitMOField(forfaitKey, field)}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.currentTarget.blur(); } }}
+        className="w-20 text-right px-2 py-1 border rounded"
+      />
+    );
+  };
   // Identifie les items de lustrage actifs
   const activeLustrageItems = Array.isArray(activeMecaniqueItems)
     ? activeMecaniqueItems.filter(item =>
@@ -944,7 +1030,7 @@ const OrdreReparation = ({
                               <td className="border border-gray-300 p-2">{forfait.mo2Designation}</td>
                               <td className="border border-gray-300 p-2">Peinture</td>
                               <td className="border border-gray-300 p-2 text-right">
-                                {forfait.mo2Quantity.toFixed(2)} h
+                                {forfait.mo2Quantity.toFixed(2)} h 
                               </td>
                               <td className="border border-gray-300 p-2 text-right">-</td>
                               <td className="border border-gray-300 p-2 text-right">-</td>
