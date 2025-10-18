@@ -9,7 +9,8 @@ const IMPORT_FORMATS = [
   { id: 'partslink', name: 'Forcer PARTSLINK' },
   { id: 'renault', name: 'Forcer RENAULT' },
   { id: 'xpr', name: 'XPR DISTRIBUTION' },
-  { id: 'standard', name: 'Format standard (Ref | Désignation | Qté | Prix)' }
+  { id: 'standard', name: 'Format standard (Ref | Désignation | Qté | Prix)' },
+  { id: 'manual', name: 'Manuel (double espace: Ref  Désignation  Qté  Prix)' }
 ];
 
 const SOURCE_SYSTEMS = [

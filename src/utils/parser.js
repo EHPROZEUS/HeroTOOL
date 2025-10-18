@@ -406,6 +406,39 @@ const formatStrategies = {
   renault(lines, defaultSupplier) {
     return parseRenaultBlocks(lines, defaultSupplier);
   },
+  manual(lines, defaultSupplier) {
+    const pieces = [];
+    lines.forEach(line => {
+      // Diviser par double espace (ou plus)
+      const parts = line.split(/\s{2,}/).map(p => p.trim()).filter(p => p);
+      
+      if (parts.length >= 4) {
+        const [ref, des, qte, pu] = parts;
+        const qtyNum = parseFloat(normalizeNumber(qte)) || 1;
+        const puNum = parseFloat(normalizeNumber(pu));
+        
+        pieces.push(buildPiece({
+          reference: ref,
+          designation: des,
+          quantity: qtyNum,
+          prixUnitaire: isNaN(puNum) ? '' : puNum
+        }, defaultSupplier));
+      } else if (parts.length === 3) {
+        // Si seulement 3 colonnes: Réf  Désignation  Prix (Qté = 1 par défaut)
+        const [ref, des, pu] = parts;
+        const puNum = parseFloat(normalizeNumber(pu));
+        
+        pieces.push(buildPiece({
+          reference: ref,
+          designation: des,
+          quantity: 1,
+          prixUnitaire: isNaN(puNum) ? '' : puNum
+        }, defaultSupplier));
+      }
+    });
+    return pieces;
+  },
+
 
   auto(lines, defaultSupplier) {
     const hasPercentsEuro = lines.filter(l => /\d+,\d+\s*%/.test(l) && /€|EUR/i.test(l)).length;

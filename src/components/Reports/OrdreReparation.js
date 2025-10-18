@@ -11,18 +11,60 @@ import {
   TEXT_ITEMS_2 
 } from '../../config/constants';
 
+/**
+ * Vérifie si un item est une vraie opération de carrosserie
+ * (exclut les forfaits de reconditionnement)
+ */
+const isRealCarrosserieOperation = (itemId, forfaitData) => {
+  // Liste des IDs de reconditionnement à EXCLURE
+  const RECONDITIONNEMENT_IDS = [
+    'Rempc1', 'Rempc2', 'Rempc3', 'Rempc4',
+    'Repc1', 'Repc2', 'Repc3', 'Repc4',
+    'rempm', 'repm'
+  ];
+  
+  // Si c'est un forfait de reconditionnement, retourner false
+  if (RECONDITIONNEMENT_IDS.includes(itemId)) {
+    return false;
+  }
+  
+  // Vérifier la catégorie MO
+  const forfait = forfaitData[itemId];
+  if (forfait) {
+    const category = forfait.moCategory || '';
+    // Les vraies opérations de carrosserie
+    return category === 'Carrosserie' || 
+           category === 'Peinture' || 
+           category === 'Tôlerie' ||
+           forfait.peintureForfait; // Forfaits réparation peinture
+  }
+  
+  return false;
+};
+
 const tarifHoraire = 35.8;
 
-// Fonction pour déterminer la couleur globale du dossier selon la MO mécanique totale
-const getDossierColor = (totalMOMecanique) => {
+const getDossierColor = (totalMOMecanique, totalPieces = 0) => {
   const total = parseFloat(totalMOMecanique) || 0;
+  const totalPiecesValue = parseFloat(totalPieces) || 0;
   
-  if (total >= 0.01 && total <= 0.2) return { color: '#22C55E', label: 'VERT', bg: '#DCFCE7' };
-  if (total >= 0.21 && total <= 2.99) return { color: '#FACC15', label: 'JAUNE', bg: '#FEF9C3' };
-  if (total >= 3 && total <= 4.99) return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' };
-  if (total >= 5) return { color: '#EF4444', label: 'ROUGE', bg: '#FEE2E2' };
+  // 🟢 VERT : Aucune pièce à commander (peu importe la MO)
+  if (totalPiecesValue === 0) {
+    return { color: '#28a745', label: 'VERT', bg: '#d4edda' };
+  }
   
-  return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' };
+  // 🟡 JAUNE : Pièces présentes + MO < 3h
+  if (total < 3) {
+    return { color: '#FFC107', label: 'JAUNE', bg: '#FFF9E6' };
+  }
+  
+  // ⚪ BLANC : Pièces présentes + 3h ≤ MO < 5h
+  if (total < 5) {
+  return { color: '#6c757d', label: 'TRANSPARENT', bg: '#ffffff' };
+  }
+  
+  // 🔴 ROUGE : Pièces présentes + MO ≥ 5h
+  return { color: '#dc3545', label: 'ROUGE', bg: '#f8d7da' };
 };
 
 // ✅ NOUVELLE FONCTION - Ajouter ici après les imports
@@ -436,6 +478,8 @@ function computeVentilation({
   return result;
 }
 
+
+
 const OrdreReparation = ({
   showOrdreReparation,
   setShowOrdreReparation,
@@ -451,10 +495,34 @@ const OrdreReparation = ({
   pieceLines = {},
   totals = {},
   moByCategory = {},
+  itemNotes = {},
   printOrdreReparation,
   updateForfaitField, 
   itemStates = {}
 }) => {
+
+    // Fonction pour obtenir la désignation (utilise la note pour Remp/Rep)
+  const getDesignation = (itemId, forfait) => {
+    // Liste des IDs Remp et Rep
+    const REMP_REP_IDS = [
+      'repc1', 'repc2', 'repc3', 'repc4',
+      'rempc1', 'rempc2', 'rempc3', 'rempc4',
+      'repm1', 'repm2', 'repm3', 'repm4',
+      'rempm1', 'rempm2', 'rempm3', 'rempm4'
+    ];
+
+        const isRempRep = REMP_REP_IDS.some(id => id.toLowerCase() === itemId.toLowerCase());
+
+    
+    // Si c'est un item Remp/Rep et qu'il y a une note, utiliser la note
+    if (isRempRep && itemNotes[itemId]) {
+      return itemNotes[itemId];
+    }
+    
+    // Sinon, utiliser moDesignation ou le texte par défaut
+    return forfait.moDesignation || "Temps de travail";
+  };
+
     const [editMode, setEditMode] = useState(false);
   // Identifie les items de lustrage actifs
   const activeLustrageItems = Array.isArray(activeMecaniqueItems)
@@ -480,6 +548,16 @@ const OrdreReparation = ({
         !LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
       )
     : [];
+
+      // Filtrer les vraies opérations de carrosserie
+  const realCarrosserieItems = Array.isArray(pureActiveMecaniqueItems)
+    ? pureActiveMecaniqueItems.filter(item => 
+        isRealCarrosserieOperation(item.id, forfaitData)
+      )
+    : [];
+  
+  // Vérifier s'il y a au moins une vraie opération de carrosserie
+  const hasRealCarrosserieOperations = realCarrosserieItems.length > 0;
 
   // Calcul ventilation comptable (computeVentilation prend en charge fallback moByCategory)
   const ventilation = computeVentilation({
@@ -508,7 +586,7 @@ const OrdreReparation = ({
 
   // ✅ CALCUL DU TOTAL MO MÉCANIQUE (utilise finalMoByCategory)
   const totalMOMecanique = finalMoByCategory.mecanique || 0;
-  const dossierStatus = getDossierColor(totalMOMecanique);
+  const dossierStatus = getDossierColor(totalMOMecanique, totals.totalPieces);
 
   // Styles pour éviter les coupures dans le PDF
 const pdfStyles = `
@@ -983,7 +1061,7 @@ const piecePrix = (() => {
             <td className="border border-gray-300 p-2">Main d'œuvre</td>
             <td className="border border-gray-300 p-2">-</td>
             <td className="border border-gray-300 p-2">
-              {forfait.moDesignation || "Temps de travail"}
+              {getDesignation(item.id, forfait)}
             </td>
             <td className="border border-gray-300 p-2">{moCategory}</td>
             <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
@@ -1063,7 +1141,7 @@ const piecePrix = (() => {
 {(
   (Array.isArray(activePeintureForfaits) && activePeintureForfaits.length > 0) ||
   (Array.isArray(activePeintureSeuleForfaits) && activePeintureSeuleForfaits.length > 0) ||
-  (Array.isArray(pureActiveMecaniqueItems) && pureActiveMecaniqueItems.length > 0)
+  (Array.isArray(realCarrosserieItems) && realCarrosserieItems.length > 0)
 ) && (
   <tr className="bg-green-200">
     <td colSpan={7} className="border border-gray-300 p-2 font-bold">
@@ -1098,7 +1176,7 @@ const piecePrix = (() => {
             <td className="border border-gray-300 p-2">Main d'Œuvre</td>
             <td className="border border-gray-300 p-2">-</td>
             <td className="border border-gray-300 p-2">
-              {forfait.moDesignation || "Temps de travail"}
+              {getDesignation(item.id, forfait)}
             </td>
             <td className="border border-gray-300 p-2">Carrosserie</td>
             <td className="border border-gray-300 p-2 text-right">{moQuantity} h</td>
@@ -1147,7 +1225,7 @@ const piecePrix = (() => {
         colSpan="7"
         className="border border-gray-300 p-2 font-bold text-orange-600"
       >
-        RÉPARATION + PEINTURE (éditable)
+        RÉPARATION + PEINTURE
       </td>
     </tr>
     {activePeintureForfaits.map((forfait, idx) => {
@@ -1268,7 +1346,7 @@ const piecePrix = (() => {
         colSpan="7"
         className="border border-gray-300 p-2 font-bold text-green-600"
       >
-        PEINTURE (éditable)
+        PEINTURE
       </td>
     </tr>
     {activePeintureSeuleForfaits.map((forfait, idx) => {

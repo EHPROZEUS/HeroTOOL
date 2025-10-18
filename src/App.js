@@ -1986,6 +1986,7 @@ const printOrdreReparation = useCallback(() => {
               pieceLines={pieceLines}
               totals={totals}
               moByCategory={moByCategory}
+              itemNotes={itemNotes}
               printOrdreReparation={printOrdreReparation}
               updateForfaitField={updateForfaitField}
               itemStates={itemStates}

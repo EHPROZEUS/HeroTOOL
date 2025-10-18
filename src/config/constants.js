@@ -286,6 +286,8 @@ export const EXCLUDED_MULTI_PIECES = [
   'rempm1', 'rempm2', 'rempm3', 'rempm4'
 ];
 
+
+
 // ===== VALEURS PAR DÉFAUT POUR LES FORFAITS =====
 export const DEFAULT_VALUES = {
   miseANiveau: {
@@ -470,6 +472,253 @@ export const DEFAULT_VALUES = {
   },
   plaquettesAr: {
     moQuantity: 0.8,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  // REPC1-4
+  repc1: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  repc2: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  repc3: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  repc4: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  
+  // REMPC1-4
+  rempc1: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  rempc2: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  rempc3: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  rempc4: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  
+  // REPM1-4
+  repm1: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  repm2: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  repm3: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  repm4: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  
+  // REMPM1-4
+  rempm1: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  rempm2: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  rempm3: {
+    moQuantity: 0.1,
+    moPrix: 35.8,
+    pieceReference: '',
+    pieceDesignation: '',
+    pieceQuantity: 1,
+    piecePrixUnitaire: 0,
+    piecePrix: 0,
+    pieceFournisseur: '',
+    consommableReference: '',
+    consommableDesignation: '',
+    consommableQuantity: 0,
+    consommablePrixUnitaire: 0,
+    consommablePrix: 0
+  },
+  rempm4: {
+    moQuantity: 0.1,
     moPrix: 35.8,
     pieceReference: '',
     pieceDesignation: '',
@@ -1005,4 +1254,5 @@ export const PEINTURE_SEULE_FORFAITS = [
     consommablePrixUnitaire: 10,
     consommablePrix: 5
   }
+  
 ];
