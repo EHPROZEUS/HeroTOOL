@@ -1,16 +1,9 @@
 /**
- * Service d'authentification CAROL
+ * Service d'authentification CAROL OAuth
  */
 
 const CAROL_LOGIN_URL = '/api/carol-login';
-const CAROL_LOGOUT_URL = '/api/carol-logout';
 
-/**
- * Connexion à CAROL
- * @param {string} username - Identifiant CAROL
- * @param {string} password - Mot de passe CAROL
- * @returns {Promise<Object>}
- */
 export const loginToCAROL = async (username, password) => {
   try {
     console.log('🔐 Connexion à CAROL...');
@@ -24,8 +17,8 @@ export const loginToCAROL = async (username, password) => {
     });
     
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Erreur de connexion');
+      const error = await response.json().catch(() => ({ error: 'Erreur de connexion' }));
+      throw new Error(error.error || 'Identifiants invalides');
     }
     
     const data = await response.json();
@@ -34,6 +27,17 @@ export const loginToCAROL = async (username, password) => {
     // Sauvegarder le token
     if (data.token) {
       localStorage.setItem('carol_token', data.token);
+      
+      // Sauvegarder aussi le refresh token si disponible
+      if (data.refresh_token) {
+        localStorage.setItem('carol_refresh_token', data.refresh_token);
+      }
+      
+      // Sauvegarder l'expiration
+      if (data.expires_in) {
+        const expiresAt = Date.now() + (data.expires_in * 1000);
+        localStorage.setItem('carol_token_expires_at', expiresAt.toString());
+      }
     }
     
     return data;
@@ -44,33 +48,33 @@ export const loginToCAROL = async (username, password) => {
   }
 };
 
-/**
- * Déconnexion de CAROL
- */
 export const logoutFromCAROL = async () => {
   try {
     localStorage.removeItem('carol_token');
-    
-    await fetch(CAROL_LOGOUT_URL, {
-      method: 'POST'
-    });
-    
+    localStorage.removeItem('carol_refresh_token');
+    localStorage.removeItem('carol_token_expires_at');
     console.log('✅ Déconnexion CAROL');
   } catch (error) {
     console.error('❌ Erreur déconnexion:', error);
   }
 };
 
-/**
- * Récupérer le token CAROL
- */
 export const getCAROLToken = () => {
-  return localStorage.getItem('carol_token');
+  const token = localStorage.getItem('carol_token');
+  const expiresAt = localStorage.getItem('carol_token_expires_at');
+  
+  // Vérifier si le token est expiré
+  if (token && expiresAt) {
+    if (Date.now() > parseInt(expiresAt)) {
+      console.warn('⚠️ Token expiré');
+      logoutFromCAROL();
+      return null;
+    }
+  }
+  
+  return token;
 };
 
-/**
- * Vérifier si connecté
- */
 export const isLoggedInToCAROL = () => {
   return !!getCAROLToken();
 };
