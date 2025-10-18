@@ -1,8 +1,8 @@
 /**
- * API CAROL GraphQL - Utilise les cookies de session
+ * API CAROL GraphQL via Proxy Vercel
  */
 
-const CAROL_GRAPHQL_URL = 'https://www.carol.autohero.com/api/v1/refurbishment-aggregation/graphql';
+const CAROL_PROXY_URL = '/api/carol-proxy';
 
 const GET_REFURBISHMENT_QUERY = `
   query GetRefurbishment($id: ID!) {
@@ -60,22 +60,20 @@ const GET_REFURBISHMENT_QUERY = `
 `;
 
 /**
- * Récupère les données depuis CAROL en utilisant les cookies de session
+ * Récupère les données depuis CAROL via proxy Vercel
  */
 export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
   try {
     const cleanId = vehicleId.trim();
     
-    console.log('🔍 Récupération depuis CAROL (avec cookies):', cleanId);
+    console.log('🔍 Récupération depuis CAROL via proxy:', cleanId);
     
-    const response = await fetch(CAROL_GRAPHQL_URL, {
+    const response = await fetch(CAROL_PROXY_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      credentials: 'include', // ✅ Utiliser les cookies
-      mode: 'cors',
       body: JSON.stringify({
         query: GET_REFURBISHMENT_QUERY,
         variables: { id: cleanId }
@@ -85,15 +83,15 @@ export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       
-      if (response.status === 401 || response.status === 403) {
-        throw new Error('⚠️ Non authentifié. Connectez-vous d\'abord à CAROL dans un autre onglet : https://www.carol.autohero.com');
+      if (response.status === 401 || response.status === 403 || errorData.needsAuth) {
+        throw new Error('⚠️ Non authentifié.\n\nℹ️ L\'API CAROL nécessite une authentification.\n\nContactez l\'équipe IT d\'AutoHero pour ajouter "herotool.vercel.app" à la whitelist CORS de l\'API CAROL.');
       }
       
-      throw new Error(errorData.error || `Erreur: ${response.status}`);
+      throw new Error(errorData.error || `Erreur CAROL: ${response.status}`);
     }
     
     const result = await response.json();
-    console.log('✅ Réponse GraphQL:', result);
+    console.log('✅ Réponse GraphQL via proxy:', result);
     
     if (result.errors) {
       console.error('❌ Erreurs GraphQL:', result.errors);
@@ -113,25 +111,8 @@ export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
 };
 
 /**
- * Vérifier si l'utilisateur est connecté à CAROL
+ * Mapper les données CAROL vers HeroTOOL
  */
-export const checkCAROLAuth = async () => {
-  try {
-    // Essayer une requête simple pour vérifier l'auth
-    const response = await fetch('https://www.carol.autohero.com/api/v1/auth/oauth/token', {
-      method: 'GET',
-      credentials: 'include',
-      mode: 'cors'
-    });
-    
-    return response.ok;
-  } catch (error) {
-    return false;
-  }
-};
-
-// ... (Garder toutes les fonctions de mapping identiques)
-
 const mapCAROLToHeroTool = (refurbishment) => {
   const vehicle = refurbishment.vehicle || {};
   

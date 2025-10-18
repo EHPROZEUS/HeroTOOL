@@ -1,11 +1,13 @@
 /**
- * Proxy Vercel pour l'API CAROL GraphQL avec authentification
+ * Proxy Vercel pour CAROL avec gestion des cookies
  */
 
 export default async function handler(req, res) {
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Cookie, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -16,27 +18,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { query, variables } = req.body;
+    const { query, variables, cookies } = req.body;
 
     if (!query) {
       return res.status(400).json({ error: 'Query GraphQL requise' });
     }
 
-    // ✅ Récupérer le token depuis les headers
-    const authHeader = req.headers.authorization;
-    const token = authHeader ? authHeader.replace('Bearer ', '') : null;
+    console.log('🔍 Proxy CAROL GraphQL');
 
-    console.log('🔍 Proxy CAROL GraphQL:', token ? 'avec token' : 'sans token');
-
-    // Headers pour l'API CAROL
+    // Headers pour CAROL
     const headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
 
-    // ✅ Ajouter le token si disponible
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    // Ajouter les cookies si fournis
+    if (cookies) {
+      headers['Cookie'] = cookies;
     }
 
     const response = await fetch('https://www.carol.autohero.com/api/v1/refurbishment-aggregation/graphql', {
@@ -51,7 +49,8 @@ export default async function handler(req, res) {
       
       return res.status(response.status).json({ 
         error: `Erreur CAROL: ${response.status}`,
-        details: errorText
+        details: errorText,
+        needsAuth: response.status === 401 || response.status === 403
       });
     }
 
