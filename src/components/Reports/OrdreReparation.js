@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { calculateVehicleAge, formatDateFr } from '../../utils/formatters';
 import { getDefaultValues } from '../../utils/calculations';
 import { 
@@ -392,8 +392,10 @@ const OrdreReparation = ({
   totals = {},
   moByCategory = {},
   printOrdreReparation,
+  updateForfaitField, 
   itemStates = {}
 }) => {
+    const [editMode, setEditMode] = useState(false);
   // Identifie les items de lustrage actifs
   const activeLustrageItems = Array.isArray(activeMecaniqueItems)
     ? activeMecaniqueItems.filter(item =>
@@ -449,30 +451,51 @@ const OrdreReparation = ({
   const dossierStatus = getDossierColor(totalMOMecanique);
 
   // Styles pour éviter les coupures dans le PDF
-  const pdfStyles = `
-    @media print {
-      .no-break {
-        page-break-inside: avoid;
-        break-inside: avoid;
-      }
-      table {
-        page-break-inside: auto;
-      }
-      tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
-      }
-      thead {
-        display: table-header-group;
-      }
+const pdfStyles = `
+  @media print {
+    .no-break {
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
-  `;
+    table {
+      page-break-inside: auto;
+    }
+    tr {
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+    thead {
+      display: table-header-group;
+    }
+    
+    /* Masquer les inputs éditables et afficher la valeur en texte */
+    .editable-mo-input {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+    }
+  }
+`;
 
   return (
-    <div className="mt-8 border-t-2 border-gray-300 pt-8">
+<div className="mt-8 border-t-2 border-gray-300 pt-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Ordre de réparation</h2>
         <div className="flex items-center gap-4">
+          {/* ✅ BOUTON MODE ÉDITION */}
+          {showOrdreReparation && (
+<button
+  onClick={() => setEditMode(!editMode)}
+  className="px-4 py-2 rounded-lg font-semibold transition-all"
+  style={{
+    backgroundColor: editMode ? '#FF6B35' : '#E5E7EB',
+    color: editMode ? 'white' : '#374151'
+  }}
+>
+  {editMode ? '✏️ Mode Édition' : '🔒 Lecture seule'}
+</button>
+          )}
+          
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -873,10 +896,20 @@ const OrdreReparation = ({
         forfait.pieceQuantity !== undefined
           ? forfait.pieceQuantity
           : defaults.pieceQuantity || 0;
-      const piecePrix =
-        forfait.piecePrix !== undefined
-          ? forfait.piecePrix
-          : defaults.piecePrix || 0;
+const piecePrix = (() => {
+  // Si piecePrix existe dans forfait, l'utiliser
+  if (forfait.piecePrix !== undefined && forfait.piecePrix !== '' && forfait.piecePrix !== '0' && forfait.piecePrix !== 0) {
+    return forfait.piecePrix;
+  }
+  // Sinon calculer : quantité × prix unitaire
+  const qty = parseFloat(pieceQuantity) || 0;
+  const pu = parseFloat(forfait.piecePrixUnitaire) || 0;
+  if (qty > 0 && pu > 0) {
+    return (qty * pu).toFixed(2);
+  }
+  // En dernier recours, utiliser la valeur par défaut
+  return defaults.piecePrix || 0;
+})();
       const moCategory = forfait.moCategory || "Mécanique";
 
       return (
@@ -1046,150 +1079,215 @@ const OrdreReparation = ({
       );
     })}
 
-                {/* FORFAITS RÉPARATION PEINTURE */}
-                {activePeintureForfaits.length > 0 && (
-                  <>
-                    <tr style={{ backgroundColor: "#BED3C3" }}>
-                      <td
-                        colSpan="7"
-                        className="border border-gray-300 p-2 font-bold text-orange-600"
-                      >
-                        RÉPARATION + PEINTURE
-                      </td>
-                    </tr>
-                    {activePeintureForfaits.map((forfait, idx) => {
-                      const state = itemStates[forfait.id] ?? 0;
-                      
-                      return (
-                        <React.Fragment key={`peinture-${forfait.id}-${idx}`}>
-                          {/* MO RÉPARATION (Tolerie) */}
-                          {forfait.mo1Quantity > 0 && (
-                            <tr className={state === 2 ? 'bg-green-50' : ''}>
-                              <td className="border border-gray-300 p-2">
-                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
-                                  MO TOLERIE {forfait.label.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="border border-gray-300 p-2 text-center">-</td>
-                              <td className="border border-gray-300 p-2">{forfait.mo1Designation}</td>
-                              <td className="border border-gray-300 p-2">Tolerie</td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.mo1Quantity.toFixed(2)} h
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">-</td>
-                              <td className="border border-gray-300 p-2 text-right">-</td>
-                            </tr>
-                          )}
-                          
-                          {/* MO PEINTURE */}
-                          {forfait.mo2Quantity > 0 && (
-                            <tr className={state === 2 ? 'bg-green-50' : ''}>
-                              <td className="border border-gray-300 p-2">
-                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
-                                  MO PEINTURE {forfait.label.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="border border-gray-300 p-2 text-center">-</td>
-                              <td className="border border-gray-300 p-2">{forfait.mo2Designation}</td>
-                              <td className="border border-gray-300 p-2">Peinture</td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.mo2Quantity.toFixed(2)} h
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">-</td>
-                              <td className="border border-gray-300 p-2 text-right">-</td>
-                            </tr>
-                          )}
-                          
-                          {/* CONSOMMABLE */}
-                          {forfait.consommableQuantity > 0 && (
-                            <tr className={state === 2 ? 'bg-green-50' : ''}>
-                              <td className="border border-gray-300 p-2">
-                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
-                                  CONSOMMABLE {forfait.label.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="border border-gray-300 p-2 text-center">CONSO</td>
-                              <td className="border border-gray-300 p-2">{forfait.consommableDesignation}</td>
-                              <td className="border border-gray-300 p-2">-</td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.consommableQuantity.toFixed(2)}
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.consommablePrixUnitaire.toFixed(2)} €
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.consommablePrix.toFixed(2)} €
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </>
+{/* FORFAITS RÉPARATION PEINTURE - ÉDITABLE */}
+{activePeintureForfaits.length > 0 && (
+  <>
+    <tr style={{ backgroundColor: "#BED3C3" }}>
+      <td
+        colSpan="7"
+        className="border border-gray-300 p-2 font-bold text-orange-600"
+      >
+        RÉPARATION + PEINTURE (éditable)
+      </td>
+    </tr>
+    {activePeintureForfaits.map((forfait, idx) => {
+      const state = itemStates[forfait.id] ?? 0;
+      const data = forfaitData[forfait.id] || {};
+      
+      // Quantités actuelles (depuis forfaitData ou valeurs par défaut)
+      const currentMo1 = data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity;
+      const currentMo2 = data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity;
+      
+      return (
+        <React.Fragment key={`peinture-${forfait.id}-${idx}`}>
+          {/* Ligne titre */}
+          <tr style={{ backgroundColor: "#FFE4D6" }}>
+            <td
+              colSpan="7"
+              className="border border-gray-300 p-2 font-bold text-gray-800"
+            >
+              {forfait.label}
+            </td>
+          </tr>
+          
+{/* MO RÉPARATION (Tolerie) - ÉDITABLE */}
+          {forfait.mo1Quantity > 0 && (
+            <tr className={state === 2 ? 'bg-green-50' : ''}>
+              <td className="border border-gray-300 p-2">
+                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                  MO TOLERIE {forfait.label.toUpperCase()}
+                </span>
+              </td>
+              <td className="border border-gray-300 p-2 text-center">-</td>
+              <td className="border border-gray-300 p-2">{forfait.mo1Designation}</td>
+              <td className="border border-gray-300 p-2">Tolerie</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {editMode ? (
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={currentMo1}
+                    onChange={(e) => updateForfaitField(forfait.id, 'mo1Quantity', parseFloat(e.target.value) || 0)}
+                    className="w-20 px-2 py-1 border border-orange-400 rounded text-right focus:ring-2 focus:ring-orange-500"
+                    style={{ backgroundColor: '#FFF5F0' }}
+                  />
+                ) : (
+                  <span>{currentMo1.toFixed(2)} h</span>
                 )}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">-</td>
+              <td className="border border-gray-300 p-2 text-right">-</td>
+            </tr>
+          )}
+          
+          {/* MO PEINTURE - ÉDITABLE */}
+          {forfait.mo2Quantity > 0 && (
+            <tr className={state === 2 ? 'bg-green-50' : ''}>
+              <td className="border border-gray-300 p-2">
+                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                  MO PEINTURE {forfait.label.toUpperCase()}
+                </span>
+              </td>
+              <td className="border border-gray-300 p-2 text-center">-</td>
+              <td className="border border-gray-300 p-2">{forfait.mo2Designation}</td>
+              <td className="border border-gray-300 p-2">Peinture</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {editMode ? (
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={currentMo2}
+                    onChange={(e) => updateForfaitField(forfait.id, 'mo2Quantity', parseFloat(e.target.value) || 0)}
+                    className="w-20 px-2 py-1 border border-orange-400 rounded text-right focus:ring-2 focus:ring-orange-500"
+                    style={{ backgroundColor: '#FFF5F0' }}
+                  />
+                ) : (
+                  <span>{currentMo2.toFixed(2)} h</span>
+                )}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">-</td>
+              <td className="border border-gray-300 p-2 text-right">-</td>
+            </tr>
+          )}
+          
+          {/* CONSOMMABLE */}
+          {forfait.consommableQuantity > 0 && (
+            <tr className={state === 2 ? 'bg-green-50' : ''}>
+              <td className="border border-gray-300 p-2">
+                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                  CONSOMMABLE {forfait.label.toUpperCase()}
+                </span>
+              </td>
+              <td className="border border-gray-300 p-2 text-center">CONSO</td>
+              <td className="border border-gray-300 p-2">{forfait.consommableDesignation}</td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommableQuantity.toFixed(2)}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommablePrixUnitaire.toFixed(2)} €
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommablePrix.toFixed(2)} €
+              </td>
+            </tr>
+          )}
+        </React.Fragment>
+      );
+    })}
+  </>
+)}
 
-                {/* FORFAITS PEINTURE SEULE */}
-                {activePeintureSeuleForfaits.length > 0 && (
-                  <>
-                    <tr style={{ backgroundColor: "#BED3C3" }}>
-                      <td
-                        colSpan="7"
-                        className="border border-gray-300 p-2 font-bold text-GREEN-600"
-                      >
-                        PEINTURE
-                      </td>
-                    </tr>
-                    {activePeintureSeuleForfaits.map((forfait, idx) => {
-                      const state = itemStates[forfait.id] ?? 0;
-                      
-                      return (
-                        <React.Fragment key={`peinture-seule-${forfait.id}-${idx}`}>
-                          {/* MO PEINTURE */}
-                          {forfait.moQuantity > 0 && (
-                            <tr className={state === 2 ? 'bg-green-50' : ''}>
-                              <td className="border border-gray-300 p-2">
-                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
-                                  MO PEINTURE {forfait.label.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="border border-gray-300 p-2 text-center">-</td>
-                              <td className="border border-gray-300 p-2">{forfait.moDesignation}</td>
-                              <td className="border border-gray-300 p-2">Peinture</td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.moQuantity.toFixed(2)} h
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">-</td>
-                              <td className="border border-gray-300 p-2 text-right">-</td>
-                            </tr>
-                          )}
-                          
-                          {/* CONSOMMABLE */}
-                          {forfait.consommableQuantity > 0 && (
-                            <tr className={state === 2 ? 'bg-green-50' : ''}>
-                              <td className="border border-gray-300 p-2">
-                                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
-                                  CONSOMMABLE {forfait.label.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="border border-gray-300 p-2 text-center">CONSO</td>
-                              <td className="border border-gray-300 p-2">{forfait.consommableDesignation}</td>
-                              <td className="border border-gray-300 p-2">-</td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.consommableQuantity.toFixed(2)}
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.consommablePrixUnitaire.toFixed(2)} €
-                              </td>
-                              <td className="border border-gray-300 p-2 text-right">
-                                {forfait.consommablePrix.toFixed(2)} €
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </>
-                )}
+{/* FORFAITS PEINTURE SEULE - ÉDITABLE */}
+{activePeintureSeuleForfaits.length > 0 && (
+  <>
+    <tr style={{ backgroundColor: "#BED3C3" }}>
+      <td
+        colSpan="7"
+        className="border border-gray-300 p-2 font-bold text-green-600"
+      >
+        PEINTURE (éditable)
+      </td>
+    </tr>
+    {activePeintureSeuleForfaits.map((forfait, idx) => {
+      const state = itemStates[forfait.id] ?? 0;
+      const data = forfaitData[forfait.id] || {};
+      
+      // Quantité actuelle (depuis forfaitData ou valeur par défaut)
+      const currentMoQuantity = data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity;
+      
+      return (
+        <React.Fragment key={`peinture-seule-${forfait.id}-${idx}`}>
+          {/* Ligne titre */}
+          <tr style={{ backgroundColor: "#E0F2E9" }}>
+            <td
+              colSpan="7"
+              className="border border-gray-300 p-2 font-bold text-gray-800"
+            >
+              {forfait.label}
+            </td>
+          </tr>
+          
+          {/* MO PEINTURE - ÉDITABLE */}
+          {forfait.moQuantity > 0 && (
+            <tr className={state === 2 ? 'bg-green-50' : ''}>
+              <td className="border border-gray-300 p-2">
+                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                  MO PEINTURE {forfait.label.toUpperCase()}
+                </span>
+              </td>
+              <td className="border border-gray-300 p-2 text-center">-</td>
+              <td className="border border-gray-300 p-2">{forfait.moDesignation}</td>
+              <td className="border border-gray-300 p-2">Peinture</td>
+<td className="border border-gray-300 p-2 text-right">
+  {editMode ? (
+    <input
+      type="number"
+      step="0.1"
+      min="0"
+      value={currentMoQuantity}
+      onChange={(e) => updateForfaitField(forfait.id, 'moQuantity', parseFloat(e.target.value) || 0)}
+      className="w-20 px-2 py-1 border border-green-400 rounded text-right focus:ring-2 focus:ring-green-500"
+      style={{ backgroundColor: '#F0FFF4' }}
+    />
+  ) : (
+    <span>{currentMoQuantity.toFixed(2)} h</span>
+  )}
+</td>
+              <td className="border border-gray-300 p-2 text-right">-</td>
+              <td className="border border-gray-300 p-2 text-right">-</td>
+            </tr>
+          )}
+          
+          {/* CONSOMMABLE */}
+          {forfait.consommableQuantity > 0 && (
+            <tr className={state === 2 ? 'bg-green-50' : ''}>
+              <td className="border border-gray-300 p-2">
+                <span className={state === 2 ? 'line-through text-gray-500' : ''}>
+                  CONSOMMABLE {forfait.label.toUpperCase()}
+                </span>
+              </td>
+              <td className="border border-gray-300 p-2 text-center">CONSO</td>
+              <td className="border border-gray-300 p-2">{forfait.consommableDesignation}</td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommableQuantity.toFixed(2)}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommablePrixUnitaire.toFixed(2)} €
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {forfait.consommablePrix.toFixed(2)} €
+              </td>
+            </tr>
+          )}
+        </React.Fragment>
+      );
+    })}
+  </>
+)}
 {(
   (Array.isArray(activeDSPItems) && activeDSPItems.length > 0) ||
   (Array.isArray(activePlumeItems) && activePlumeItems.length > 0) ||

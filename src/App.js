@@ -14,7 +14,7 @@ import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
 import QuoteManager from './components/QuoteManager/QuoteManager';
-import BookmarkletInstaller from './components/Bookmarklet/BookmarkletInstaller';
+
 import CAROLImport from './components/Import/CAROLImport';
 
 
@@ -375,6 +375,20 @@ const handleCAROLImport = useCallback((data) => {
   alert(message);
 }, []);
 
+const addPieceLine = useCallback(itemId => {
+  setPieceLines(prev => ({
+    ...prev,
+    [itemId]: [...(prev[itemId] || []), {
+      reference: '',
+      designation: '',
+      fournisseur: '',
+      quantity: '1',
+      prixUnitaire: '',
+      prix: ''
+    }]
+  }));
+}, []);
+
 // ========== LISTENER BOOKMARKLET ==========
 useEffect(() => {
   const handleBookmarkletMessage = (event) => {
@@ -587,46 +601,40 @@ const updateNote = useCallback((id, value) => {
     });
   }, []);
 
-  const updateForfaitField = useCallback((itemId, field, value) => {
-    setForfaitData(prev => {
-      if (field === "reparation" || field === "peinture") {
-        return {
-          ...prev,
-          [itemId]: {
-            ...prev[itemId],
-            [field]: value,
-          }
-        };
-      }
-      const nextForfait = { ...prev, [itemId]: { ...prev[itemId], [field]: value } };
-      const fd = nextForfait[itemId];
-      if (field === 'pieceQuantity' || field === 'piecePrixUnitaire') {
-        const qty = parseFloat(fd.pieceQuantity || 0);
-        const pu = parseFloat(fd.piecePrixUnitaire || 0);
-        fd.piecePrix = (qty * pu).toFixed(2);
-      }
-      if (field === 'consommableQuantity' || field === 'consommablePrixUnitaire') {
-        const qty = parseFloat(fd.consommableQuantity || 0);
-        const pu = parseFloat(fd.consommablePrixUnitaire || 0);
-        fd.consommablePrix = (qty * pu).toFixed(2);
-      }
-      return nextForfait;
-    });
-  }, []);
-
-  const addPieceLine = useCallback(itemId => {
-    setPieceLines(prev => ({
-      ...prev,
-      [itemId]: [...(prev[itemId] || []), {
-        reference: '',
-        designation: '',
-        fournisseur: '',
-        quantity: '1',
-        prixUnitaire: '',
-        prix: ''
-      }]
-    }));
-  }, []);
+const updateForfaitField = useCallback((itemId, field, value) => {
+  setForfaitData(prev => {
+    if (field === "reparation" || field === "peinture") {
+      return {
+        ...prev,
+        [itemId]: {
+          ...prev[itemId],
+          [field]: value,
+        }
+      };
+    }
+    
+    const nextForfait = { ...prev, [itemId]: { ...prev[itemId], [field]: value } };
+    const fd = nextForfait[itemId];
+    
+    // 🔧 NOUVEAU : Toujours recalculer piecePrix si qty ou pu changent
+    if (field === 'pieceQuantity' || field === 'piecePrixUnitaire') {
+      const qty = parseFloat(fd.pieceQuantity || 0);
+      const pu = parseFloat(fd.piecePrixUnitaire || 0);
+      const calculatedPrice = (qty * pu).toFixed(2);
+      fd.piecePrix = calculatedPrice;
+      console.log('🔧 Calcul piecePrix:', { itemId, field, value, qty, pu, result: calculatedPrice });
+    }
+    
+    // 🔧 NOUVEAU : Aussi pour les consommables
+    if (field === 'consommableQuantity' || field === 'consommablePrixUnitaire') {
+      const qty = parseFloat(fd.consommableQuantity || 0);
+      const pu = parseFloat(fd.consommablePrixUnitaire || 0);
+      fd.consommablePrix = (qty * pu).toFixed(2);
+    }
+    
+    return nextForfait;
+  });
+}, []);
 
   const removePieceLine = useCallback((itemId, index) => {
     setPieceLines(prev => ({
@@ -1298,22 +1306,41 @@ const getMauriceBadges = () => {
   ]);
 
   // ---- Print / PDF helpers ----
-  const printOrdreReparation = useCallback(() => {
-    const el = document.getElementById('ordre-reparation-content');
-    if (!el) return;
-    const w = window.open('', '', 'height=800,width=1000');
-    w.document.write('<html><head><title>Ordre</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
-    w.document.write('</head><body>');
-    w.document.write(el.innerHTML);
-    w.document.write('</body></html>');
-    w.document.close();
-    w.focus();
-    setTimeout(() => {
-      w.print();
-      w.close();
-    }, 200);
-  }, []);
+const printOrdreReparation = useCallback(() => {
+  // 1. Imprimer l'Ordre de Réparation
+  const ordreContent = document.getElementById('ordre-reparation-content');
+  if (!ordreContent) {
+    alert('⚠️ Ordre de réparation non trouvé');
+    return;
+  }
+
+  const ordreWindow = window.open('', '', 'width=800,height=600');
+  ordreWindow.document.write('<html><head><title>Ordre de Réparation</title>');
+  ordreWindow.document.write('<style>body{font-family:Arial;margin:20px;}</style>');
+  ordreWindow.document.write('</head><body>');
+  ordreWindow.document.write(ordreContent.innerHTML);
+  ordreWindow.document.write('</body></html>');
+  ordreWindow.document.close();
+  ordreWindow.print();
+
+  // 2. Attendre un peu puis imprimer la Liste de Pièces
+  setTimeout(() => {
+    const listePiecesContent = document.getElementById('liste-pieces-content');
+    if (!listePiecesContent) {
+      console.log('⚠️ Liste de pièces non trouvée');
+      return;
+    }
+
+    const listePiecesWindow = window.open('', '', 'width=800,height=600');
+    listePiecesWindow.document.write('<html><head><title>Liste des Pièces</title>');
+    listePiecesWindow.document.write('<style>body{font-family:Arial;margin:20px;}</style>');
+    listePiecesWindow.document.write('</head><body>');
+    listePiecesWindow.document.write(listePiecesContent.innerHTML);
+    listePiecesWindow.document.write('</body></html>');
+    listePiecesWindow.document.close();
+    listePiecesWindow.print();
+  }, 1000);
+}, []);
 
   const downloadOrdreReparationPDF = useCallback(() => {
     const el = document.getElementById('ordre-reparation-content');
@@ -1535,7 +1562,7 @@ const getMauriceBadges = () => {
 </div>
 
 {/* ========== IMPORT CAROL ========== */}
-<BookmarkletInstaller />
+
 <CAROLImport onImportSuccess={handleCAROLImport} />
 {/* ================================== */}
 
@@ -1894,22 +1921,24 @@ const getMauriceBadges = () => {
                 </div>
               )}
 
-                            <div className="mb-2">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
-                {Object.entries(forfaitData)
-                  .filter(([key, data]) => {
-                    // REPC et REMPC
-                    const isREPC = TEXT_ITEMS_1.some(item => item.id === key);
-                    const isREMPC = TEXT_ITEMS_2.some(item => item.id === key);
-                    
-                    // Réparation Peinture
-                    const isReparationPeinture = data.peintureForfait;
-                    
-                    // Peinture Seule
-                    const isPeintureSeule = data.peintureSeuleForfait;
-                    
-                    return isREPC || isREMPC || isReparationPeinture || isPeintureSeule;
-                  })
+{/* Carrosserie */}
+<div className="mb-2">
+  <h3 className="text-xl font-bold text-gray-800 mb-4">Carrosserie</h3>
+  {Object.entries(forfaitData)
+    .filter(([key, data]) => {
+      // REPC et REMPC
+      const isREPC = TEXT_ITEMS_1.some(item => item.id === key);
+      const isREMPC = TEXT_ITEMS_2.some(item => item.id === key);
+      
+      // ❌ ON MASQUE Réparation Peinture
+      // const isReparationPeinture = data.peintureForfait;
+      
+      // Peinture Seule
+      const isPeintureSeule = data.peintureSeuleForfait;
+      
+      // On retourne seulement REPC, REMPC et Peinture Seule
+      return isREPC || isREMPC;
+    })
                   .map(([key, data]) => {
                     // REPC ou REMPC
                     if (TEXT_ITEMS_1.some(item => item.id === key) || TEXT_ITEMS_2.some(item => item.id === key)) {
@@ -1928,33 +1957,9 @@ const getMauriceBadges = () => {
                       );
                     }
                     
-                    // Réparation Peinture (2 MO + consommables)
-                    if (data.peintureForfait) {
-                      const forfait = PEINTURE_FORFAITS.find(f => f.id === data.peintureForfait);
-                      if (!forfait) return null;
-                      return (
-                        <ForfaitReparationPeintureForm
-                          key={key}
-                          item={{ id: key, label: forfait.label }}
-                          forfaitData={forfaitData}
-                          updateForfaitField={updateForfaitField}
-                        />
-                      );
-                    }
+
                     
-                    // Peinture Seule (1 MO + consommables)
-                    if (data.peintureSeuleForfait) {
-                      const forfait = PEINTURE_SEULE_FORFAITS.find(f => f.id === data.peintureSeuleForfait);
-                      if (!forfait) return null;
-                      return (
-                        <ForfaitPeintureSeuleForm
-                          key={key}
-                          item={{ id: key, label: forfait.label }}
-                          forfaitData={forfaitData}
-                          updateForfaitField={updateForfaitField}
-                        />
-                      );
-                    }
+
                     
                     return null;
                   })
@@ -1983,6 +1988,7 @@ const getMauriceBadges = () => {
               totals={totals}
               moByCategory={moByCategory}
               printOrdreReparation={printOrdreReparation}
+              updateForfaitField={updateForfaitField}
               itemStates={itemStates}
               activePeintureForfaits={activePeintureForfaits}
             />

@@ -1,21 +1,105 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { calculateVehicleAge } from '../../utils/formatters';
+import { getVehicleByLead } from '../../services/googleSheetsService';
 
-const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoite, toggleClim, toggleFreinParking, toggleStartStop }) => {
+const VehicleInfoForm = ({ 
+  headerInfo, 
+  updateHeaderInfo, 
+  toggleMoteur, 
+  toggleBoite, 
+  toggleClim, 
+  toggleFreinParking, 
+  toggleStartStop 
+}) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+const handleLeadBlur = async () => {
+  const leadValue = headerInfo.lead?.trim();
+  
+  if (!leadValue) return;
+  
+  setLoading(true);
+  setError('');
+  setSuccess(false);
+  
+  try {
+    const vehicleData = await getVehicleByLead(leadValue);
+    
+    if (vehicleData) {
+      // Auto-remplir TOUS les champs disponibles
+      if (vehicleData.vin) {
+        updateHeaderInfo('vin', vehicleData.vin);
+      }
+      if (vehicleData.immatriculation) {
+        updateHeaderInfo('immatriculation', vehicleData.immatriculation);
+      }
+      if (vehicleData.kilometres) {
+        updateHeaderInfo('kilometres', vehicleData.kilometres);
+      }
+      if (vehicleData.dateVehicule) {
+        updateHeaderInfo('dateVehicule', vehicleData.dateVehicule);
+      }
+      if (vehicleData.marque) {
+        updateHeaderInfo('marque', vehicleData.marque);
+      }
+      if (vehicleData.modele) {
+        updateHeaderInfo('modele', vehicleData.modele);
+      }
+      if (vehicleData.moteur) {
+        toggleMoteur(vehicleData.moteur);
+      }
+      
+      // Afficher un message de succès
+      setSuccess(true);
+      console.log('✅ Données importées:', vehicleData);
+      
+      // Masquer le message après 3 secondes
+      setTimeout(() => setSuccess(false), 3000);
+      
+    } else {
+      setError('Aucun véhicule trouvé avec ce numéro de stock');
+    }
+    
+  } catch (err) {
+    setError('Erreur lors de la recherche. Vérifiez votre connexion.');
+    console.error('Erreur:', err);
+  } finally {
+    setLoading(false);
+  }
+};;
+
   return (
     <div className="mb-8 p-4 md:p-6 rounded-xl border-2" style={{ backgroundColor: '#FFF0E6', borderColor: '#FF6B35' }}>
+      {/* Première ligne: Lead + Immatriculation */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Lead</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Lead (Import automatique si TAB)
+            {loading && <span className="ml-2 text-orange-500 text-xs">🔄 Recherche...</span>}
+            {success && <span className="ml-2 text-green-600 text-xs">✅ Importé!</span>}
+          </label>
           <input 
             type="text" 
             value={headerInfo.lead} 
             onChange={(e) => updateHeaderInfo('lead', e.target.value)}
-            placeholder="Nom..." 
+            onBlur={handleLeadBlur}
+            placeholder="Ex: EM46047, KC14921..." 
             className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
-            style={{ borderColor: '#FF6B35' }}
+            style={{ 
+              borderColor: loading ? '#FFA500' : success ? '#10B981' : '#FF6B35',
+              backgroundColor: success ? '#F0FDF4' : '#FFFFFF'
+            }}
+            disabled={loading}
           />
+          {error && (
+            <p className="text-red-500 text-xs mt-1 flex items-center">
+              <span className="mr-1">⚠️</span> {error}
+            </p>
+          )}
         </div>
+        
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Immatriculation</label>
           <input 
@@ -29,6 +113,34 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
         </div>
       </div>
       
+      {/* Deuxième ligne: Marque + Modèle */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Marque</label>
+          <input 
+            type="text" 
+            value={headerInfo.marque || ''} 
+            onChange={(e) => updateHeaderInfo('marque', e.target.value)}
+            placeholder="Peugeot, Renault..." 
+            className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
+            style={{ borderColor: '#FF6B35' }}
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Modèle</label>
+          <input 
+            type="text" 
+            value={headerInfo.modele || ''} 
+            onChange={(e) => updateHeaderInfo('modele', e.target.value)}
+            placeholder="308, Clio..." 
+            className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
+            style={{ borderColor: '#FF6B35' }}
+          />
+        </div>
+      </div>
+      
+      {/* Troisième ligne: VIN + Kilomètres */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">VIN</label>
@@ -41,17 +153,6 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
             style={{ borderColor: '#FF6B35' }}
           />
         </div>
-          <div>
-    <label className="block text-sm font-semibold text-gray-700 mb-2">Marque</label>
-    <input 
-      type="text" 
-      value={headerInfo.marque} 
-      onChange={(e) => updateHeaderInfo('marque', e.target.value)}
-      placeholder="Renault, Peugeot..." 
-      className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
-      style={{ borderColor: '#FF6B35' }}
-    />
-  </div>
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Kilomètres</label>
           <input 
@@ -63,19 +164,9 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
             style={{ borderColor: '#FF6B35' }}
           />
         </div>
-          <div>
-    <label className="block text-sm font-semibold text-gray-700 mb-2">Modèle</label>
-    <input 
-      type="text" 
-      value={headerInfo.modele} 
-      onChange={(e) => updateHeaderInfo('modele', e.target.value)}
-      placeholder="Clio, 208..." 
-      className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
-      style={{ borderColor: '#FF6B35' }}
-    />
-  </div>
       </div>
       
+      {/* Quatrième ligne: Moteur + Boîte + Date */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Moteur</label>
@@ -115,6 +206,7 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
             </button>
           </div>
         </div>
+        
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Boîte</label>
           <div className="flex gap-1">
@@ -153,6 +245,7 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
             </button>
           </div>
         </div>
+        
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Date du véhicule</label>
           <input 
@@ -199,6 +292,7 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
             </button>
           </div>
         </div>
+        
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Frein de parking</label>
           <div className="flex gap-2">
@@ -226,6 +320,7 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
             </button>
           </div>
         </div>
+        
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Options</label>
           <button 

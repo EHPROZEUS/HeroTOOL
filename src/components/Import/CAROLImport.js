@@ -74,9 +74,14 @@ const CAROLImport = ({ onImportSuccess }) => {
   return (
     <div className="mb-6 p-4 rounded-xl border-2 border-blue-300 bg-blue-50">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-bold text-gray-800">
-          🔗 Import automatique depuis CAROL
-        </h3>
+<div className="flex items-center gap-2">
+  <h3 className="text-lg font-bold text-gray-800">
+    🔗 Import automatique depuis CAROL
+  </h3>
+  <span className="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs font-bold rounded">
+    Work in Progress
+  </span>
+</div>
         
         <button
           onClick={openCAROL}
@@ -121,8 +126,6 @@ const CAROLImport = ({ onImportSuccess }) => {
         <ul className="mt-1 ml-4 list-disc space-y-1">
           <li>✅ Infos véhicule (VIN, immat, marque, modèle, km...)</li>
           <li>✅ Tâches de reconditionnement (activées automatiquement)</li>
-          <li>✅ Pièces détaillées (référence, prix, fournisseur)</li>
-          <li>✅ Main d'oeuvre (heures et catégories)</li>
         </ul>
       </div>
     </div>

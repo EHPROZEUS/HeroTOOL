@@ -302,12 +302,13 @@ const ListePieces = ({
 
           {/* Impression */}
           <div className="mt-8 text-center">
-            <button
-              onClick={printListePieces}
-              className="print-button px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
-            >
-              🖨️ Imprimer la liste des pièces
-            </button>
+<button
+  onClick={printListePieces}
+  className="px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
+  style={{ backgroundColor: '#FF6B35' }}
+>
+  📥 Télécharger la liste (PDF)
+</button>
           </div>
         </div>
       )}

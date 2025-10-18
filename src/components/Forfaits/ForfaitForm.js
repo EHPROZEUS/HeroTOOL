@@ -38,11 +38,11 @@ const ForfaitForm = ({
   const qtyNum = parseFloat(pieceQuantityRaw);
   const puNum = parseFloat(piecePUraw);
   const moQtyNum = parseFloat(moQuantityRaw);
-  const computedPieceTotal = (!isNaN(qtyNum) && qtyNum > 0 && !isNaN(puNum) && puNum >= 0)
-    ? (qtyNum * puNum).toFixed(2)
-    : '';
+const computedPieceTotal = (!isNaN(qtyNum) && qtyNum > 0 && !isNaN(puNum) && puNum >= 0)
+  ? (qtyNum * puNum).toFixed(2)
+  : '';
 
-  const displayPieceTotal = computedPieceTotal || (storedPiecePrix || '');
+const displayPieceTotal = computedPieceTotal || storedPiecePrix || '';
 
   const handleQuantityChange = (itemId, field, value) => {
     updateForfaitField(itemId, field, value);
@@ -168,25 +168,45 @@ const ForfaitForm = ({
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
                   <label className="text-xs font-semibold block mb-1">Quantité</label>
-                  <input
-                    type="text"
-                    value={pieceQuantityRaw}
-                    onChange={(e) => handleQuantityChange(item.id, 'pieceQuantity', e.target.value)}
-                    placeholder="1"
-                    className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    style={{ borderColor: '#FF6B35' }}
-                  />
+<input
+  type="text"
+  value={pieceQuantityRaw}
+  onChange={(e) => {
+    const newQty = e.target.value;
+    handleQuantityChange(item.id, 'pieceQuantity', newQty);
+    
+    // Forcer le recalcul du total
+    const qty = parseFloat(newQty) || 0;
+    const pu = parseFloat(piecePUraw) || 0;
+    if (qty > 0 && pu > 0) {
+      updateForfaitField(item.id, 'piecePrix', (qty * pu).toFixed(2));
+    }
+  }}
+  placeholder="1"
+  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+  style={{ borderColor: '#FF6B35' }}
+/>
                 </div>
                 <div className="flex-1">
                   <label className="text-xs font-semibold block mb-1">Prix unitaire HT</label>
-                  <input
-                    type="text"
-                    value={piecePUraw}
-                    onChange={(e) => updateForfaitField(item.id, 'piecePrixUnitaire', e.target.value)}
-                    placeholder="45.00"
-                    className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    style={{ borderColor: '#FF6B35' }}
-                  />
+<input
+  type="text"
+  value={piecePUraw}
+  onChange={(e) => {
+    const newPU = e.target.value;
+    updateForfaitField(item.id, 'piecePrixUnitaire', newPU);
+    
+    // Forcer le recalcul du total
+    const qty = parseFloat(pieceQuantityRaw) || 0;
+    const pu = parseFloat(newPU) || 0;
+    if (qty > 0 && pu > 0) {
+      updateForfaitField(item.id, 'piecePrix', (qty * pu).toFixed(2));
+    }
+  }}
+  placeholder="45.00"
+  className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+  style={{ borderColor: '#FF6B35' }}
+/>
                 </div>
                 <div className="flex-1">
                   <label className="text-xs font-semibold block mb-1">Total HT</label>
