@@ -1,202 +1,157 @@
-/**
- * API WKDA pour l'import de données véhicules
- * Compatible avec admin.wkda.de via proxy Vercel
- */
+import React, { useState } from 'react';
+import { 
+  fetchVehicleFromWKDA, 
+  isValidWKDAId, 
+  extractIdFromWKDAUrl,
+  checkWKDAAuth
+} from '../../utils/wkdaApi';
 
-// Utiliser le proxy Vercel au lieu de l'API directe
-const USE_PROXY = true;
-const PROXY_URL = '/api/wkda-proxy';
-const WKDA_BASE_URL = 'https://admin.wkda.de';
+const WKDAImport = ({ onImportSuccess }) => {
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-/**
- * Récupère les données d'un véhicule depuis WKDA
- * @param {string} carId - L'UUID du véhicule
- * @param {string} authToken - Token d'authentification (optionnel)
- * @returns {Promise<Object|null>}
- */
-export const fetchVehicleFromWKDA = async (carId, authToken = null) => {
-  try {
-    const cleanId = carId.trim();
-    
-    // Construire l'URL (proxy ou direct)
-    const url = USE_PROXY 
-      ? `${PROXY_URL}?carId=${cleanId}`
-      : `${WKDA_BASE_URL}/api/cars/${cleanId}`;
-    
-    console.log('🔍 Récupération depuis WKDA:', cleanId, USE_PROXY ? '(via proxy)' : '(direct)');
-    
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
-    
-    // Ajouter le token si disponible (uniquement en mode direct)
-    if (!USE_PROXY && authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-    }
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: headers
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      
-      if (response.status === 404) {
-        throw new Error('Véhicule non trouvé dans WKDA');
-      }
-      if (response.status === 401 || response.status === 403) {
-        throw new Error('Authentification requise pour accéder à WKDA');
-      }
-      
-      throw new Error(errorData.error || `Erreur WKDA: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log('✅ Données WKDA reçues:', data);
-    
-    // Mapper les données vers le format HeroTOOL
-    return mapWKDAToHeroTool(data);
-    
-  } catch (error) {
-    console.error('❌ Erreur import WKDA:', error);
-    throw error;
-  }
-};
+  // Vérifier l'authentification au montage
+  React.useEffect(() => {
+    checkWKDAAuth().then(setIsAuthenticated);
+  }, []);
 
-/**
- * Mapper les données WKDA vers le format HeroTOOL
- */
-const mapWKDAToHeroTool = (wkdaData) => {
-  // Structure attendue de l'API WKDA (à adapter selon la vraie structure)
-  const vehicle = wkdaData.vehicle || wkdaData.car || wkdaData;
-  
-  return {
-    lead: vehicle.id || vehicle.uuid || '',
-    immatriculation: (
-      vehicle.licensePlate || 
-      vehicle.registration || 
-      vehicle.plateNumber ||
-      vehicle.immatriculation ||
-      ''
-    ).toUpperCase(),
-    
-    vin: (
-      vehicle.vin || 
-      vehicle.chassisNumber || 
-      vehicle.vinNumber ||
-      ''
-    ).toUpperCase(),
-    
-    marque: vehicle.make || vehicle.brand || vehicle.manufacturer || '',
-    
-    modele: vehicle.model || vehicle.modelName || '',
-    
-    kilometres: (
-      vehicle.mileage || 
-      vehicle.kilometers || 
-      vehicle.odometer ||
-      vehicle.kilometrage ||
-      ''
-    ).toString().replace(/\D/g, ''),
-    
-    moteur: mapFuelType(
-      vehicle.fuelType || 
-      vehicle.fuel || 
-      vehicle.carburant ||
-      vehicle.engineType
-    ),
-    
-    boite: mapTransmission(
-      vehicle.transmission || 
-      vehicle.gearbox || 
-      vehicle.boiteDeVitesse
-    ),
-    
-    dateVehicule: formatDate(
-      vehicle.firstRegistration || 
-      vehicle.registrationDate || 
-      vehicle.dateFirstCirculation ||
-      vehicle.miseEnCirculation
-    ),
-    
-    clim: mapClimate(
-      vehicle.airConditioning || 
-      vehicle.climate || 
-      vehicle.climatisation
-    ),
-    
-    freinParking: mapParkingBrake(
-      vehicle.parkingBrake || 
-      vehicle.freinDeParking ||
-      vehicle.handbrake
-    ),
-    
-    startStop: Boolean(
-      vehicle.startStop || 
-      vehicle.startStopSystem ||
-      vehicle.hasStartStop
-    )
+  const openWKDA = () => {
+    window.open('https://admin.wkda.de', '_blank');
   };
+
+  const handleImport = async () => {
+    setError('');
+    
+    if (!input.trim()) {
+      setError('⚠️ Veuillez entrer un UUID ou une URL WKDA');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Extraire l'UUID
+      let carId = input.trim();
+      
+      if (input.includes('http') || input.includes('wkda') || input.includes('carol')) {
+        const extractedId = extractIdFromWKDAUrl(input);
+        if (!extractedId) {
+          throw new Error('URL invalide. UUID non trouvé.');
+        }
+        carId = extractedId;
+      }
+
+      // Valider le format UUID
+      if (!isValidWKDAId(carId)) {
+        throw new Error('Format UUID invalide');
+      }
+
+      console.log('🚗 Import WKDA pour:', carId);
+
+      // Récupérer les données
+      const vehicleData = await fetchVehicleFromWKDA(carId);
+
+      if (!vehicleData) {
+        throw new Error('Aucune donnée reçue de WKDA');
+      }
+
+      // Succès
+      onImportSuccess(vehicleData);
+      setInput('');
+      setError('');
+      setIsAuthenticated(true);
+      
+    } catch (err) {
+      console.error('Erreur import WKDA:', err);
+      
+      // Message d'erreur personnalisé
+      if (err.message.includes('Non authentifié')) {
+        setError('🔐 Vous devez être connecté à WKDA Admin');
+        setIsAuthenticated(false);
+      } else {
+        setError(`❌ ${err.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleImport();
+    }
+  };
+
+  return (
+    <div className="mb-6 p-4 rounded-xl border-2 border-blue-300 bg-blue-50">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-bold text-gray-800">
+          🔗 Import depuis WKDA Admin
+        </h3>
+        
+        {isAuthenticated === false && (
+          <button
+            onClick={openWKDA}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold text-sm"
+          >
+            🔓 Se connecter à WKDA
+          </button>
+        )}
+      </div>
+
+      {/* Statut de connexion */}
+      {isAuthenticated !== null && (
+        <div className={`mb-3 text-sm px-3 py-2 rounded ${
+          isAuthenticated 
+            ? 'bg-green-100 text-green-800 border border-green-300' 
+            : 'bg-orange-100 text-orange-800 border border-orange-300'
+        }`}>
+          {isAuthenticated ? (
+            <>✅ Connecté à WKDA Admin</>
+          ) : (
+            <>⚠️ Non connecté à WKDA. Cliquez sur "Se connecter à WKDA" puis revenez ici.</>
+          )}
+        </div>
+      )}
+      
+      <div className="flex gap-2 mb-3">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="UUID ou URL WKDA/CAROL..."
+          className="flex-1 px-3 py-2 border-2 border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={loading}
+        />
+        
+        <button
+          onClick={handleImport}
+          disabled={loading || !input.trim()}
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          {loading ? '⏳ Import...' : '📥 Importer'}
+        </button>
+      </div>
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 p-3 rounded border border-red-200 mb-3">
+          {error}
+        </div>
+      )}
+
+      <div className="text-xs text-gray-600">
+        <strong>💡 Formats acceptés :</strong>
+        <ul className="mt-1 ml-4 list-disc space-y-1">
+          <li>UUID : <code className="bg-white px-1 rounded">913c173c-fe77-...</code></li>
+          <li>URL WKDA : <code className="bg-white px-1 rounded">https://admin.wkda.de/car/detail/...</code></li>
+          <li>URL CAROL : <code className="bg-white px-1 rounded">https://www.carol.autohero.com/.../...</code></li>
+        </ul>
+      </div>
+    </div>
+  );
 };
 
-// Reste des fonctions helper (mapFuelType, mapTransmission, etc.)
-const mapFuelType = (fuel) => {
-  if (!fuel) return '';
-  const fuelLower = fuel.toString().toLowerCase();
-  if (fuelLower.includes('petrol') || fuelLower.includes('essence') || fuelLower.includes('gasoline') || fuelLower.includes('benzin')) return 'essence';
-  if (fuelLower.includes('diesel') || fuelLower.includes('gasoil')) return 'diesel';
-  if (fuelLower.includes('hybrid') || fuelLower.includes('hybride') || fuelLower.includes('phev')) return 'hybride';
-  return '';
-};
-
-const mapTransmission = (transmission) => {
-  if (!transmission) return '';
-  const transLower = transmission.toString().toLowerCase();
-  if (transLower.includes('manual') || transLower.includes('manuel') || transLower.includes('manuell')) return 'manuelle';
-  if (transLower.includes('automatic') || transLower.includes('auto') || transLower.includes('cvt') || transLower.includes('automatique')) return 'auto/cvt';
-  if (transLower.includes('dct') || transLower.includes('dsg') || transLower.includes('dual clutch')) return 'dct';
-  return '';
-};
-
-const mapClimate = (climate) => {
-  if (!climate) return '';
-  const climateLower = climate.toString().toLowerCase();
-  if (climateLower.includes('bi-zone') || climateLower.includes('dual') || climateLower.includes('2-zone')) return 'bi-zone';
-  if (climateLower.includes('clim') || climateLower.includes('air') || climateLower.includes('ac')) return 'clim';
-  return '';
-};
-
-const mapParkingBrake = (brake) => {
-  if (!brake) return '';
-  const brakeLower = brake.toString().toLowerCase();
-  if (brakeLower.includes('electric') || brakeLower.includes('électrique') || brakeLower.includes('elektronisch')) return 'electrique';
-  if (brakeLower.includes('manual') || brakeLower.includes('manuel') || brakeLower.includes('hand')) return 'manuel';
-  return '';
-};
-
-const formatDate = (dateValue) => {
-  if (!dateValue) return '';
-  try {
-    const date = new Date(dateValue);
-    if (isNaN(date.getTime())) return '';
-    return date.toISOString().split('T')[0];
-  } catch (e) {
-    console.error('Erreur formatage date:', e);
-    return '';
-  }
-};
-
-export const isValidWKDAId = (id) => {
-  if (!id) return false;
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(id.trim());
-};
-
-export const extractIdFromWKDAUrl = (url) => {
-  if (!url) return null;
-  const uuidPattern = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
-  const match = url.match(uuidPattern);
-  return match ? match[1] : null;
-};
+export default WKDAImport;
