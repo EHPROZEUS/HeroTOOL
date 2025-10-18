@@ -83,12 +83,15 @@ const CAROLImport = ({ onImportSuccess }) => {
   </span>
 </div>
         
-        <button
-          onClick={openCAROL}
-          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold text-sm"
-        >
-          🔓 Ouvrir CAROL
-        </button>
+<button
+  onClick={openCAROL}
+  className="px-4 py-2 text-white rounded-lg font-semibold text-sm transition-all"
+  style={{ backgroundColor: '#FF6B35' }}
+  onMouseEnter={(e) => e.target.style.backgroundColor = '#E55A2B'}
+  onMouseLeave={(e) => e.target.style.backgroundColor = '#FF6B35'}
+>
+  🔓 Ouvrir CAROL
+</button>
       </div>
 
       <div className="mb-3 text-sm text-blue-700 bg-blue-100 px-3 py-2 rounded border border-blue-300">
