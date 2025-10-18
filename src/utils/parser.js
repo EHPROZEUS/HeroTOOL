@@ -82,13 +82,28 @@ function parseAutossimoLine(line, defaultSupplier) {
   let parts = line.split('\t');
   if (parts.length < 5) parts = line.split(/\s{2,}/);
   parts = parts.map(p => p.trim()).filter(Boolean);
+  
+  // ✅ Format AUTOSSIMO : Référence | Désignation | Quantité | Unité | Prix Unitaire
   if (parts.length < 5) return null;
+  
   const [ref, desRaw, qtyRaw, uniteRaw, puRaw] = parts;
+  
   if (!ref || !desRaw) return null;
-  if (!/^\d+(\.\d+)?$/.test(qtyRaw)) return null;
-  if (!/^\d+(\.\d+)?$/.test(puRaw)) return null;
-  const qty = parseFloat(qtyRaw);
-  const pu = parseFloat(puRaw);
+  
+  // ✅ Normaliser et parser la quantité
+  const qtyNormalized = normalizeNumber(qtyRaw);
+  const qty = parseFloat(qtyNormalized);
+  
+  // ✅ Vérifier que la quantité est valide
+  if (isNaN(qty) || qty <= 0) return null;
+  
+  // ✅ Normaliser et parser le prix unitaire
+  const puNormalized = normalizeNumber(puRaw);
+  const pu = parseFloat(puNormalized);
+  
+  // ✅ Vérifier que le prix est valide
+  if (isNaN(pu) || pu < 0) return null;
+  
   return buildPiece({
     reference: ref,
     designation: desRaw,

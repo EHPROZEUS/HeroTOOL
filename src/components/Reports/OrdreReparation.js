@@ -25,6 +25,66 @@ const getDossierColor = (totalMOMecanique) => {
   return { color: '#E5E7EB', label: 'TRANSPARENT', bg: '#F9FAFB' };
 };
 
+// ✅ NOUVELLE FONCTION - Ajouter ici après les imports
+/**
+ * Filtre les pièces pour l'ordre de réparation
+ * Pour les filtres (huile, pollen, air, carburant) : garde seulement la pièce la plus chère
+ * Pour les autres forfaits : garde toutes les pièces
+ */
+const filterPiecesForOR = (itemId, forfaitData, pieceLines) => {
+  const filterItems = ['filtreHuile', 'filtrePollen', 'filtreAir', 'filtreCarburant'];
+  
+  // Si ce n'est pas un filtre, retourner toutes les pièces
+  if (!filterItems.includes(itemId)) {
+    return pieceLines?.[itemId] || [];
+  }
+  
+  // Collecter toutes les pièces (principale + supplémentaires)
+  const allPieces = [];
+  
+  // Ajouter la pièce principale si elle existe
+  const forfait = forfaitData[itemId] || {};
+  if (forfait.pieceReference && forfait.piecePrixUnitaire) {
+    allPieces.push({
+      reference: forfait.pieceReference,
+      designation: forfait.pieceDesignation || '',
+      prixUnitaire: parseFloat(forfait.piecePrixUnitaire) || 0,
+      quantity: parseFloat(forfait.pieceQuantity) || 1,
+      isPrincipal: true
+    });
+  }
+  
+  // Ajouter les pièces supplémentaires
+  const suppPieces = (pieceLines?.[itemId] || []).map(line => ({
+    reference: line.reference,
+    designation: line.designation || '',
+    prixUnitaire: parseFloat(line.prixUnitaire) || 0,
+    quantity: parseFloat(line.quantity) || 1,
+    isPrincipal: false,
+    originalLine: line
+  }));
+  
+  allPieces.push(...suppPieces);
+  
+  // S'il n'y a qu'une seule pièce ou aucune, retourner toutes les pièces supplémentaires
+  if (allPieces.length <= 1) {
+    return pieceLines?.[itemId] || [];
+  }
+  
+  // Trouver la pièce la plus chère (basé sur prix unitaire)
+  const mostExpensive = allPieces.reduce((max, piece) => 
+    piece.prixUnitaire > max.prixUnitaire ? piece : max
+  , allPieces[0]);
+  
+  // Retourner seulement la pièce la plus chère si elle est supplémentaire
+  if (!mostExpensive.isPrincipal) {
+    return [mostExpensive.originalLine];
+  }
+  
+  // Si la plus chère est la principale, ne retourner aucune pièce supplémentaire
+  return [];
+};
+
 // Lignes obligatoires à afficher en haut du tableau des prestations
 const OBLIGATORY_PRESTATIONS = [
   {
@@ -951,7 +1011,7 @@ const piecePrix = (() => {
               </td>
             </tr>
           )}
-          {pieceLines?.[item.id]?.map((line, idx) => (
+          {filterPiecesForOR(item.id, forfaitData, pieceLines).map((line, idx) => (
             <tr key={idx}>
               <td className="border border-gray-300 p-2">Pièce suppl.</td>
               <td className="border border-gray-300 p-2">{line.reference}</td>

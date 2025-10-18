@@ -165,8 +165,8 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
         </p>
       </div>
 
-      {/* Maintenance Items Grid */}
-      <div className="grid md:grid-cols-2 gap-5">
+      {/* Maintenance Items Grid - VERSION COMPACTE */}
+      <div className="grid md:grid-cols-3 gap-3">
         {maintenanceItems.map(({ field, label }) => {
           const raw = lastMaintenance[field] || '';
           const [d = '', k = ''] = raw.split('|');
@@ -186,43 +186,42 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                 if (e.target.closest('[data-row-action="true"]')) return;
                 toggleSelect(field);
               }}
-              className="rounded-xl p-6 cursor-pointer transition-all border-2 shadow-sm hover:shadow-lg"
+              className="rounded-lg p-3 cursor-pointer transition-all border-2 shadow-sm hover:shadow-md"
               style={{
                 backgroundColor: isSelected ? '#FFF4E6' : '#F9FAFB',
                 borderColor: isSelected ? '#FF6B35' : '#D1D5DB',
-                borderLeftWidth: isSelected ? '6px' : '2px',
-                transform: isSelected ? 'translateX(2px)' : 'none'
+                borderLeftWidth: isSelected ? '4px' : '2px',
               }}
             >
               {!isEditing && (
                 <>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg text-gray-800">{label}</h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-sm text-gray-800">{label}</h3>
                     <button
                       data-row-action="true"
                       type="button"
                       onClick={() => startInlineEdit(field)}
-                      className="px-4 py-2 rounded-lg text-sm font-bold transition-all hover:opacity-90 shadow-sm"
+                      className="px-2 py-1 rounded text-xs font-bold transition-all hover:opacity-90"
                       style={{ backgroundColor: '#FF6B35', color: 'white' }}
                     >
                       Éditer
                     </button>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200">
-                      <span className="text-gray-600 font-semibold text-sm">Date:</span>
-                      <span className="text-gray-900 font-bold">{d || '—'}</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center p-2 bg-white rounded border border-gray-200">
+                      <span className="text-gray-600 font-semibold text-xs">Date:</span>
+                      <span className="text-gray-900 font-bold text-xs">{d || '—'}</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200">
-                      <span className="text-gray-600 font-semibold text-sm">Km:</span>
-                      <span className="text-gray-900 font-bold">{k || '—'}</span>
+                    <div className="flex justify-between items-center p-2 bg-white rounded border border-gray-200">
+                      <span className="text-gray-600 font-semibold text-xs">Km:</span>
+                      <span className="text-gray-900 font-bold text-xs">{k || '—'}</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 rounded-lg border-2" style={{ 
+                    <div className="flex justify-between items-center p-2 rounded border-2" style={{ 
                       backgroundColor: '#FFF4E6',
                       borderColor: '#FF6B35'
                     }}>
-                      <span className="text-gray-600 font-semibold text-sm">Âge:</span>
-                      <span className="font-bold text-base" style={{ color: '#FF6B35' }}>
+                      <span className="text-gray-600 font-semibold text-xs">Âge:</span>
+                      <span className="font-bold text-xs" style={{ color: '#FF6B35' }}>
                         {age ? `il y a ${age}` : '—'}
                       </span>
                     </div>
@@ -231,24 +230,24 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
               )}
 
               {isEditing && (
-                <div data-row-action="true" className="space-y-4">
-                  <h3 className="font-bold text-lg text-gray-800 mb-4 pb-3 border-b-2" style={{ borderColor: '#FF6B35' }}>
+                <div data-row-action="true" className="space-y-3">
+                  <h3 className="font-bold text-sm text-gray-800 mb-3 pb-2 border-b-2" style={{ borderColor: '#FF6B35' }}>
                     {label}
                   </h3>
                   <div>
-                    <label className="block text-sm font-bold mb-2 text-gray-700 uppercase tracking-wide">
+                    <label className="block text-xs font-bold mb-1 text-gray-700 uppercase tracking-wide">
                       Date
                     </label>
                     <input
                       type="date"
                       value={inlineDate || ''}
                       onChange={(e) => setInlineDate(e.target.value)}
-                      className="w-full px-4 py-3 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-3 py-2 border-2 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
                       style={{ borderColor: '#FF6B35' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold mb-2 text-gray-700 uppercase tracking-wide">
+                    <label className="block text-xs font-bold mb-1 text-gray-700 uppercase tracking-wide">
                       Kilométrage
                     </label>
                     <input
@@ -256,21 +255,21 @@ const MaintenanceHistory = ({ lastMaintenance = {}, updateLastMaintenance }) => 
                       value={inlineKm || ''}
                       onChange={(e) => setInlineKm(e.target.value)}
                       placeholder="Ex: 15423"
-                      className="w-full px-4 py-3 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-3 py-2 border-2 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
                       style={{ borderColor: '#FF6B35' }}
                     />
                   </div>
-                  <div className="flex gap-3 pt-3">
+                  <div className="flex gap-2 pt-2">
                     <button
                       onClick={saveInlineEdit}
-                      className="flex-1 px-5 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-md"
+                      className="flex-1 px-3 py-2 rounded-lg text-xs font-bold text-white transition-all hover:opacity-90"
                       style={{ backgroundColor: '#FF6B35' }}
                     >
                       Enregistrer
                     </button>
                     <button
                       onClick={cancelInlineEdit}
-                      className="flex-1 px-5 py-3 rounded-xl text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all shadow-md"
+                      className="flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all"
                     >
                       Annuler
                     </button>
