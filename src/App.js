@@ -1446,11 +1446,10 @@ const printOrdreReparation = useCallback(() => {
         justifyContent: 'center', 
         marginRight: 15,
         overflow: 'hidden',
-        cursor: 'pointer',
         transform: mauriceClicks > 0 ? `rotate(${mauriceClicks * 15}deg) scale(${1 + mauriceClicks * 0.1})` : 'none',
         boxShadow: darkMaurice ? '0 0 20px #00FFFF' : 'none'
       }}
-      title={mauriceMode ? mauriceQuotes[currentQuote] : "Cliquez 5 fois pour activer Maurice"}
+
     >
       {mauriceMode ? (
   <img 
