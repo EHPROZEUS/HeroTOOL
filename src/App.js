@@ -14,6 +14,7 @@ import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
 import QuoteManager from './components/QuoteManager/QuoteManager';
+import BookmarkletInstaller from './components/Bookmarklet/BookmarkletInstaller';
 import CAROLImport from './components/Import/CAROLImport';
 
 
@@ -373,6 +374,70 @@ const handleCAROLImport = useCallback((data) => {
   
   alert(message);
 }, []);
+
+// ========== LISTENER BOOKMARKLET ==========
+useEffect(() => {
+  const handleBookmarkletMessage = (event) => {
+    // Sécurité : vérifier l'origine (en production)
+    // if (event.origin !== 'https://www.carol.autohero.com') {
+    //   return;
+    // }
+    
+    if (event.data?.type === 'CAROL_IMPORT') {
+      console.log('📥 Données reçues du Bookmarklet CAROL:', event.data.data);
+      
+      try {
+        const carolData = event.data.data;
+        
+        const mappedData = {
+          vehicleData: {
+            lead: carolData.id || '',
+            immatriculation: (carolData.vehicle?.licensePlate || '').toUpperCase(),
+            vin: (carolData.vehicle?.vin || '').toUpperCase(),
+            marque: carolData.vehicle?.make || '',
+            modele: carolData.vehicle?.model || '',
+            kilometres: (carolData.vehicle?.mileage || '').toString().replace(/\D/g, ''),
+            moteur: carolData.vehicle?.fuelType || '',
+            boite: carolData.vehicle?.transmission || '',
+            dateVehicule: carolData.vehicle?.firstRegistration || '',
+            clim: carolData.vehicle?.airConditioning || '',
+            freinParking: carolData.vehicle?.parkingBrake || '',
+            startStop: Boolean(carolData.vehicle?.startStop)
+          },
+          taskMapping: {
+            itemStates: {},
+            itemNotes: {},
+            forfaitData: {},
+            pieceLines: {}
+          },
+          carolMetadata: {
+            refurbishmentNumber: carolData.refurbishmentNumber || '',
+            status: carolData.status || '',
+            workshop: carolData.workshop?.name || '',
+            position: carolData.position || '',
+            estimatedCost: carolData.estimatedTotalCost || 0,
+            actualCost: carolData.actualTotalCost || 0,
+            tasks: carolData.tasks || []
+          }
+        };
+        
+        handleCAROLImport(mappedData);
+        
+        alert('✅ Données CAROL importées avec succès via Bookmarklet !');
+        
+      } catch (error) {
+        console.error('❌ Erreur traitement données Bookmarklet:', error);
+        alert('❌ Erreur lors de l\'import des données : ' + error.message);
+      }
+    }
+  };
+  
+  window.addEventListener('message', handleBookmarkletMessage);
+  
+  return () => {
+    window.removeEventListener('message', handleBookmarkletMessage);
+  };
+}, [handleCAROLImport]);
 
 const cycleState = useCallback(itemId => {
   setItemStates(prev => {
@@ -1470,6 +1535,7 @@ const getMauriceBadges = () => {
 </div>
 
 {/* ========== IMPORT CAROL ========== */}
+<BookmarkletInstaller />
 <CAROLImport onImportSuccess={handleCAROLImport} />
 {/* ================================== */}
 
@@ -1483,15 +1549,6 @@ const getMauriceBadges = () => {
   toggleStartStop={toggleStartStop}
 />
 
-        <VehicleInfoForm
-          headerInfo={headerInfo}
-          updateHeaderInfo={updateHeaderInfo}
-          toggleMoteur={toggleMoteur}
-          toggleBoite={toggleBoite}
-          toggleClim={toggleClim}
-          toggleFreinParking={toggleFreinParking}
-          toggleStartStop={toggleStartStop}
-        />
 {/* 💾 Gestionnaire de devis Firebase - SYSTÈME UNIFIÉ */}
 <QuoteManager
   headerInfo={headerInfo}
