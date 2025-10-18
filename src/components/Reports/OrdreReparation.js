@@ -605,6 +605,18 @@ const OrdreReparation = ({
             <span className="text-xs">{headerInfo.vin}</span>
           </div>
         )}
+        {headerInfo?.marque && (
+  <div className="flex">
+    <span className="font-bold w-28">Marque:</span>
+    <span>{headerInfo.marque}</span>
+  </div>
+)}
+{headerInfo?.modele && (
+  <div className="flex">
+    <span className="font-bold w-28">Modèle:</span>
+    <span>{headerInfo.modele}</span>
+  </div>
+)}
         {headerInfo?.kilometres && (
           <div className="flex gap-1">
             <span className="font-bold w-28">Kilomètres: </span>

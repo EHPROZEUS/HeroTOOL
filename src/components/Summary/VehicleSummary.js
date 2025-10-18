@@ -34,6 +34,18 @@ const VehicleSummary = ({ headerInfo, oilInfo, lastMaintenance, includeContrevis
               <span className="text-gray-900 font-medium text-sm">{headerInfo.vin}</span>
             </div>
           )}
+          {headerInfo.marque && (
+  <div className="flex items-center">
+    <span className="font-bold text-gray-700 w-32">Marque:</span>
+    <span className="text-gray-900 font-medium">{headerInfo.marque}</span>
+  </div>
+)}
+{headerInfo.modele && (
+  <div className="flex items-center">
+    <span className="font-bold text-gray-700 w-32">Modèle:</span>
+    <span className="text-gray-900 font-medium">{headerInfo.modele}</span>
+  </div>
+)}
           {headerInfo.moteur && (
             <div className="flex items-center">
               <span className="font-bold text-gray-700 w-32">Moteur:</span>

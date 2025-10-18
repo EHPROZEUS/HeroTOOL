@@ -41,6 +41,17 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
             style={{ borderColor: '#FF6B35' }}
           />
         </div>
+          <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-2">Marque</label>
+    <input 
+      type="text" 
+      value={headerInfo.marque} 
+      onChange={(e) => updateHeaderInfo('marque', e.target.value)}
+      placeholder="Renault, Peugeot..." 
+      className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
+      style={{ borderColor: '#FF6B35' }}
+    />
+  </div>
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">Kilomètres</label>
           <input 
@@ -52,6 +63,17 @@ const VehicleInfoForm = ({ headerInfo, updateHeaderInfo, toggleMoteur, toggleBoi
             style={{ borderColor: '#FF6B35' }}
           />
         </div>
+          <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-2">Modèle</label>
+    <input 
+      type="text" 
+      value={headerInfo.modele} 
+      onChange={(e) => updateHeaderInfo('modele', e.target.value)}
+      placeholder="Clio, 208..." 
+      className="w-full px-3 py-2 border-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
+      style={{ borderColor: '#FF6B35' }}
+    />
+  </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

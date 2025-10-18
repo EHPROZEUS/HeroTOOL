@@ -14,6 +14,7 @@ import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
 import QuoteManager from './components/QuoteManager/QuoteManager';
+import WKDAImport from './components/Import/WKDAImport';
 
 
 import {
@@ -105,10 +106,12 @@ function App() {
     lead: '',
     immatriculation: '',
     vin: '',
+    marque: '',
     moteur: '',
     boite: '',
     dateVehicule: '',
     kilometres: '',
+     modele: '',
     clim: '',
     freinParking: '',
     startStop: false
@@ -292,6 +295,7 @@ const playMauriceSound = (type) => {
   const updateHeaderInfo = useCallback((field, value) => {
     setHeaderInfo(prev => ({ ...prev, [field]: value }));
   }, []);
+  
 
   const toggleMoteur = useCallback(type => {
     setHeaderInfo(prev => ({ ...prev, moteur: prev.moteur === type ? '' : type }));
@@ -315,6 +319,23 @@ const playMauriceSound = (type) => {
   const toggleStartStop = useCallback(() => {
     setHeaderInfo(prev => ({ ...prev, startStop: !prev.startStop }));
   }, []);
+
+  // Fonction pour gérer l'import depuis WKDA
+const handleWKDAImport = useCallback((vehicleData) => {
+  console.log('✅ Données WKDA importées:', vehicleData);
+  
+  // Remplir automatiquement tous les champs du véhicule
+  setHeaderInfo(vehicleData);
+  
+  // Notification de succès avec détails
+  const message = `✅ Véhicule importé avec succès !\n\n` +
+    `🚗 ${vehicleData.marque || '?'} ${vehicleData.modele || '?'}\n` +
+    `📋 VIN: ${vehicleData.vin || 'N/A'}\n` +
+    `📍 Immat: ${vehicleData.immatriculation || 'N/A'}\n` +
+    `📊 Kilométrage: ${vehicleData.kilometres || 'N/A'} km`;
+  
+  alert(message);
+}, []);
 
 const cycleState = useCallback(itemId => {
   setItemStates(prev => {
@@ -1411,7 +1432,19 @@ const getMauriceBadges = () => {
   )}
 </div>
 
+{/* ========== MODULE D'IMPORT WKDA ========== */}
+<WKDAImport onImportSuccess={handleWKDAImport} />
+{/* ========================================== */}
 
+<VehicleInfoForm
+  headerInfo={headerInfo}
+  updateHeaderInfo={updateHeaderInfo}
+  toggleMoteur={toggleMoteur}
+  toggleBoite={toggleBoite}
+  toggleClim={toggleClim}
+  toggleFreinParking={toggleFreinParking}
+  toggleStartStop={toggleStartStop}
+/>
 
         <VehicleInfoForm
           headerInfo={headerInfo}
