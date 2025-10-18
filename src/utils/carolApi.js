@@ -1,16 +1,9 @@
 /**
- * API CAROL GraphQL via Proxy Vercel avec authentification
- * Endpoint proxy: /api/carol-proxy
+ * API CAROL GraphQL - Utilise les cookies de session
  */
 
-import { getCAROLToken } from './carolAuth';
+const CAROL_GRAPHQL_URL = 'https://www.carol.autohero.com/api/v1/refurbishment-aggregation/graphql';
 
-// ✅ Utiliser le proxy au lieu de l'URL directe CAROL
-const CAROL_API_URL = '/api/carol-proxy';
-
-/**
- * Requête GraphQL complète
- */
 const GET_REFURBISHMENT_QUERY = `
   query GetRefurbishment($id: ID!) {
     refurbishment(id: $id) {
@@ -67,28 +60,22 @@ const GET_REFURBISHMENT_QUERY = `
 `;
 
 /**
- * Récupère les données complètes depuis CAROL via proxy
+ * Récupère les données depuis CAROL en utilisant les cookies de session
  */
 export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
   try {
     const cleanId = vehicleId.trim();
     
-    // ✅ Récupérer le token d'authentification
-    const token = getCAROLToken();
+    console.log('🔍 Récupération depuis CAROL (avec cookies):', cleanId);
     
-    if (!token) {
-      throw new Error('⚠️ Non connecté. Veuillez vous connecter à CAROL.');
-    }
-    
-    console.log('🔍 Récupération depuis CAROL (via proxy avec token):', cleanId);
-    
-    const response = await fetch(CAROL_API_URL, {
+    const response = await fetch(CAROL_GRAPHQL_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}` // ✅ Ajouter le token
+        'Accept': 'application/json'
       },
+      credentials: 'include', // ✅ Utiliser les cookies
+      mode: 'cors',
       body: JSON.stringify({
         query: GET_REFURBISHMENT_QUERY,
         variables: { id: cleanId }
@@ -99,14 +86,14 @@ export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
       const errorData = await response.json().catch(() => ({}));
       
       if (response.status === 401 || response.status === 403) {
-        throw new Error('⚠️ Session expirée. Veuillez vous reconnecter.');
+        throw new Error('⚠️ Non authentifié. Connectez-vous d\'abord à CAROL dans un autre onglet : https://www.carol.autohero.com');
       }
       
       throw new Error(errorData.error || `Erreur: ${response.status}`);
     }
     
     const result = await response.json();
-    console.log('✅ Réponse GraphQL via proxy:', result);
+    console.log('✅ Réponse GraphQL:', result);
     
     if (result.errors) {
       console.error('❌ Erreurs GraphQL:', result.errors);
@@ -126,12 +113,28 @@ export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
 };
 
 /**
- * Mapper les données CAROL vers HeroTOOL
+ * Vérifier si l'utilisateur est connecté à CAROL
  */
+export const checkCAROLAuth = async () => {
+  try {
+    // Essayer une requête simple pour vérifier l'auth
+    const response = await fetch('https://www.carol.autohero.com/api/v1/auth/oauth/token', {
+      method: 'GET',
+      credentials: 'include',
+      mode: 'cors'
+    });
+    
+    return response.ok;
+  } catch (error) {
+    return false;
+  }
+};
+
+// ... (Garder toutes les fonctions de mapping identiques)
+
 const mapCAROLToHeroTool = (refurbishment) => {
   const vehicle = refurbishment.vehicle || {};
   
-  // Données du véhicule
   const vehicleData = {
     lead: refurbishment.id || '',
     immatriculation: (vehicle.licensePlate || '').toUpperCase(),
@@ -147,10 +150,8 @@ const mapCAROLToHeroTool = (refurbishment) => {
     startStop: Boolean(vehicle.startStop)
   };
   
-  // Mapper les tâches
   const taskMapping = mapTasksToHeroToolItems(refurbishment.tasks || []);
   
-  // Métadonnées CAROL
   const carolMetadata = {
     refurbishmentNumber: refurbishment.refurbishmentNumber,
     status: refurbishment.status,
@@ -161,16 +162,9 @@ const mapCAROLToHeroTool = (refurbishment) => {
     tasks: refurbishment.tasks || []
   };
   
-  return {
-    vehicleData,
-    taskMapping,
-    carolMetadata
-  };
+  return { vehicleData, taskMapping, carolMetadata };
 };
 
-/**
- * Mapper les tâches CAROL vers HeroTOOL
- */
 const mapTasksToHeroToolItems = (tasks) => {
   const itemStates = {};
   const itemNotes = {};
@@ -181,15 +175,12 @@ const mapTasksToHeroToolItems = (tasks) => {
     const heroToolItemId = mapTaskCategoryToHeroToolItem(task.category, task.name);
     
     if (heroToolItemId) {
-      // Activer l'item
       itemStates[heroToolItemId] = task.status === 'COMPLETED' ? 2 : 1;
       
-      // Ajouter note
       if (task.description) {
         itemNotes[heroToolItemId] = task.description;
       }
       
-      // Créer forfait
       forfaitData[heroToolItemId] = {
         moQuantity: task.labor?.hours?.toString() || '0.5',
         moPrix: 35.8,
@@ -207,11 +198,9 @@ const mapTasksToHeroToolItems = (tasks) => {
         consommablePrix: '0'
       };
       
-      // Ajouter les pièces
       if (task.parts && task.parts.length > 0) {
         task.parts.forEach((part, index) => {
           if (index === 0) {
-            // Première pièce
             forfaitData[heroToolItemId].pieceReference = part.reference || part.partNumber || '';
             forfaitData[heroToolItemId].pieceDesignation = part.name || '';
             forfaitData[heroToolItemId].pieceQuantity = part.quantity?.toString() || '1';
@@ -219,7 +208,6 @@ const mapTasksToHeroToolItems = (tasks) => {
             forfaitData[heroToolItemId].piecePrix = part.totalPrice?.toString() || '0';
             forfaitData[heroToolItemId].pieceFournisseur = part.supplier || '';
           } else {
-            // Pièces supplémentaires
             if (!pieceLines[heroToolItemId]) {
               pieceLines[heroToolItemId] = [];
             }
@@ -241,9 +229,6 @@ const mapTasksToHeroToolItems = (tasks) => {
   return { itemStates, itemNotes, forfaitData, pieceLines };
 };
 
-/**
- * Mapper catégories CAROL → items HeroTOOL
- */
 const mapTaskCategoryToHeroToolItem = (category, taskName) => {
   const categoryLower = (category || '').toLowerCase();
   const nameLower = (taskName || '').toLowerCase();
@@ -274,7 +259,6 @@ const mapTaskCategoryToHeroToolItem = (category, taskName) => {
       return itemId;
     }
   }
-  
   return null;
 };
 

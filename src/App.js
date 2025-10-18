@@ -15,7 +15,7 @@ import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
 import QuoteManager from './components/QuoteManager/QuoteManager';
 import CAROLImport from './components/Import/CAROLImport';
-import CAROLLogin from './components/Auth/CAROLLogin';
+
 
 
 import {
@@ -1470,7 +1470,6 @@ const getMauriceBadges = () => {
 </div>
 
 {/* ========== IMPORT CAROL ========== */}
-<CAROLLogin />
 <CAROLImport onImportSuccess={handleCAROLImport} />
 {/* ================================== */}
 
