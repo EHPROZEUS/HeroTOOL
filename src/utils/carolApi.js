@@ -1,18 +1,24 @@
 /**
- * API CAROL GraphQL pour l'import de données de reconditionnement
+ * API CAROL GraphQL - Import véhicule + tâches + pièces
  * Endpoint: /api/v1/refurbishment-aggregation/graphql
  */
 
 const CAROL_API_URL = 'https://www.carol.autohero.com/api/v1/refurbishment-aggregation/graphql';
 
 /**
- * Requête GraphQL pour récupérer un véhicule
+ * Requête GraphQL complète
  */
-const GET_VEHICLE_QUERY = `
+const GET_REFURBISHMENT_QUERY = `
   query GetRefurbishment($id: ID!) {
     refurbishment(id: $id) {
       id
       refurbishmentNumber
+      status
+      position
+      workshop {
+        name
+        id
+      }
       vehicle {
         id
         vin
@@ -27,31 +33,44 @@ const GET_VEHICLE_QUERY = `
         parkingBrake
         startStop
       }
-      status
-      workshop {
-        name
-      }
-      position
       tasks {
         id
         name
-        status
         category
+        status
+        description
+        estimatedCost
+        laborTime
+        parts {
+          id
+          name
+          reference
+          partNumber
+          quantity
+          unitPrice
+          totalPrice
+          supplier
+        }
+        labor {
+          hours
+          rate
+          total
+        }
       }
+      estimatedTotalCost
+      actualTotalCost
     }
   }
 `;
 
 /**
- * Récupère les données d'un véhicule depuis CAROL
- * @param {string} vehicleId - L'UUID du véhicule
- * @returns {Promise<Object|null>}
+ * Récupère les données complètes depuis CAROL
  */
-export const fetchVehicleFromCAROL = async (vehicleId) => {
+export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
   try {
     const cleanId = vehicleId.trim();
     
-    console.log('🔍 Récupération depuis CAROL GraphQL:', cleanId);
+    console.log('🔍 Récupération depuis CAROL:', cleanId);
     
     const response = await fetch(CAROL_API_URL, {
       method: 'POST',
@@ -59,18 +78,16 @@ export const fetchVehicleFromCAROL = async (vehicleId) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      credentials: 'include', // ✅ Utiliser les cookies de session
+      credentials: 'include',
       body: JSON.stringify({
-        query: GET_VEHICLE_QUERY,
-        variables: {
-          id: cleanId
-        }
+        query: GET_REFURBISHMENT_QUERY,
+        variables: { id: cleanId }
       })
     });
     
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        throw new Error('⚠️ Non authentifié. Connectez-vous à CAROL/WKDA puis réessayez.');
+        throw new Error('⚠️ Non authentifié. Connectez-vous à CAROL puis réessayez.');
       }
       throw new Error(`Erreur CAROL: ${response.status}`);
     }
@@ -96,150 +113,216 @@ export const fetchVehicleFromCAROL = async (vehicleId) => {
 };
 
 /**
- * Mapper les données CAROL vers le format HeroTOOL
+ * Mapper les données CAROL vers HeroTOOL
  */
 const mapCAROLToHeroTool = (refurbishment) => {
   const vehicle = refurbishment.vehicle || {};
   
-  return {
+  // Données du véhicule
+  const vehicleData = {
     lead: refurbishment.id || '',
-    
     immatriculation: (vehicle.licensePlate || '').toUpperCase(),
-    
     vin: (vehicle.vin || '').toUpperCase(),
-    
     marque: vehicle.make || '',
-    
     modele: vehicle.model || '',
-    
     kilometres: (vehicle.mileage || '').toString().replace(/\D/g, ''),
-    
     moteur: mapFuelType(vehicle.fuelType),
-    
     boite: mapTransmission(vehicle.transmission),
-    
     dateVehicule: formatDate(vehicle.firstRegistration),
-    
     clim: mapClimate(vehicle.airConditioning),
-    
     freinParking: mapParkingBrake(vehicle.parkingBrake),
-    
-    startStop: Boolean(vehicle.startStop),
-    
-    // Infos supplémentaires CAROL
-    _carolData: {
-      refurbishmentNumber: refurbishment.refurbishmentNumber,
-      status: refurbishment.status,
-      workshop: refurbishment.workshop?.name,
-      position: refurbishment.position,
-      tasks: refurbishment.tasks || []
-    }
+    startStop: Boolean(vehicle.startStop)
+  };
+  
+  // Mapper les tâches
+  const taskMapping = mapTasksToHeroToolItems(refurbishment.tasks || []);
+  
+  // Métadonnées CAROL
+  const carolMetadata = {
+    refurbishmentNumber: refurbishment.refurbishmentNumber,
+    status: refurbishment.status,
+    workshop: refurbishment.workshop?.name,
+    position: refurbishment.position,
+    estimatedCost: refurbishment.estimatedTotalCost,
+    actualCost: refurbishment.actualTotalCost,
+    tasks: refurbishment.tasks || []
+  };
+  
+  return {
+    vehicleData,
+    taskMapping,
+    carolMetadata
   };
 };
 
 /**
- * Mapper le type de carburant
+ * Mapper les tâches CAROL vers HeroTOOL
  */
+const mapTasksToHeroToolItems = (tasks) => {
+  const itemStates = {};
+  const itemNotes = {};
+  const forfaitData = {};
+  const pieceLines = {};
+  
+  tasks.forEach(task => {
+    const heroToolItemId = mapTaskCategoryToHeroToolItem(task.category, task.name);
+    
+    if (heroToolItemId) {
+      // Activer l'item
+      itemStates[heroToolItemId] = task.status === 'COMPLETED' ? 2 : 1;
+      
+      // Ajouter note
+      if (task.description) {
+        itemNotes[heroToolItemId] = task.description;
+      }
+      
+      // Créer forfait
+      forfaitData[heroToolItemId] = {
+        moQuantity: task.labor?.hours?.toString() || '0.5',
+        moPrix: 35.8,
+        moCategory: determineMOCategory(task.category),
+        pieceReference: '',
+        pieceDesignation: '',
+        pieceQuantity: '0',
+        piecePrixUnitaire: '0',
+        piecePrix: '0',
+        pieceFournisseur: '',
+        consommableReference: '',
+        consommableDesignation: '',
+        consommableQuantity: '0',
+        consommablePrixUnitaire: '0',
+        consommablePrix: '0'
+      };
+      
+      // Ajouter les pièces
+      if (task.parts && task.parts.length > 0) {
+        task.parts.forEach((part, index) => {
+          if (index === 0) {
+            // Première pièce
+            forfaitData[heroToolItemId].pieceReference = part.reference || part.partNumber || '';
+            forfaitData[heroToolItemId].pieceDesignation = part.name || '';
+            forfaitData[heroToolItemId].pieceQuantity = part.quantity?.toString() || '1';
+            forfaitData[heroToolItemId].piecePrixUnitaire = part.unitPrice?.toString() || '0';
+            forfaitData[heroToolItemId].piecePrix = part.totalPrice?.toString() || '0';
+            forfaitData[heroToolItemId].pieceFournisseur = part.supplier || '';
+          } else {
+            // Pièces supplémentaires
+            if (!pieceLines[heroToolItemId]) {
+              pieceLines[heroToolItemId] = [];
+            }
+            
+            pieceLines[heroToolItemId].push({
+              reference: part.reference || part.partNumber || '',
+              designation: part.name || '',
+              fournisseur: part.supplier || '',
+              quantity: part.quantity?.toString() || '1',
+              prixUnitaire: part.unitPrice?.toString() || '0',
+              prix: part.totalPrice?.toString() || '0'
+            });
+          }
+        });
+      }
+    }
+  });
+  
+  return { itemStates, itemNotes, forfaitData, pieceLines };
+};
+
+/**
+ * Mapper catégories CAROL → items HeroTOOL
+ */
+const mapTaskCategoryToHeroToolItem = (category, taskName) => {
+  const categoryLower = (category || '').toLowerCase();
+  const nameLower = (taskName || '').toLowerCase();
+  
+  const categoryMap = {
+    'oil': 'filtreHuile',
+    'vidange': 'filtreHuile',
+    'air_filter': 'filtreAir',
+    'pollen_filter': 'filtrePollen',
+    'fuel_filter': 'filtreCarburant',
+    'spark_plugs': 'bougies',
+    'brake': 'disquesPlaquettesAv',
+    'freins': 'disquesPlaquettesAv',
+    'tire': 'pneus4',
+    'pneu': 'pneus4',
+    'timing_belt': 'courroieDistribution',
+    'battery': 'batterie',
+    'suspension': 'amortisseursAvant',
+    'body': 'carrosserie',
+    'paint': 'peinture',
+    'detail': 'dsp',
+    'clean': 'dsp',
+    'polish': 'lustrage'
+  };
+  
+  for (const [key, itemId] of Object.entries(categoryMap)) {
+    if (categoryLower.includes(key) || nameLower.includes(key)) {
+      return itemId;
+    }
+  }
+  
+  return null;
+};
+
+const determineMOCategory = (taskCategory) => {
+  const categoryLower = (taskCategory || '').toLowerCase();
+  if (categoryLower.includes('body') || categoryLower.includes('paint')) return 'Carrosserie';
+  if (categoryLower.includes('detail') || categoryLower.includes('clean')) return 'Lustrage';
+  return 'Mécanique';
+};
+
 const mapFuelType = (fuel) => {
   if (!fuel) return '';
   const fuelLower = fuel.toString().toLowerCase();
-  
-  if (fuelLower.includes('petrol') || fuelLower.includes('essence') || fuelLower.includes('gasoline')) {
-    return 'essence';
-  }
-  if (fuelLower.includes('diesel')) {
-    return 'diesel';
-  }
-  if (fuelLower.includes('hybrid') || fuelLower.includes('hybride')) {
-    return 'hybride';
-  }
-  
+  if (fuelLower.includes('petrol') || fuelLower.includes('essence')) return 'essence';
+  if (fuelLower.includes('diesel')) return 'diesel';
+  if (fuelLower.includes('hybrid')) return 'hybride';
   return '';
 };
 
-/**
- * Mapper le type de transmission
- */
 const mapTransmission = (transmission) => {
   if (!transmission) return '';
   const transLower = transmission.toString().toLowerCase();
-  
-  if (transLower.includes('manual') || transLower.includes('manuel')) {
-    return 'manuelle';
-  }
-  if (transLower.includes('automatic') || transLower.includes('auto') || transLower.includes('cvt')) {
-    return 'auto/cvt';
-  }
-  if (transLower.includes('dct') || transLower.includes('dsg')) {
-    return 'dct';
-  }
-  
+  if (transLower.includes('manual') || transLower.includes('manuel')) return 'manuelle';
+  if (transLower.includes('automatic') || transLower.includes('auto')) return 'auto/cvt';
+  if (transLower.includes('dct')) return 'dct';
   return '';
 };
 
-/**
- * Mapper la climatisation
- */
 const mapClimate = (climate) => {
   if (!climate) return '';
   const climateLower = climate.toString().toLowerCase();
-  
-  if (climateLower.includes('bi-zone') || climateLower.includes('dual') || climateLower.includes('2-zone')) {
-    return 'bi-zone';
-  }
-  if (climateLower.includes('clim') || climateLower.includes('air') || climateLower.includes('ac')) {
-    return 'clim';
-  }
-  
+  if (climateLower.includes('bi-zone') || climateLower.includes('dual')) return 'bi-zone';
+  if (climateLower.includes('clim')) return 'clim';
   return '';
 };
 
-/**
- * Mapper le frein de parking
- */
 const mapParkingBrake = (brake) => {
   if (!brake) return '';
   const brakeLower = brake.toString().toLowerCase();
-  
-  if (brakeLower.includes('electric') || brakeLower.includes('électrique')) {
-    return 'electrique';
-  }
-  if (brakeLower.includes('manual') || brakeLower.includes('manuel') || brakeLower.includes('hand')) {
-    return 'manuel';
-  }
-  
+  if (brakeLower.includes('electric') || brakeLower.includes('électrique')) return 'electrique';
+  if (brakeLower.includes('manual') || brakeLower.includes('manuel')) return 'manuel';
   return '';
 };
 
-/**
- * Formater la date au format ISO (YYYY-MM-DD)
- */
 const formatDate = (dateValue) => {
   if (!dateValue) return '';
-  
   try {
     const date = new Date(dateValue);
     if (isNaN(date.getTime())) return '';
-    
     return date.toISOString().split('T')[0];
   } catch (e) {
-    console.error('Erreur formatage date:', e);
     return '';
   }
 };
 
-/**
- * Valider un UUID
- */
 export const isValidVehicleId = (id) => {
   if (!id) return false;
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(id.trim());
 };
 
-/**
- * Extraire l'UUID depuis une URL
- */
 export const extractIdFromURL = (url) => {
   if (!url) return null;
   const uuidPattern = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;

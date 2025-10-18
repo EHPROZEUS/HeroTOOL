@@ -14,7 +14,7 @@ import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
 import QuoteManager from './components/QuoteManager/QuoteManager';
-import WKDAImport from './components/Import/WKDAImport';
+import CAROLImport from './components/Import/CAROLImport';
 
 
 import {
@@ -320,19 +320,55 @@ const playMauriceSound = (type) => {
     setHeaderInfo(prev => ({ ...prev, startStop: !prev.startStop }));
   }, []);
 
-  // Fonction pour gérer l'import depuis WKDA
-const handleWKDAImport = useCallback((vehicleData) => {
-  console.log('✅ Données WKDA importées:', vehicleData);
+// Fonction pour gérer l'import complet depuis CAROL
+const handleCAROLImport = useCallback((data) => {
+  console.log('✅ Import CAROL complet:', data);
   
-  // Remplir automatiquement tous les champs du véhicule
+  const { vehicleData, taskMapping, carolMetadata } = data;
+  
+  // 1. Remplir les infos du véhicule
   setHeaderInfo(vehicleData);
   
-  // Notification de succès avec détails
-  const message = `✅ Véhicule importé avec succès !\n\n` +
+  // 2. Activer les items
+  if (taskMapping.itemStates && Object.keys(taskMapping.itemStates).length > 0) {
+    setItemStates(prev => ({
+      ...prev,
+      ...taskMapping.itemStates
+    }));
+  }
+  
+  // 3. Ajouter les notes
+  if (taskMapping.itemNotes && Object.keys(taskMapping.itemNotes).length > 0) {
+    setItemNotes(prev => ({
+      ...prev,
+      ...taskMapping.itemNotes
+    }));
+  }
+  
+  // 4. Importer les forfaits
+  if (taskMapping.forfaitData && Object.keys(taskMapping.forfaitData).length > 0) {
+    setForfaitData(prev => ({
+      ...prev,
+      ...taskMapping.forfaitData
+    }));
+  }
+  
+  // 5. Importer les pièces supplémentaires
+  if (taskMapping.pieceLines && Object.keys(taskMapping.pieceLines).length > 0) {
+    setPieceLines(prev => ({
+      ...prev,
+      ...taskMapping.pieceLines
+    }));
+  }
+  
+  // Notification de succès
+  const tasksCount = Object.keys(taskMapping.itemStates || {}).length;
+  const message = `✅ Import CAROL réussi !\n\n` +
     `🚗 ${vehicleData.marque || '?'} ${vehicleData.modele || '?'}\n` +
     `📋 VIN: ${vehicleData.vin || 'N/A'}\n` +
     `📍 Immat: ${vehicleData.immatriculation || 'N/A'}\n` +
-    `📊 Kilométrage: ${vehicleData.kilometres || 'N/A'} km`;
+    `📊 ${vehicleData.kilometres || 'N/A'} km\n\n` +
+    `✨ ${tasksCount} tâche(s) + pièces importées`;
   
   alert(message);
 }, []);
@@ -1432,9 +1468,9 @@ const getMauriceBadges = () => {
   )}
 </div>
 
-{/* ========== MODULE D'IMPORT WKDA ========== */}
-<WKDAImport onImportSuccess={handleWKDAImport} />
-{/* ========================================== */}
+{/* ========== IMPORT CAROL ========== */}
+<CAROLImport onImportSuccess={handleCAROLImport} />
+{/* ================================== */}
 
 <VehicleInfoForm
   headerInfo={headerInfo}
