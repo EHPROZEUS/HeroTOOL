@@ -57,21 +57,21 @@ const BookmarkletInstaller = () => {
           <p className="font-semibold text-purple-900 mb-2">
             ✨ Méthode 1 : Glisser-déposer (FACILE)
           </p>
-          <div className="flex items-center gap-3">
-            
-              href={bookmarkletCode}
-              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-bold text-center hover:shadow-lg transition-all cursor-move inline-block"
-              onClick={(e) => e.preventDefault()}
-            >
-              📥 Import CAROL
-            </a>
-            <div className="flex-1 text-sm text-purple-700">
-              <p className="font-semibold">👆 Glissez ce bouton vers votre barre de favoris !</p>
-              <p className="text-xs text-purple-600 mt-1">
-                (Maintenez le bouton enfoncé et déplacez-le vers le haut)
-              </p>
-            </div>
-          </div>
+<div className="flex items-center gap-3">
+  <a
+    href={bookmarkletCode}
+    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-bold text-center hover:shadow-lg transition-all cursor-move inline-block"
+    onClick={(e) => e.preventDefault()}
+  >
+    📥 Import CAROL
+  </a>
+  <div className="flex-1 text-sm text-purple-700">
+    <p className="font-semibold">👆 Glissez ce bouton vers votre barre de favoris !</p>
+    <p className="text-xs text-purple-600 mt-1">
+      (Maintenez le bouton enfoncé et déplacez-le vers le haut)
+    </p>
+  </div>
+</div>
         </div>
 
         {/* Méthode 2 : Copier-coller */}
