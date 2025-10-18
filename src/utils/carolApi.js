@@ -1,9 +1,12 @@
 /**
- * API CAROL GraphQL - Import véhicule + tâches + pièces
- * Endpoint: /api/v1/refurbishment-aggregation/graphql
+ * API CAROL GraphQL via Proxy Vercel avec authentification
+ * Endpoint proxy: /api/carol-proxy
  */
 
-const CAROL_API_URL = 'https://www.carol.autohero.com/api/v1/refurbishment-aggregation/graphql';
+import { getCAROLToken } from './carolAuth';
+
+// ✅ Utiliser le proxy au lieu de l'URL directe CAROL
+const CAROL_API_URL = '/api/carol-proxy';
 
 /**
  * Requête GraphQL complète
@@ -64,21 +67,28 @@ const GET_REFURBISHMENT_QUERY = `
 `;
 
 /**
- * Récupère les données complètes depuis CAROL
+ * Récupère les données complètes depuis CAROL via proxy
  */
 export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
   try {
     const cleanId = vehicleId.trim();
     
-    console.log('🔍 Récupération depuis CAROL:', cleanId);
+    // ✅ Récupérer le token d'authentification
+    const token = getCAROLToken();
+    
+    if (!token) {
+      throw new Error('⚠️ Non connecté. Veuillez vous connecter à CAROL.');
+    }
+    
+    console.log('🔍 Récupération depuis CAROL (via proxy avec token):', cleanId);
     
     const response = await fetch(CAROL_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}` // ✅ Ajouter le token
       },
-      credentials: 'include',
       body: JSON.stringify({
         query: GET_REFURBISHMENT_QUERY,
         variables: { id: cleanId }
@@ -86,14 +96,17 @@ export const fetchRefurbishmentFromCAROL = async (vehicleId) => {
     });
     
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      
       if (response.status === 401 || response.status === 403) {
-        throw new Error('⚠️ Non authentifié. Connectez-vous à CAROL puis réessayez.');
+        throw new Error('⚠️ Session expirée. Veuillez vous reconnecter.');
       }
-      throw new Error(`Erreur CAROL: ${response.status}`);
+      
+      throw new Error(errorData.error || `Erreur: ${response.status}`);
     }
     
     const result = await response.json();
-    console.log('✅ Réponse GraphQL:', result);
+    console.log('✅ Réponse GraphQL via proxy:', result);
     
     if (result.errors) {
       console.error('❌ Erreurs GraphQL:', result.errors);
