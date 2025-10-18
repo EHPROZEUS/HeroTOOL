@@ -78,9 +78,12 @@ const CAROLImport = ({ onImportSuccess }) => {
   <h3 className="text-lg font-bold text-gray-800">
     🔗 Import automatique depuis CAROL
   </h3>
-  <span className="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs font-bold rounded">
-    Work in Progress
-  </span>
+<span
+  className="px-2 py-1 bg-yellow-200 text-xs font-bold rounded"
+  style={{ color: 'red' }}
+>
+  Work in Progress need CAROL API white list
+</span>
 </div>
         
 <button
