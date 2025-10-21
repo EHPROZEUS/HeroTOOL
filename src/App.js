@@ -92,7 +92,7 @@ const CarrosserieSubMenus = ({
     .set({
       margin: 0.25,
       filename: `Liste_Pieces_${headerInfo.lead || 'vehicule'}.pdf`,
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 8},
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
     })
     .from(el)
@@ -1340,7 +1340,7 @@ const downloadOrdreReparationPDF = useCallback(() => {
     .set({
       margin: 0.00025,
       filename: `Ordre_Reparation_${headerInfo.lead || 'vehicule'}.pdf`,
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 8},
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
     })
     .from(el)
@@ -1357,9 +1357,9 @@ const downloadListePiecesPDF = useCallback(() => {
   
   html2pdf()
     .set({
-      margin: 0.25,
+      margin: 0.00025,
       filename: `Liste_Pieces_${headerInfo.lead || 'vehicule'}.pdf`,
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 8},
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
     })
     .from(el)
