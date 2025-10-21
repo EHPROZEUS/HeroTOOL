@@ -409,6 +409,11 @@ const addPieceLine = useCallback(itemId => {
   }));
 }, []);
 
+const handleDownload = () => {
+  downloadListePiecesPDF();
+  downloadOrdreReparationPDF();
+};
+
 // ========== LISTENER BOOKMARKLET ==========
 useEffect(() => {
   const handleBookmarkletMessage = (event) => {
@@ -1333,7 +1338,7 @@ const downloadOrdreReparationPDF = useCallback(() => {
   if (!el) return;
   html2pdf()
     .set({
-      margin: 0.25,
+      margin: 0.00025,
       filename: `Ordre_Reparation_${headerInfo.lead || 'vehicule'}.pdf`,
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
@@ -1981,10 +1986,10 @@ const downloadListePiecesPDF = useCallback(() => {
             />
             <div className="mt-4 text-center">
               <button
-                onClick={downloadOrdreReparationPDF}
+                onClick={handleDownload}
               className="print-button px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all shadow-lg"
               >
-                📄 Télécharger l'ordre de réparation (PDF)
+                📄 Télécharger les documents (PDF)
               </button>
             </div>
 
