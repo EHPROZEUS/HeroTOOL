@@ -307,7 +307,7 @@ const ListePieces = ({
   className="px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
   style={{ backgroundColor: '#FF6B35' }}
 >
-  📥 Télécharger la liste (PDF)
+  📄 Télécharger la liste (PDF)  {/* ✅ Bon texte */}
 </button>
           </div>
         </div>

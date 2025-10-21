@@ -767,14 +767,14 @@ const pdfStyles = `
           </div>
         )}
         {headerInfo?.marque && (
-  <div className="flex">
-    <span className="font-bold w-28">Marque:</span>
+  <div className="flex gap-1">
+    <span className="font-bold w-28">Marque: </span>
     <span>{headerInfo.marque}</span>
   </div>
 )}
 {headerInfo?.modele && (
-  <div className="flex">
-    <span className="font-bold w-28">Modèle:</span>
+  <div className="flex gap-1">
+    <span className="font-bold w-28">Modèle: </span>
     <span>{headerInfo.modele}</span>
   </div>
 )}
@@ -1233,8 +1233,13 @@ const piecePrix = (() => {
       const data = forfaitData[forfait.id] || {};
       
       // Quantités actuelles (depuis forfaitData ou valeurs par défaut)
-      const currentMo1 = data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity;
-      const currentMo2 = data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity;
+      // ✅ FORCE LA CONVERSION EN NUMBER
+const currentMo1 = parseFloat(
+  data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity
+) || 0;
+const currentMo2 = parseFloat(
+  data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity
+) || 0;
       
       return (
         <React.Fragment key={`peinture-${forfait.id}-${idx}`}>
@@ -1354,7 +1359,10 @@ const piecePrix = (() => {
       const data = forfaitData[forfait.id] || {};
       
       // Quantité actuelle (depuis forfaitData ou valeur par défaut)
-      const currentMoQuantity = data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity;
+      // ✅ FORCE LA CONVERSION EN NUMBER
+const currentMoQuantity = parseFloat(
+  data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity
+) || 0;
       
       return (
         <React.Fragment key={`peinture-seule-${forfait.id}-${idx}`}>

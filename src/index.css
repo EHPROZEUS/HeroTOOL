@@ -904,3 +904,182 @@ button[style*="background"]:hover {
 .ultra-maurice-spin {
   animation: spin 4s linear infinite;
 }
+/* Réduction de la taille des tableaux pour l'Ordre de Réparation */
+/* ===== ORDRE DE RÉPARATION - COMPACT ===== */
+/* ========== ORDRE DE RÉPARATION ULTRA COMPACT ========== */
+
+/* Conteneur principal */
+#ordre-reparation-content {
+  font-size: 10px !important;
+  line-height: 1.3;
+}
+
+/* Titres de sections */
+#ordre-reparation-content h3 {
+  font-size: 12px !important;
+  margin-bottom: 4px !important;
+  padding: 3px 6px !important;
+}
+
+/* TOUS les tableaux */
+#ordre-reparation-content table {
+  font-size: 9px !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* Headers de tableaux */
+#ordre-reparation-content thead th {
+  padding: 2px 4px !important;
+  font-size: 9px !important;
+  line-height: 1.1;
+  background-color: #e5e7eb !important;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Cellules de tableaux */
+#ordre-reparation-content tbody td {
+  padding: 2px 4px !important;
+  font-size: 9px !important;
+  line-height: 1.2;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Lignes de tableaux */
+#ordre-reparation-content tbody tr {
+  height: 22px !important;
+}
+
+/* Largeurs FIXES pour le tableau "Détail des Opérations" */
+#ordre-reparation-content table th:nth-child(1),
+#ordre-reparation-content table td:nth-child(1) {
+  width: 10% !important;
+}
+
+#ordre-reparation-content table th:nth-child(2),
+#ordre-reparation-content table td:nth-child(2) {
+  width: 8% !important;
+}
+
+#ordre-reparation-content table th:nth-child(3),
+#ordre-reparation-content table td:nth-child(3) {
+  width: 40% !important;
+}
+
+#ordre-reparation-content table th:nth-child(4),
+#ordre-reparation-content table td:nth-child(4) {
+  width: 12% !important;
+}
+
+#ordre-reparation-content table th:nth-child(5),
+#ordre-reparation-content table td:nth-child(5) {
+  width: 10% !important;
+  text-align: right !important;
+}
+
+#ordre-reparation-content table th:nth-child(6),
+#ordre-reparation-content table td:nth-child(6) {
+  width: 10% !important;
+  text-align: right !important;
+}
+
+#ordre-reparation-content table th:nth-child(7),
+#ordre-reparation-content table td:nth-child(7) {
+  width: 10% !important;
+  text-align: right !important;
+}
+
+/* Blocs info véhicule et totaux TRÈS compacts */
+#ordre-reparation-content > div {
+  padding: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+#ordre-reparation-content .bg-white {
+  padding: 6px !important;
+}
+
+#ordre-reparation-content .p-6,
+#ordre-reparation-content .p-4,
+#ordre-reparation-content .p-3 {
+  padding: 6px !important;
+}
+
+#ordre-reparation-content .mb-6,
+#ordre-reparation-content .mb-4,
+#ordre-reparation-content .mb-3 {
+  margin-bottom: 6px !important;
+}
+
+/* Infos véhicule compact */
+#ordre-reparation-content .grid {
+  gap: 0.25rem !important;
+}
+
+/* Pour l'impression PDF */
+@media print {
+  #ordre-reparation-content {
+    font-size: 8px !important;
+  }
+  
+  #ordre-reparation-content table {
+    font-size: 7px !important;
+  }
+  
+  #ordre-reparation-content th,
+  #ordre-reparation-content td {
+    padding: 1px 3px !important;
+    font-size: 7px !important;
+  }
+  
+  #ordre-reparation-content tbody tr {
+    height: 18px !important;
+  }
+  
+  #ordre-reparation-content h3 {
+    font-size: 10px !important;
+  }
+}
+/* Styles d'impression pour l'ordre de réparation */
+@media print {
+  /* Éviter les coupures dans les lignes de tableau */
+  #ordre-reparation-content table tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Éviter les coupures dans les sections */
+  #ordre-reparation-content tbody tr {
+    page-break-inside: avoid !important;
+  }
+  
+  /* Garder les en-têtes avec leur contenu */
+  #ordre-reparation-content thead {
+    display: table-header-group;
+  }
+  
+  /* Format A4 paysage pour plus de largeur */
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  
+  /* Réduire légèrement la police pour l'impression */
+  #ordre-reparation-content {
+    font-size: 11px !important;
+  }
+  
+  /* Masquer les boutons à l'impression */
+  button {
+    display: none !important;
+  }
+  
+  /* Optimiser les bordures */
+  #ordre-reparation-content table {
+    border-collapse: collapse !important;
+  }
+}

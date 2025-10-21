@@ -325,67 +325,106 @@ const displayPieceTotal = computedPieceTotal || storedPiecePrix || '';
             )}
           </div>
 
-          {/* Consommables */}
-          {(item.id === 'filtreHuile' || isLustrageItem) && (
-            <div className="space-y-4">
-              <span className="font-semibold block mb-2">
-                {item.id === 'filtreHuile' ? 'Consommable (Huile)' : 'Consommable (Lustrage)'}
-              </span>
-              <div className="w-full max-w-[180px]">
-                <label className="text-xs font-semibold block mb-1">Référence</label>
-                <input
-                  type="text"
-                  value={forfait.consommableReference || ''}
-                  onChange={(e) => updateForfaitField(item.id, 'consommableReference', e.target.value)}
-                  placeholder={item.id === 'filtreHuile' ? 'Huile 5W-30' : 'Réf produit'}
-                  className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold block mb-1">Désignation</label>
-                <textarea
-                  rows={2}
-                  value={forfait.consommableDesignation || ''}
-                  onChange={(e) => updateForfaitField(item.id, 'consommableDesignation', e.target.value)}
-                  placeholder={item.id === 'filtreHuile' ? 'Huile moteur...' : 'Produit lustrage...'}
-                  className="w-full px-3 py-2 border rounded-lg text-sm resize-y bg-orange-50"
-                />
-              </div>
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="text-xs font-semibold block mb-1">
-                    {item.id === 'filtreHuile' ? 'Quantité (litres)' : 'Quantité'}
-                  </label>
-                  <input
-                    type="text"
-                    value={forfait.consommableQuantity || ''}
-                    onChange={(e) => updateForfaitField(item.id, 'consommableQuantity', e.target.value)}
-                    placeholder={item.id === 'filtreHuile' ? '4.5' : '1'}
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="text-xs font-semibold block mb-1">Prix unitaire HT</label>
-                  <input
-                    type="text"
-                    value={forfait.consommablePrixUnitaire || ''}
-                    onChange={(e) => updateForfaitField(item.id, 'consommablePrixUnitaire', e.target.value)}
-                    placeholder={item.id === 'filtreHuile' ? '7.50' : '15.00'}
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="text-xs font-semibold block mb-1">Total HT</label>
-                  <input
-                    type="text"
-                    value={forfait.consommablePrix || ''}
-                    readOnly
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+{/* Consommables */}
+{(item.id === 'filtreHuile' || isLustrageItem) && (
+  <div className="space-y-4">
+    <span className="font-semibold block mb-2">
+      {item.id === 'filtreHuile' ? 'Consommable (Huile)' : 'Consommable (Lustrage)'}
+    </span>
+    <div className="w-full max-w-[180px]">
+      <label className="text-xs font-semibold block mb-1">Référence</label>
+      <input
+        type="text"
+        value={forfait.consommableReference || ''}
+        onChange={(e) => updateForfaitField(item.id, 'consommableReference', e.target.value)}
+        placeholder={item.id === 'filtreHuile' ? 'Huile 5W-30' : 'Réf produit'}
+        className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
+      />
+    </div>
+    <div>
+      <label className="text-xs font-semibold block mb-1">Désignation</label>
+      <textarea
+        rows={2}
+        value={forfait.consommableDesignation || ''}
+        onChange={(e) => updateForfaitField(item.id, 'consommableDesignation', e.target.value)}
+        placeholder={item.id === 'filtreHuile' ? 'Huile moteur...' : 'Produit lustrage...'}
+        className="w-full px-3 py-2 border rounded-lg text-sm resize-y bg-orange-50"
+      />
+    </div>
+    <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex-1">
+        <label className="text-xs font-semibold block mb-1">
+          {item.id === 'filtreHuile' ? 'Quantité (litres)' : 'Quantité'}
+        </label>
+        <input
+          type="text"
+          value={
+            forfait.consommableQuantity !== undefined 
+              ? forfait.consommableQuantity 
+              : (isLustrageItem 
+                  ? (LUSTRAGE_ITEMS.find(l => l.id === item.id)?.consommable || '') 
+                  : ''
+                )
+          }
+          onChange={(e) => updateForfaitField(item.id, 'consommableQuantity', e.target.value)}
+          placeholder={item.id === 'filtreHuile' ? '4.5' : '1'}
+          className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
+        />
+      </div>
+      <div className="flex-1">
+        <label className="text-xs font-semibold block mb-1">Prix unitaire HT</label>
+        <input
+          type="text"
+          value={
+            forfait.consommablePrixUnitaire !== undefined 
+              ? forfait.consommablePrixUnitaire 
+              : (isLustrageItem ? '1.00' : '')
+          }
+          onChange={(e) => updateForfaitField(item.id, 'consommablePrixUnitaire', e.target.value)}
+          placeholder={item.id === 'filtreHuile' ? '7.50' : '1.00'}
+          className="w-full px-3 py-2 border rounded-lg text-sm bg-orange-50"
+        />
+      </div>
+      <div className="flex-1">
+        <label className="text-xs font-semibold block mb-1">Total HT</label>
+        <input
+          type="text"
+          value={
+            (() => {
+              // Récupérer la quantité (défaut ou saisie)
+              let qty = forfait.consommableQuantity !== undefined 
+                ? parseFloat(forfait.consommableQuantity) 
+                : (isLustrageItem 
+                    ? parseFloat(LUSTRAGE_ITEMS.find(l => l.id === item.id)?.consommable || 0)
+                    : 0
+                  );
+              
+              // Récupérer le prix unitaire (défaut 1.00€ pour lustrage)
+              let pu = forfait.consommablePrixUnitaire !== undefined
+                ? parseFloat(forfait.consommablePrixUnitaire)
+                : (isLustrageItem ? 1.00 : 0);
+              
+              // Calculer le total
+              if (isNaN(qty)) qty = 0;
+              if (isNaN(pu)) pu = 0;
+              
+              const total = (qty * pu).toFixed(2);
+              
+              // Mettre à jour automatiquement dans forfaitData si nécessaire
+              if (forfait.consommablePrix !== total) {
+                setTimeout(() => updateForfaitField(item.id, 'consommablePrix', total), 0);
+              }
+              
+              return total;
+            })()
+          }
+          readOnly
+          className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100 font-semibold"
+        />
+      </div>
+    </div>
+  </div>
+)}
         </>
       )}
     </div>

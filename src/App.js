@@ -81,7 +81,23 @@ const CarrosserieSubMenus = ({
   addPeintureSeuleForfait,
   removePeintureSeuleForfait
 }) => {
+  const downloadListePiecesPDF = useCallback(() => {
+  const el = document.getElementById('liste-pieces-content');
+  if (!el) {
+    alert('⚠️ Liste de pièces non trouvée');
+    return;
+  }
   
+  html2pdf()
+    .set({
+      margin: 0.25,
+      filename: `Liste_Pieces_${headerInfo.lead || 'vehicule'}.pdf`,
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+    })
+    .from(el)
+    .save();
+}, [headerInfo.lead]);
   return (
     <div className="section-carrosserie mb-6 flex justify-end">
       <div className="sous-menus space-y-4">
@@ -151,6 +167,10 @@ function App() {
     'reparation-peinture': false,
     'peinture': false
   });
+
+  const printOrdreReparation = useCallback(() => {
+  console.log('Fonction d\'impression désactivée');
+}, []);
 
 // Mode Maurice ULTIMATE
 const [mauriceMode, setMauricMode] = useState(() => {
@@ -1305,73 +1325,41 @@ const getMauriceBadges = () => {
     includeContrevisite
   ]);
 
-  // ---- Print / PDF helpers ----
-const printOrdreReparation = useCallback(() => {
-  // 1. Imprimer l'Ordre de Réparation
-  const ordreContent = document.getElementById('ordre-reparation-content');
-  if (!ordreContent) {
-    alert('⚠️ Ordre de réparation non trouvé');
+
+
+// Fonction pour télécharger l'Ordre de Réparation en PDF
+const downloadOrdreReparationPDF = useCallback(() => {
+  const el = document.getElementById('ordre-reparation-content');
+  if (!el) return;
+  html2pdf()
+    .set({
+      margin: 0.25,
+      filename: `Ordre_Reparation_${headerInfo.lead || 'vehicule'}.pdf`,
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+    })
+    .from(el)
+    .save();
+}, [headerInfo.lead]);
+
+// ✅ AJOUTER CETTE FONCTION ICI
+const downloadListePiecesPDF = useCallback(() => {
+  const el = document.getElementById('liste-pieces-content');
+  if (!el) {
+    alert('⚠️ Liste de pièces non trouvée');
     return;
   }
-
-  const ordreWindow = window.open('', '', 'width=800,height=600');
-  ordreWindow.document.write('<html><head><title>Ordre de Réparation</title>');
-  ordreWindow.document.write('<style>body{font-family:Arial;margin:20px;}</style>');
-  ordreWindow.document.write('</head><body>');
-  ordreWindow.document.write(ordreContent.innerHTML);
-  ordreWindow.document.write('</body></html>');
-  ordreWindow.document.close();
-  ordreWindow.print();
-
-  // 2. Attendre un peu puis imprimer la Liste de Pièces
-  setTimeout(() => {
-    const listePiecesContent = document.getElementById('liste-pieces-content');
-    if (!listePiecesContent) {
-      console.log('⚠️ Liste de pièces non trouvée');
-      return;
-    }
-
-    const listePiecesWindow = window.open('', '', 'width=800,height=600');
-    listePiecesWindow.document.write('<html><head><title>Liste des Pièces</title>');
-    listePiecesWindow.document.write('<style>body{font-family:Arial;margin:20px;}</style>');
-    listePiecesWindow.document.write('</head><body>');
-    listePiecesWindow.document.write(listePiecesContent.innerHTML);
-    listePiecesWindow.document.write('</body></html>');
-    listePiecesWindow.document.close();
-    listePiecesWindow.print();
-  }, 1000);
-}, []);
-
-  const downloadOrdreReparationPDF = useCallback(() => {
-    const el = document.getElementById('ordre-reparation-content');
-    if (!el) return;
-    html2pdf()
-      .set({
-        margin: 0.25,
-        filename: `Ordre_Reparation_${headerInfo.lead || 'vehicule'}.pdf`,
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-      })
-      .from(el)
-      .save();
-  }, [headerInfo.lead]);
-
-  const printListePieces = useCallback(() => {
-    const el = document.getElementById('liste-pieces-content');
-    if (!el) return;
-    const w = window.open('', '', 'height=800,width=1000');
-    w.document.write('<html><head><title>Pièces</title>');
-    w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #333;padding:6px;font-size:12px;}th{background:#e5e7eb;}</style>');
-    w.document.write('</head><body>');
-    w.document.write(el.innerHTML);
-    w.document.write('</body></html>');
-    w.document.close();
-    w.focus();
-    setTimeout(() => {
-      w.print();
-      w.close();
-    }, 200);
-  }, []);
+  
+  html2pdf()
+    .set({
+      margin: 0.25,
+      filename: `Liste_Pieces_${headerInfo.lead || 'vehicule'}.pdf`,
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+    })
+    .from(el)
+    .save();
+}, [headerInfo.lead]);
 
   const activeItemsList = ALL_ITEMS.filter(i => itemStates[i.id] === 1 || itemStates[i.id] === 2);
   const activeMecaniqueItems = activeItemsList.filter(i => !DSP_ITEMS.some(d => d.id === i.id));
@@ -1987,7 +1975,6 @@ const printOrdreReparation = useCallback(() => {
               totals={totals}
               moByCategory={moByCategory}
               itemNotes={itemNotes}
-              printOrdreReparation={printOrdreReparation}
               updateForfaitField={updateForfaitField}
               itemStates={itemStates}
               activePeintureForfaits={activePeintureForfaits}
@@ -2006,7 +1993,7 @@ const printOrdreReparation = useCallback(() => {
               setShowListePieces={setShowListePieces}
               headerInfo={headerInfo}
               piecesBySupplier={piecesBySupplier}
-              printListePieces={printListePieces}
+              printListePieces={downloadListePiecesPDF}
             />
           </>
         )}

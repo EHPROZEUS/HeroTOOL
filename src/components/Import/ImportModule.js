@@ -47,18 +47,52 @@ const ImportModule = ({
   const [defaultFournisseur, setDefaultFournisseur] = useState('');
   const forcedSupplier = SOURCE_FORCED_SUPPLIERS[sourceSystem] || '';
 
+// 🎯 FONCTION DE FILTRAGE DES FORFAITS
+const getFilteredForfaitsCibles = (items) => {
+  return items.filter(item => {
+    const id = (item.id || '').toLowerCase();
+    const label = (item.label || '').toLowerCase();
+    
+    // ❌ EXCLUSION 1 : Tous les forfaits DSP (Smart)
+    if (id.startsWith('dsp') || label.includes('dsp')) {
+      return false;
+    }
+    
+    // ❌ EXCLUSION 2 : Tous les forfaits Lustrage (Smart)
+    if (id.startsWith('l') && /^l\d+$/.test(id)) { // L1, L2, L3, etc.
+      return false;
+    }
+    if (label.includes('lustrage')) {
+      return false;
+    }
+    
+    // ❌ EXCLUSION 3 : Réparation peinture (RP1, RP2, etc.)
+    if (id.startsWith('rp') || (label.includes('réparation') && label.includes('peinture'))) {
+      return false;
+    }
+    
+    // ❌ EXCLUSION 4 : Peinture seule (P1, P2, etc.) SAUF si contient "remplacement"
+    if (id.startsWith('p') && /^p\d+$/.test(id) && !label.includes('remplacement')) {
+      return false;
+    }
+    if (label.includes('peinture') && !label.includes('remplacement') && !label.includes('réparation')) {
+      return false;
+    }
+    
+    // ❌ EXCLUSION 5 : Tous les forfaits Plume
+    if (id.includes('plume') || label.includes('plume')) {
+      return false;
+    }
+    
+    // ✅ Garder tous les autres forfaits (REMPC1, Filtre à huile, etc.)
+    return true;
+  });
+};
   const handleParsePieces = () => {
     parsePiecesText(selectedFormat, sourceSystem, defaultFournisseur);
   };
   
-  const applyFournisseurToAll = (fournisseur) => {
-    if (forcedSupplier) return;
-    setDefaultFournisseur(fournisseur);
-    if (parsedPieces.length > 0) {
-      setParsedPieces(parsedPieces.map(p => ({ ...p, fournisseur })));
-    }
-  };
-
+  // ... reste du code inchangé
   return (
     <div className="mt-8 border-t-2 border-gray-300 pt-8">
       <div className="flex justify-between items-center mb-6">
@@ -233,17 +267,17 @@ const ImportModule = ({
                         </div>
                         <div className="flex-1">
                           <label className="block text-[11px] font-semibold mb-1">Forfait cible *</label>
-                          <select
-                            value={piece.targetForfait}
-                            onChange={(e) => updateParsedPiece(piece.id, 'targetForfait', e.target.value)}
-                            className="w-full px-3 py-2 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            style={{ borderColor: '#FF6B35' }}
-                          >
-                            <option value="">Choisir...</option>
-                            {activeItems.map(it => (
-                              <option key={it.id} value={it.id}>{it.label}</option>
-                            ))}
-                          </select>
+<select
+  value={piece.targetForfait}
+  onChange={(e) => updateParsedPiece(piece.id, 'targetForfait', e.target.value)}
+  className="w-full px-3 py-2 border-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+  style={{ borderColor: '#FF6B35' }}
+>
+  <option value="">Choisir...</option>
+  {getFilteredForfaitsCibles(activeItems).map(it => (
+    <option key={it.id} value={it.id}>{it.label}</option>
+  ))}
+</select>
                         </div>
                       </div>
                     </div>
