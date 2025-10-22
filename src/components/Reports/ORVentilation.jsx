@@ -25,7 +25,10 @@ const VENTILATION_CATEGORIES = [
 const ORVentilation = ({ ventilation = {} }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-4">
-      <h3 className="text-base font-bold text-gray-800 mb-3 p-2 rounded-lg" style={{ backgroundColor: '#FFF0E6' }}>
+      <h3
+        className="text-base font-bold text-gray-800 mb-3 p-2 rounded-lg"
+        style={{ backgroundColor: '#FFF0E6' }}
+      >
         Ventilation Comptable
       </h3>
 
@@ -58,29 +61,6 @@ const ORVentilation = ({ ventilation = {} }) => {
               );
             })}
           </tbody>
-
-          {/* Total final */}
-          <tfoot>
-            <tr className="bg-gray-100 font-bold">
-              <td className="border border-gray-300 p-1 text-xs">TOTAL</td>
-              <td className="border border-gray-300 p-1 text-right text-xs">
-                {formatNum(
-                  VENTILATION_CATEGORIES.reduce(
-                    (sum, cat) => sum + safeNum(ventilation[cat.key]?.qty, 0),
-                    0
-                  )
-                )}
-              </td>
-              <td className="border border-gray-300 p-1 text-right text-xs">
-                {formatNum(
-                  VENTILATION_CATEGORIES.reduce(
-                    (sum, cat) => sum + safeNum(ventilation[cat.key]?.ht, 0),
-                    0
-                  )
-                )}
-              </td>
-            </tr>
-          </tfoot>
         </table>
       </div>
     </div>
