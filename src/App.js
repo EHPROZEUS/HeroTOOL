@@ -199,6 +199,12 @@ const [mauriceStats, setMauriceStats] = useState(() => {
   };
 });
 
+const toggleBothSections = useCallback(() => {
+  const newState = !showOrdreReparation;
+  setShowOrdreReparation(newState);
+  setShowListePieces(newState);
+}, [showOrdreReparation]);
+
 const [konamiSequence, setKonamiSequence] = useState([]);
 const [ultraMaurice, setUltraMaurice] = useState(false);
 
@@ -1966,7 +1972,7 @@ const downloadListePiecesPDF = useCallback(() => {
 
             <OrdreReparation
               showOrdreReparation={showOrdreReparation}
-              setShowOrdreReparation={setShowOrdreReparation}
+              setShowOrdreReparation={toggleBothSections}
               includeControleTechnique={includeControleTechnique}
               setIncludeControleTechnique={setIncludeControleTechnique}
               includeContrevisite={includeContrevisite}
