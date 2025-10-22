@@ -19,7 +19,7 @@ const VENTILATION_CATEGORIES = [
   { key: 'piecesTolerie', label: 'PIECES TOLERIE' },
   { key: 'pneumatiques', label: 'PNEUMATIQUES' },
   { key: 'presSousTraitees', label: 'PRES. SOUS-TRAITEES' },
-  { key: 'recyclageDechets', label: 'RECYCLAGE DECHETS' },
+  // { key: 'recyclageDechets', label: 'RECYCLAGE DECHETS' }, ← supprimé
 ];
 
 const ORVentilation = ({ ventilation = {} }) => {
