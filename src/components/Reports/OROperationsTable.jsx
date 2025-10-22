@@ -6,6 +6,8 @@ import {
   OBLIGATORY_PRESTATIONS, 
   OBLIGATORY_CLEANING 
 } from '../../utils/moCalculator';
+import { getDefaultValues } from '../../utils/calculations';
+
 
 const OROperationsTable = ({
   pureActiveMecaniqueItems = [],
@@ -159,18 +161,39 @@ const OROperationsTable = ({
                   Prestations Mécanique
                 </td>
               </tr>
-              {pureActiveMecaniqueItems.map(item => {
-                const forfait = forfaitData?.[item.id];
-                if (!forfait || item.id.startsWith('plu')) return null;
+{pureActiveMecaniqueItems.map(item => {
+  console.log('🔍 Item:', item.id, 'forfait exists:', !!forfaitData?.[item.id]);
+  const defaults = getDefaultValues(item.id);
+  const forfait = {
+    ...defaults, // Utiliser les valeurs par défaut
+    ...forfaitData?.[item.id], // Remplacer par les valeurs de forfaitData
+    // Forcer moQuantity à 0.5 pour filtreHuile si undefined
+    moQuantity: item.id === 'filtreHuile' ? (forfaitData?.[item.id]?.moQuantity ?? 0.5) : (forfaitData?.[item.id]?.moQuantity ?? defaults.moQuantity),
+  };
+  // ✅ AJOUTE CE LOG
+  if (item.id === 'filtreHuile') {
+    console.log('🛢️ Filtre à huile forfait:', forfait);
+    console.log('🛢️ defaults:', defaults);
+    console.log('🛢️ moQuantity:', forfait?.moQuantity, 'safeNum:', safeNum(forfait?.moQuantity));
+    console.log('🛢️ moQuantity defaults:', defaults?.moQuantity);
+  }
+  
+  if (!forfait || item.id.startsWith('plu')) return null;
 
                 return (
                   <React.Fragment key={item.id}>
                     {/* Ligne de prestation */}
-                    <tr className="bg-gray-100">
-                      <td colSpan="7" className="p-2 border-none font-semibold">
-                        {item.label || 'Prestation'}
-                      </td>
-                    </tr>
+<tr className="bg-gray-100">
+  <td colSpan="7" className="p-2 border-none font-semibold">
+    {item.label || 'Prestation'}
+    {/* ✅ Afficher la quantité d'huile pour le filtre à huile */}
+    {item.id === 'filtreHuile' && forfait.consommableQuantity && (
+      <span className="ml-2 text-sm text-gray-600">
+        ({safeNum(forfait.consommableQuantity).toFixed(1)} L d'huile)
+      </span>
+    )}
+  </td>
+</tr>
 
                     {/* Main d'oeuvre */}
                     {safeNum(forfait.moQuantity) > 0 && (
