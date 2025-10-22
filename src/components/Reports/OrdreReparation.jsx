@@ -2,7 +2,7 @@
  * COMPOSANT PRINCIPAL: Ordre de Réparation (Refactorisé)
  * Version modulaire et maintenable avec sous-composants
  */
-import React from 'react';
+import React, { useState } from 'react';
 import ORHeader from './ORHeader';
 import ORVehicleInfo from './ORVehicleInfo';
 import ORVentilation from './ORVentilation';
@@ -28,12 +28,12 @@ const OrdreReparation = ({
   pieceLines = {},
   totals = {},
   moByCategory = {},
-  //updateForfaitField,
-  printOrdreReparation
+  updateForfaitField,
+  printOrdreReparation,
+  itemStates
 }) => {
 
-  //const [editMode, setEditMode] = useState(false); 
-  
+const [editMode, setEditMode] = useState(false);
   // Utilisation du hook personnalisé pour la logique métier
 const {
   activeLustrageItems,
@@ -72,8 +72,8 @@ const {
         setIncludeControleTechnique={setIncludeControleTechnique}
         includeContrevisite={includeContrevisite}
         setIncludeContrevisite={setIncludeContrevisite}
-        //editMode={editMode}
-        //setEditMode={setEditMode}
+        editMode={editMode}
+        setEditMode={setEditMode}
       />
 
 {/* Contenu de l'ordre (affiché conditionnellement) */}
@@ -170,8 +170,9 @@ const {
       forfaitData={forfaitData}
       includeControleTechnique={includeControleTechnique}
       includeContrevisite={includeContrevisite}
-     //editMode={editMode}  
-     // updateForfaitField={updateForfaitField}
+     editMode={editMode}  
+     updateForfaitField={updateForfaitField}
+     itemStates={itemStates}
     />
 
     {/* Récapitulatif des totaux */}

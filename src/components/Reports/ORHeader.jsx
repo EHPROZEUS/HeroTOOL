@@ -24,7 +24,7 @@ const ORHeader = ({
           {/* Bouton Mode Édition - affiché seulement si l'ordre est visible */}
           {showOrdreReparation && (
             <button
-              //onClick={() => setEditMode(!editMode)}
+              onClick={() => setEditMode(!editMode)}
               className="px-4 py-2 rounded-lg font-semibold transition-all"
               style={{
                 backgroundColor: editMode ? '#FF6B35' : '#E5E7EB',

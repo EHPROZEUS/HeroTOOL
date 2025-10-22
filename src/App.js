@@ -1987,9 +1987,9 @@ const downloadListePiecesPDF = useCallback(() => {
               moByCategory={moByCategory}
               itemNotes={itemNotes}
               updateForfaitField={updateForfaitField}
-              itemStates={itemStates}
               activePeintureForfaits={activePeintureForfaits}
-            />
+              itemStates={itemStates}
+              />
             <div className="mt-4 text-center">
               <button
                 onClick={handleDownload}

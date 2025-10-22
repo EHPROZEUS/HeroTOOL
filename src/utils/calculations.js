@@ -264,21 +264,25 @@ export const calculateMOByCategory = (
     }
   });
 
-  // Forfaits peinture (si activés via itemStates)
-  PEINTURE_FORFAITS.forEach(forfait => {
-    const state = itemStates[forfait.id] ?? 0;
-    if (state > 0) {
-      categories.tolerie += parseNumber(forfait.mo1Quantity || 0) || 0;
-      categories.peinture += parseNumber(forfait.mo2Quantity || 0) || 0;
-    }
-  });
+// Forfaits peinture (si activés via itemStates)
+PEINTURE_FORFAITS.forEach(forfait => {
+  const state = itemStates[forfait.id] ?? 0;
+  if (state > 0) {
+    const data = forfaitData[forfait.id] || {};
+    // ✅ UTILISER forfaitData pour prendre les valeurs modifiées par l'utilisateur
+    categories.tolerie += parseNumber(data.mo1Quantity !== undefined ? data.mo1Quantity : forfait.mo1Quantity || 0) || 0;
+    categories.peinture += parseNumber(data.mo2Quantity !== undefined ? data.mo2Quantity : forfait.mo2Quantity || 0) || 0;
+  }
+});
 
-  PEINTURE_SEULE_FORFAITS.forEach(forfait => {
-    const state = itemStates[forfait.id] ?? 0;
-    if (state > 0) {
-      categories.peinture += parseNumber(forfait.moQuantity || 0) || 0;
-    }
-  });
+PEINTURE_SEULE_FORFAITS.forEach(forfait => {
+  const state = itemStates[forfait.id] ?? 0;
+  if (state > 0) {
+    const data = forfaitData[forfait.id] || {};
+    // ✅ UTILISER forfaitData pour prendre les valeurs modifiées par l'utilisateur
+    categories.peinture += parseNumber(data.moQuantity !== undefined ? data.moQuantity : forfait.moQuantity || 0) || 0;
+  }
+});
 
   return categories;
 };
