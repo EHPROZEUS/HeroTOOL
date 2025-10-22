@@ -26,64 +26,71 @@ const ORTotals = ({
         Récapitulatif Financier
       </h3>
 
-      <div className="space-y-3">
-        {/* Total MO */}
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-gray-700">Total Main d'Œuvre:</span>
-          <span className="text-lg font-bold text-gray-900">{formatNum(totalMO)} €</span>
-        </div>
-
-        {/* Total Pièces */}
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-gray-700">Total Pièces:</span>
-          <span className="text-lg font-bold text-gray-900">{formatNum(totalPieces)} €</span>
-        </div>
-
-        {/* Total Consommables */}
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-gray-700">Total Consommables:</span>
-          <span className="text-lg font-bold text-gray-900">{formatNum(totalConsommables)} €</span>
-        </div>
-
-        <div className="border-t border-gray-400 pt-3 mt-3"></div>
-
-        {/* Total HT sans prestations */}
-        <div className="flex justify-between items-center">
-          <span className="text-lg font-bold" style={{ color: '#FF6B35' }}>
-            TOTAL HT (sans prestations ext.):
-          </span>
-          <span className="text-lg font-bold" style={{ color: '#FF6B35' }}>
-            {formatNum(totalHTSansPrestations)} €
-          </span>
-        </div>
-
-        {/* Contrôle Technique */}
-        {includeControleTechnique && (
-          <div className="flex justify-between items-center bg-blue-50 px-3 py-2 rounded">
-            <span className="font-semibold">Contrôle Technique:</span>
-            <span className="font-semibold">42.00 €</span>
+      {/* ✅ DEUX COLONNES */}
+      <div className="grid grid-cols-2 gap-6">
+        
+        {/* COLONNE GAUCHE : Détail des composants */}
+        <div className="space-y-3">
+          {/* Total MO */}
+          <div className="flex justify-between items-center">
+            <span className="font-semibold text-gray-700">Total Main d'Œuvre:</span>
+            <span className="text-lg font-bold text-gray-900">{formatNum(totalMO)} €</span>
           </div>
-        )}
 
-        {/* Contre-visite */}
-        {includeContrevisite && (
+          {/* Total Pièces */}
+          <div className="flex justify-between items-center">
+            <span className="font-semibold text-gray-700">Total Pièces:</span>
+            <span className="text-lg font-bold text-gray-900">{formatNum(totalPieces)} €</span>
+          </div>
+
+          {/* Total Consommables */}
+          <div className="flex justify-between items-center">
+            <span className="font-semibold text-gray-700">Total Consommables:</span>
+            <span className="text-lg font-bold text-gray-900">{formatNum(totalConsommables)} €</span>
+          </div>
+        </div>
+
+        {/* COLONNE DROITE : Totaux et prestations */}
+        <div className="space-y-3">
+          {/* Total HT sans prestations */}
           <div className="flex justify-between items-center bg-orange-50 px-3 py-2 rounded">
-            <span className="font-semibold">Contre-visite:</span>
-            <span className="font-semibold">10.00 €</span>
+            <span className="font-bold text-gray-800">
+              TOTAL HT (sans prest. ext.):
+            </span>
+            <span className="text-lg font-bold" style={{ color: '#FF6B35' }}>
+              {formatNum(totalHTSansPrestations)} €
+            </span>
           </div>
-        )}
 
-        <div className="border-t-2 pt-3 mt-3" style={{ borderColor: '#FF6B35' }}></div>
+          {/* Contrôle Technique */}
+          {includeControleTechnique && (
+            <div className="flex justify-between items-center bg-blue-50 px-3 py-2 rounded">
+              <span className="font-semibold">Contrôle Technique:</span>
+              <span className="font-semibold">42.00 €</span>
+            </div>
+          )}
 
-        {/* Total HT Final */}
-        <div className="flex justify-between items-center">
-          <span className="text-xl font-bold" style={{ color: '#FF6B35' }}>
-            TOTAL HT:
-          </span>
-          <span className="text-xl font-bold" style={{ color: '#FF6B35' }}>
-            {formatNum(totalHT)} €
-          </span>
+          {/* Contre-visite */}
+          {includeContrevisite && (
+            <div className="flex justify-between items-center bg-orange-100 px-3 py-2 rounded">
+              <span className="font-semibold">Contre-visite:</span>
+              <span className="font-semibold">10.00 €</span>
+            </div>
+          )}
+
+          <div className="border-t-2 pt-3 mt-3" style={{ borderColor: '#FF6B35' }}></div>
+
+          {/* Total HT Final */}
+          <div className="flex justify-between items-center bg-orange-100 px-4 py-3 rounded-lg">
+            <span className="text-xl font-bold" style={{ color: '#FF6B35' }}>
+              TOTAL HT:
+            </span>
+            <span className="text-xl font-bold" style={{ color: '#FF6B35' }}>
+              {formatNum(totalHT)} €
+            </span>
+          </div>
         </div>
+
       </div>
     </div>
   );
