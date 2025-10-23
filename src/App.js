@@ -14,10 +14,9 @@ import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
 import QuoteManager from './components/QuoteManager/QuoteManager';
-
+import { parseCarolDamage, mapCarolToHeroTool } from './utils/carolMapping';
 import CAROLImport from './components/Import/CAROLImport';
-
-
+import Papa from 'papaparse';
 
 import {
   HUILES_CONFIG,
@@ -68,6 +67,8 @@ const SOURCE_FORCED_SUPPLIERS = {
   RENAULT: 'GUEUDET',
   AUTOSSIMO: 'AUTOSSIMO'
 };
+
+const CAROL_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1518__XGgk9Sl-b-6TBqF-sNtraeQa0f3sgFti_WBcf0/export?format=csv&gid=0';
 
 const CarrosserieSubMenus = ({
   toggleSubMenu,
@@ -301,6 +302,46 @@ const playMauriceSound = (type) => {
 };
   // Firebase auth user state
   const [firebaseUser, setFirebaseUser] = useState(null);
+
+const [carolData, setCarolData] = useState([]);
+const [carolLoading, setCarolLoading] = useState(false);
+
+
+
+// Puis remplace le useEffect Carol par :
+useEffect(() => {
+  const fetchCarolData = async () => {
+    try {
+      setCarolLoading(true);
+      
+      const CAROL_CSV_URL = 'https://docs.google.com/spreadsheets/d/1iFfy7DNR3ClgTBSCoeBsFZh2Ma-FMOMV-TDo5S6O56c/export?format=csv&gid=0';
+      
+      const response = await fetch(CAROL_CSV_URL);
+      const csvText = await response.text();
+      
+      // Parser avec PapaParse (gère les retours à la ligne)
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          setCarolData(results.data);
+          console.log('✅ Carol chargé:', results.data.length, 'lignes');
+          console.log('📋 Exemple:', results.data[0]);
+        },
+        error: (error) => {
+          console.error('❌ Erreur parsing CSV:', error);
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ Erreur Carol:', error);
+    } finally {
+      setCarolLoading(false);
+    }
+  };
+  
+  fetchCarolData();
+}, []);// Plus besoin de firebaseUser ! // Dépend de firebaseUser
 
   useEffect(() => {
     // listen auth state
@@ -1173,6 +1214,7 @@ const handleFooterClick = () => {
 };
 
 
+
  // Couleurs dynamiques ULTIMATE avec thèmes
 const colors = mauriceMode ? (darkMaurice ? {
   // MODE NUIT CYBERPUNK
@@ -1342,18 +1384,45 @@ const getMauriceBadges = () => {
 const downloadOrdreReparationPDF = useCallback(() => {
   const el = document.getElementById('ordre-reparation-content');
   if (!el) return;
+
+  // Sauvegarde des styles originaux
+  const originalStyles = {};
+  const elements = el.querySelectorAll('*');
+  elements.forEach(el => {
+    originalStyles[el.getAttribute('id') || el.getAttribute('class')] = el.style.backgroundColor;
+    el.style.backgroundColor = 'transparent'; // Annule les fonds
+  });
+
   html2pdf()
     .set({
-      margin: 0.00025,
+      margin: 0.05,
       filename: `Ordre_Reparation_${headerInfo.lead || 'vehicule'}.pdf`,
-      html2canvas: { scale: 8},
+      html2canvas: { scale: 8 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
     })
     .from(el)
-    .save();
+    .toPdf()
+    .get('pdf')
+    .then((pdf) => {
+      // Restaure les styles originaux après conversion
+      elements.forEach(el => {
+        const key = el.getAttribute('id') || el.getAttribute('class');
+        el.style.backgroundColor = originalStyles[key] || '';
+      });
+      pdf.save();
+    })
+    .catch((error) => {
+      // Restaure en cas d'erreur
+      elements.forEach(el => {
+        const key = el.getAttribute('id') || el.getAttribute('class');
+        el.style.backgroundColor = originalStyles[key] || '';
+      });
+      console.error('Erreur lors de la conversion PDF :', error);
+    });
 }, [headerInfo.lead]);
 
-// ✅ AJOUTER CETTE FONCTION ICI
+
+// ✅ Fonction de téléchargement PDF de la liste de pièces
 const downloadListePiecesPDF = useCallback(() => {
   const el = document.getElementById('liste-pieces-content');
   if (!el) {
@@ -1372,6 +1441,100 @@ const downloadListePiecesPDF = useCallback(() => {
     .save();
 }, [headerInfo.lead]);
 
+// 🚗 Fonction Carol - Chargement automatique des dommages
+const loadFromCarol = useCallback(async (leadValue) => {
+  if (!leadValue || !leadValue.trim()) return;
+  
+  const lead = leadValue.trim().toUpperCase();
+  
+  console.log('🔍 Recherche Carol pour:', lead);
+  console.log('📊 carolData length:', carolData.length);
+  console.log('📋 carolData[0]:', carolData[0]);
+  
+  const damages = carolData.filter(row => 
+    row.stock_number && row.stock_number.toUpperCase() === lead
+  );
+  
+  console.log('✅ Dommages trouvés:', damages.length);
+  console.log('📋 Premier dommage:', damages[0]);
+  
+  if (damages.length === 0) {
+    console.log('Aucun dommage Carol trouvé pour:', lead);
+    return;
+  }
+  
+  // Demander confirmation
+  const confirmLoad = window.confirm(
+    `🔍 ${damages.length} dommage(s) trouvé(s) dans Carol pour le lead ${lead}.\n\n` +
+    `Voulez-vous charger automatiquement ces dommages ?`
+  );
+  
+  if (!confirmLoad) return;
+  
+  // Parser et mapper les dommages
+  const parsedDamages = damages.map(parseCarolDamage);
+  console.log('🔧 Parsed damages:', parsedDamages);
+  
+  const mappedDamages = parsedDamages.map(mapCarolToHeroTool);
+  console.log('🗺️ Mapped damages:', mappedDamages);
+  
+  
+  // CALCULER LES STATS AVANT (pas après)
+  let successCount = 0;
+  let failedCount = 0;
+  const failedDamages = [];
+  
+  mappedDamages.forEach(mapped => {
+    if (mapped.success && mapped.itemId) {
+      successCount++;
+    } else {
+      failedCount++;
+      failedDamages.push(mapped.note);
+    }
+  });
+  
+  // Appliquer les dommages aux états
+  setItemStates(prev => {
+    const newStates = { ...prev };
+    
+    mappedDamages.forEach(mapped => {
+      if (mapped.success && mapped.itemId) {
+        newStates[mapped.itemId] = 1;
+      }
+    });
+    
+    return newStates;
+  });
+  
+  // Ajouter les notes
+  setItemNotes(prev => {
+    const newNotes = { ...prev };
+    
+    mappedDamages.forEach(mapped => {
+      if (mapped.success && mapped.itemId && mapped.note) {
+        newNotes[mapped.itemId] = (newNotes[mapped.itemId] || '') + '\n' + mapped.note;
+      }
+    });
+    
+    return newNotes;
+  });
+  
+  // Message de résultat
+  let message = `✅ Chargement Carol terminé !\n\n`;
+  message += `✓ ${successCount} dommage(s) mappé(s) avec succès\n`;
+  
+  if (failedCount > 0) {
+    message += `⚠️ ${failedCount} dommage(s) non mappé(s):\n`;
+    failedDamages.slice(0, 3).forEach(note => {
+      message += `  • ${note}\n`;
+    });
+    if (failedCount > 3) {
+      message += `  ... et ${failedCount - 3} autre(s)\n`;
+    }
+  }
+  
+  alert(message);
+}, [carolData]);
   const activeItemsList = ALL_ITEMS.filter(i => itemStates[i.id] === 1 || itemStates[i.id] === 2);
   const activeMecaniqueItems = activeItemsList.filter(i => !DSP_ITEMS.some(d => d.id === i.id));
   const activeDSPItems = activeItemsList.filter(i => DSP_ITEMS.some(d => d.id === i.id));
@@ -1572,6 +1735,8 @@ const downloadListePiecesPDF = useCallback(() => {
   toggleClim={toggleClim}
   toggleFreinParking={toggleFreinParking}
   toggleStartStop={toggleStartStop}
+  loadFromCarol={loadFromCarol}
+  carolLoading={carolLoading}
 />
 
 {/* 💾 Gestionnaire de devis Firebase - SYSTÈME UNIFIÉ */}

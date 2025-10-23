@@ -9,7 +9,9 @@ const VehicleInfoForm = ({
   toggleBoite, 
   toggleClim, 
   toggleFreinParking, 
-  toggleStartStop 
+  toggleStartStop,
+  loadFromCarol,      // NOUVEAU
+  carolLoading        // NOUVEAU
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,6 +52,9 @@ const handleLeadBlur = async () => {
       if (vehicleData.moteur) {
         toggleMoteur(vehicleData.moteur);
       }
+         if (loadFromCarol) {
+      await loadFromCarol(leadValue);
+    }
       
       // Afficher un message de succès
       setSuccess(true);
