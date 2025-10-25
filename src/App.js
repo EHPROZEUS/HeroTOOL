@@ -14,9 +14,12 @@ import ImportModule from './components/Import/ImportModule';
 import OrdreReparation from './components/Reports/OrdreReparation';
 import ListePieces from './components/Reports/ListePieces';
 import QuoteManager from './components/QuoteManager/QuoteManager';
-import { parseCarolDamage, mapCarolToHeroTool } from './utils/carolMapping';
+import { mapCarolToHeroTool, resetCounters } from './utils/carolMapping';
 import CAROLImport from './components/Import/CAROLImport';
 import Papa from 'papaparse';
+import { processCarolDataWithAutoCheck, mapCarolToHeroToolWithAutoCheck } from './carolMappingWithAutoCheck';
+import { useAutoCheck } from './autoCheckHelper';
+
 
 import {
   HUILES_CONFIG,
@@ -138,6 +141,10 @@ function App() {
   const [itemStates, setItemStates] = useState(
     Object.fromEntries(ALL_ITEMS.map(i => [i.id, 0]))
   );
+  
+  // Hook d'auto-cochage (DOIT être après useState itemStates)
+  const autoCheck = useAutoCheck(setItemStates);
+  
   const selectedCarrosserieItems = ALL_ITEMS.filter(
     item => item.moCategory === 'Carrosserie' && itemStates[item.id] > 0
   );
@@ -1472,26 +1479,31 @@ const loadFromCarol = useCallback(async (leadValue) => {
   if (!confirmLoad) return;
   
   // Parser et mapper les dommages
-  const parsedDamages = damages.map(parseCarolDamage);
-  console.log('🔧 Parsed damages:', parsedDamages);
-  
-  const mappedDamages = parsedDamages.map(mapCarolToHeroTool);
-  console.log('🗺️ Mapped damages:', mappedDamages);
-  
+resetCounters();
+const mappedDamages = damages.map(damage => mapCarolToHeroToolWithAutoCheck(damage, setItemStates));
+console.log('🗺️ Mapped damages:', mappedDamages);
   
   // CALCULER LES STATS AVANT (pas après)
-  let successCount = 0;
-  let failedCount = 0;
-  const failedDamages = [];
+let successCount = 0;
+let failedCount = 0;
+let ignoredCount = 0;
+let needsInputCount = 0;  // ← Cette ligne manque !
+const needsInputDamages = [];
+const failedDamages = [];
   
-  mappedDamages.forEach(mapped => {
-    if (mapped.success && mapped.itemId) {
-      successCount++;
-    } else {
-      failedCount++;
-      failedDamages.push(mapped.note);
-    }
-  });
+mappedDamages.forEach(mapped => {
+  if (mapped.action === 'ignore') {
+    ignoredCount++;
+  } else if (mapped.needsUserInput) {
+    needsInputCount++;
+    needsInputDamages.push(mapped);
+  } else if (mapped.success) {  // ← ICI
+    successCount++;
+  } else {
+    failedCount++;
+    failedDamages.push(mapped);
+  }
+});
   
   // Appliquer les dommages aux états
   setItemStates(prev => {

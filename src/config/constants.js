@@ -146,6 +146,32 @@ export const TEXT_ITEMS_4 = [
   { id: 'rempm4', label: 'REMPM4', hasNote: true }
 ];
 
+export const GENERIC_FORFAITS = [
+  // Réparation Carrosserie
+  { id: 'repc1', label: 'REPC1 - Réparation carrosserie 1', moQuantity: 0.5 },
+  { id: 'repc2', label: 'REPC2 - Réparation carrosserie 2', moQuantity: 0.5 },
+  { id: 'repc3', label: 'REPC3 - Réparation carrosserie 3', moQuantity: 0.5 },
+  { id: 'repc4', label: 'REPC4 - Réparation carrosserie 4', moQuantity: 0.5 },
+  
+  // Remplacement Carrosserie
+  { id: 'rempc1', label: 'REMPC1 - Remplacement carrosserie 1', moQuantity: 0.5 },
+  { id: 'rempc2', label: 'REMPC2 - Remplacement carrosserie 2', moQuantity: 0.5 },
+  { id: 'rempc3', label: 'REMPC3 - Remplacement carrosserie 3', moQuantity: 0.5 },
+  { id: 'rempc4', label: 'REMPC4 - Remplacement carrosserie 4', moQuantity: 0.5 },
+  
+  // Réparation Mécanique
+  { id: 'repm1', label: 'REPM1 - Réparation mécanique 1', moQuantity: 0.5 },
+  { id: 'repm2', label: 'REPM2 - Réparation mécanique 2', moQuantity: 0.5 },
+  { id: 'repm3', label: 'REPM3 - Réparation mécanique 3', moQuantity: 0.5 },
+  { id: 'repm4', label: 'REPM4 - Réparation mécanique 4', moQuantity: 0.5 },
+  
+  // Remplacement Mécanique
+  { id: 'rempm1', label: 'REMPM1 - Remplacement mécanique 1', moQuantity: 0.5 },
+  { id: 'rempm2', label: 'REMPM2 - Remplacement mécanique 2', moQuantity: 0.5 },
+  { id: 'rempm3', label: 'REMPM3 - Remplacement mécanique 3', moQuantity: 0.5 },
+  { id: 'rempm4', label: 'REMPM4 - Remplacement mécanique 4', moQuantity: 0.5 },
+];
+
 // ===== FORFAITS DSP =====
 export const DSP_ITEMS = [
   // Ailes
@@ -268,7 +294,8 @@ export const ALL_ITEMS = [
   ...TEXT_ITEMS_4,
   ...DSP_ITEMS,
   ...LUSTRAGE_ITEMS,
-  ...PLUME_ITEMS
+  ...PLUME_ITEMS,
+  ...GENERIC_FORFAITS
 ];
 
 // Items qui ne peuvent pas avoir plusieurs pièces
