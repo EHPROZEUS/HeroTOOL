@@ -85,23 +85,6 @@ const CarrosserieSubMenus = ({
   addPeintureSeuleForfait,
   removePeintureSeuleForfait
 }) => {
-  const downloadListePiecesPDF = useCallback(() => {
-  const el = document.getElementById('liste-pieces-content');
-  if (!el) {
-    alert('⚠️ Liste de pièces non trouvée');
-    return;
-  }
-  
-  html2pdf()
-    .set({
-      margin: 0.25,
-      filename: `Liste_Pieces_${headerInfo.lead || 'vehicule'}.pdf`,
-      html2canvas: { scale: 8},
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-    })
-    .from(el)
-    .save();
- }, [headerInfo.lead]);
   return (
     <div className="section-carrosserie mb-6 flex justify-end">
       <div className="sous-menus space-y-4">
