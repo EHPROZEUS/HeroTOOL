@@ -1,4 +1,5 @@
 import React from 'react';
+import { LUSTRAGE_ITEMS } from '../../config/constants';
 
 /**
  * Formulaire pour Lustrage/Plume 1 élément
@@ -20,9 +21,16 @@ const ForfaitSmartForm = ({
   const moQty = parseFloat(moQuantity) || 0;
   const moTotal = (moQty * 35.8).toFixed(2);
   
+  // Récupérer la configuration de lustrage pour obtenir la valeur par défaut
+  const lustrageConfig = type === 'lustrage' ? LUSTRAGE_ITEMS.find(l => l.id === item.id) : null;
+  
   // Consommables (pour lustrage uniquement)
-  const consommableQuantity = forfait.consommableQuantity || '0';
-  const consommablePrixUnitaire = forfait.consommablePrixUnitaire || '1';
+  const consommableQuantity = forfait.consommableQuantity !== undefined 
+    ? forfait.consommableQuantity 
+    : (lustrageConfig?.consommable || 0);
+  const consommablePrixUnitaire = forfait.consommablePrixUnitaire !== undefined
+    ? forfait.consommablePrixUnitaire
+    : 1.00;
   const consQty = parseFloat(consommableQuantity) || 0;
   const consPU = parseFloat(consommablePrixUnitaire) || 0;
   const consTotal = (consQty * consPU).toFixed(2);
@@ -37,7 +45,7 @@ const ForfaitSmartForm = ({
       <h3 className={`text-xl font-bold mb-4 ${textColor}`}>{item.label}</h3>
 
       {/* Main d'œuvre */}
-      <div className={`mb-6 ${type === 'lustrage' ? 'pb-6 border-b-2 border-purple-200' : ''}`}>
+      <div className={`mb-6 ${type === 'lustrage' ? 'pb-6 border-b-2 border-purple-200' : ''}`}> 
         <div className={`text-lg font-bold mb-3 ${textColor}`}>Main d'œuvre</div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
