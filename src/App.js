@@ -85,29 +85,6 @@ const CarrosserieSubMenus = ({
   addPeintureSeuleForfait,
   removePeintureSeuleForfait
 }) => {
-  return (
-    <>
-      <ReparationPeintureSubMenu
-        toggleSubMenu={toggleSubMenu}
-        subMenuStates={subMenuStates}
-        forfaitData={forfaitData}
-        updateForfaitField={updateForfaitField}
-        addPeintureForfait={addPeintureForfait}
-        removePeintureForfait={removePeintureForfait}
-        countRP1={countRP1}
-      />
-      <PeintureSubMenu
-        toggleSubMenu={toggleSubMenu}
-        subMenuStates={subMenuStates}
-        forfaitData={forfaitData}
-        updateForfaitField={updateForfaitField}
-        addPeintureSeuleForfait={addPeintureSeuleForfait}
-        removePeintureSeuleForfait={removePeintureSeuleForfait}
-        countP1Elem={countP1Elem}
-      />
-    </>
-  );
-};
 
 function App() {
   const [headerInfo, setHeaderInfo] = useState({
