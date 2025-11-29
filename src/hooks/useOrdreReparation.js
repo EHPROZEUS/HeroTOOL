@@ -8,19 +8,26 @@ import { computeVentilation } from '../utils/ventilationCalculator';
 import { safeNum } from '../utils/dataValidator';
 
 export const useOrdreReparation = ({
-  // ...  paramètres existants
+  activeMecaniqueItems = [],
+  activeDSPItems = [],
+  forfaitData = {},
+  pieceLines = {},
+  moByCategory = {},
+  totals = {},
+  includeControleTechnique = false,
+  includeContrevisite = false
 }) => {
   
   // Séparer LUSTRAGE + PLUMES + CARROSSERIE des items de mécanique pure
   const { activeLustrageItems, activePlumeItems, pureActiveMecaniqueItems } = useMemo(() => {
     const lustrage = Array.isArray(activeMecaniqueItems)
-      ? activeMecaniqueItems.filter(item =>
+      ? activeMecaniqueItems. filter(item =>
           LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
         )
       : [];
 
     const plumes = Array.isArray(activeMecaniqueItems)
-      ? activeMecaniqueItems.filter(item => item.id. startsWith('PLU'))
+      ?  activeMecaniqueItems.filter(item => item.id. startsWith('PLU'))
       : [];
 
     // IDs des items REPC et REMPC à exclure de la mécanique
@@ -30,10 +37,10 @@ export const useOrdreReparation = ({
     ];
 
     const pure = Array.isArray(activeMecaniqueItems)
-      ? activeMecaniqueItems.filter(item =>
+      ? activeMecaniqueItems. filter(item =>
           ! LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id) &&
           !item.id.startsWith('PLU') &&
-          !carrosserieIds. includes(item.id)  // ✅ EXCLURE REPC/REMPC
+          !carrosserieIds.includes(item.id)  // ✅ EXCLURE REPC/REMPC
         )
       : [];
 
@@ -74,7 +81,7 @@ export const useOrdreReparation = ({
     if (includeContrevisite) totalHT += 10;
 
     return {
-      ...totals,
+      ... totals,
       totalHT,
       totalHTSansPrestations
     };
