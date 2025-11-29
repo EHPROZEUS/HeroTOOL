@@ -84,7 +84,7 @@ const CarrosserieSubMenus = ({
   countP1Elem,
   addPeintureSeuleForfait,
   removePeintureSeuleForfait
-  );
+  ),
 };
 
 function App() {
