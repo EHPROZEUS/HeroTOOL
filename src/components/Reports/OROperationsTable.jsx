@@ -254,7 +254,7 @@ const OROperationsTable = ({
             </>
           )}
 
-          {/* === SECTION CARROSSERIE (REPC/REMPC) === */}
+{/* === SECTION CARROSSERIE (REPC/REMPC) === */}
 {activeCarrosserieItems && activeCarrosserieItems.length > 0 && (
   <>
     <tr style={{ backgroundColor: '#FDEBD0' }}>
@@ -263,8 +263,8 @@ const OROperationsTable = ({
       </td>
     </tr>
     {activeCarrosserieItems.map(item => {
-      const forfait = forfaitData? .[item.id];
-      if (!forfait) return null;
+      const forfait = forfaitData[item.id];
+      if (! forfait) return null;
 
       return (
         <React.Fragment key={item.id}>
@@ -274,7 +274,6 @@ const OROperationsTable = ({
             </td>
           </tr>
           
-          {/* Main d'oeuvre */}
           {safeNum(forfait.moQuantity) > 0 && (
             <tr>
               <td className="border border-gray-300 p-2">MO</td>
@@ -289,7 +288,6 @@ const OROperationsTable = ({
             </tr>
           )}
 
-          {/* Pièce */}
           {safeNum(forfait.pieceQuantity) > 0 && (
             <tr>
               <td className="border border-gray-300 p-2">Pièce</td>
