@@ -14,6 +14,7 @@ const OROperationsTable = ({
   activeDSPItems = [],
   activeLustrageItems = [],
   activePlumeItems = [],
+  activeCarrosserieItems = [],
   forfaitData = {},
   includeControleTechnique,
   includeContrevisite,
