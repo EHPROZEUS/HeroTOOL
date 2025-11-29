@@ -39,7 +39,8 @@ const [editMode, setEditMode] = useState(false);
   // Utilisation du hook personnalisé pour la logique métier
 const {
   activeLustrageItems,
-  activePlumeItems,  // ✅ AJOUTÉ
+  activePlumeItems,
+  activeCarrosserieItems,
   pureActiveMecaniqueItems,
   ventilation,
   finalTotals
@@ -169,6 +170,7 @@ const {
       activeDSPItems={activeDSPItems}
       activeLustrageItems={activeLustrageItems}
       activePlumeItems={activePlumeItems}
+      activeCarrosserieItems={activeCarrosserieItems}
       forfaitData={forfaitData}
       includeControleTechnique={includeControleTechnique}
       includeContrevisite={includeContrevisite}
