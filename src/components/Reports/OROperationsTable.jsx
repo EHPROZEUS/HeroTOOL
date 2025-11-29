@@ -252,6 +252,65 @@ const OROperationsTable = ({
               })}
             </>
           )}
+
+          {/* === SECTION CARROSSERIE (REPC/REMPC) === */}
+{activeCarrosserieItems && activeCarrosserieItems.length > 0 && (
+  <>
+    <tr style={{ backgroundColor: '#FDEBD0' }}>
+      <td colSpan="7" className="border border-gray-300 p-2 font-bold text-orange-700">
+        CARROSSERIE (REPC/REMPC)
+      </td>
+    </tr>
+    {activeCarrosserieItems.map(item => {
+      const forfait = forfaitData? .[item.id];
+      if (!forfait) return null;
+
+      return (
+        <React.Fragment key={item.id}>
+          <tr className="bg-orange-50">
+            <td colSpan="7" className="p-2 border-none font-semibold">
+              {forfait.moDesignation || item.label}
+            </td>
+          </tr>
+          
+          {/* Main d'oeuvre */}
+          {safeNum(forfait.moQuantity) > 0 && (
+            <tr>
+              <td className="border border-gray-300 p-2">MO</td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2">{forfait.moDesignation || item.label}</td>
+              <td className="border border-gray-300 p-2">Carrosserie</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {safeNum(forfait.moQuantity). toFixed(2)} h
+              </td>
+              <td className="border border-gray-300 p-2 text-right">-</td>
+              <td className="border border-gray-300 p-2 text-right">-</td>
+            </tr>
+          )}
+
+          {/* Pièce */}
+          {safeNum(forfait.pieceQuantity) > 0 && (
+            <tr>
+              <td className="border border-gray-300 p-2">Pièce</td>
+              <td className="border border-gray-300 p-2">{forfait.pieceReference || '-'}</td>
+              <td className="border border-gray-300 p-2">{forfait.pieceDesignation || item.label}</td>
+              <td className="border border-gray-300 p-2">-</td>
+              <td className="border border-gray-300 p-2 text-right">
+                {safeNum(forfait.pieceQuantity).toFixed(2)}
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {formatNum(forfait.piecePrixUnitaire)} €
+              </td>
+              <td className="border border-gray-300 p-2 text-right">
+                {formatNum(forfait.piecePrix)} €
+              </td>
+            </tr>
+          )}
+        </React.Fragment>
+      );
+    })}
+  </>
+)}
           
           {/* === SECTION RÉPARATION + PEINTURE === */}
 {(() => {
