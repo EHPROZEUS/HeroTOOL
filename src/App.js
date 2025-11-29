@@ -101,16 +101,7 @@ const CarrosserieSubMenus = ({
     })
     .from(el)
     .save();
-}, [headerInfo.lead]);
-  return (
-    <div className="section-carrosserie mb-6 flex justify-end">
-      <div className="sous-menus space-y-4">
-        <div className="submenu flex flex-col items-end">
 
-          {subMenuStates['peinture'] && (
-            <div className="submenu-content mt-2 flex flex-col items-end">
-              <PeintureSubMenu
-                forfaitData={forfaitData}
                 addPeintureSeuleForfait={addPeintureSeuleForfait}
                 removePeintureSeuleForfait={removePeintureSeuleForfait}
                 countP1Elem={countP1Elem}
