@@ -85,13 +85,30 @@ const CarrosserieSubMenus = ({
   addPeintureSeuleForfait,
   removePeintureSeuleForfait
 }) => {
-  const downloadListePiecesPDF = useCallback(() => {
-  const el = document.getElementById('liste-pieces-content');
-  if (!el) {
-    alert('⚠️ Liste de pièces non trouvée');
-    return;
-  }
-  
+  return (
+    <>
+      <ReparationPeintureSubMenu
+        toggleSubMenu={toggleSubMenu}
+        subMenuStates={subMenuStates}
+        forfaitData={forfaitData}
+        updateForfaitField={updateForfaitField}
+        addPeintureForfait={addPeintureForfait}
+        removePeintureForfait={removePeintureForfait}
+        countRP1={countRP1}
+      />
+      <PeintureSubMenu
+        toggleSubMenu={toggleSubMenu}
+        subMenuStates={subMenuStates}
+        forfaitData={forfaitData}
+        updateForfaitField={updateForfaitField}
+        addPeintureSeuleForfait={addPeintureSeuleForfait}
+        removePeintureSeuleForfait={removePeintureSeuleForfait}
+        countP1Elem={countP1Elem}
+      />
+    </>
+  );
+};
+
 function App() {
   const [headerInfo, setHeaderInfo] = useState({
     lead: '',
