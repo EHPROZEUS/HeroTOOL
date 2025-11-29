@@ -2237,5 +2237,6 @@ mappedDamages.forEach(mapped => {
     </div>
   );
 }
+}
 
 export default App;
