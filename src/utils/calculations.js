@@ -149,8 +149,8 @@ export const calculateTotals = (
     if (activeIds.has(key)) return;
     if (data.lustrage1Elem === true) {
       totalMOHeures += parseNumber(data.moQuantity || 0) || 0;
-      const consQty = parseNumber(data.consommableQuantity || 0);
-      const consPU = parseNumber(data.consommablePrixUnitaire || 0);
+      const consQty = parseNumber(data.consommableQuantity || 1);
+      const consPU = parseNumber(data.consommablePrixUnitaire || 1);
       totalConsommables += consQty * consPU;
       activeIds.add(key);
     }
