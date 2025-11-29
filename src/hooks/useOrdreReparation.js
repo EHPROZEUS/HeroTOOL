@@ -18,8 +18,14 @@ export const useOrdreReparation = ({
   includeContrevisite = false
 }) => {
   
+  // IDs des items REPC et REMPC (Carrosserie)
+  const carrosserieIds = [
+    ... TEXT_ITEMS_1.map(i => i.id),  // repc1, repc2, repc3, repc4
+    ...TEXT_ITEMS_2.map(i => i.id)   // rempc1, rempc2, rempc3, rempc4
+  ];
+
   // Séparer LUSTRAGE + PLUMES + CARROSSERIE des items de mécanique pure
-  const { activeLustrageItems, activePlumeItems, pureActiveMecaniqueItems } = useMemo(() => {
+  const { activeLustrageItems, activePlumeItems, activeCarrosserieItems, pureActiveMecaniqueItems } = useMemo(() => {
     const lustrage = Array.isArray(activeMecaniqueItems)
       ? activeMecaniqueItems. filter(item =>
           LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id)
@@ -30,26 +36,26 @@ export const useOrdreReparation = ({
       ?  activeMecaniqueItems.filter(item => item.id. startsWith('PLU'))
       : [];
 
-    // IDs des items REPC et REMPC à exclure de la mécanique
-    const carrosserieIds = [
-      ... TEXT_ITEMS_1.map(i => i.id),  // repc1, repc2, repc3, repc4
-      ...TEXT_ITEMS_2.map(i => i.id)   // rempc1, rempc2, rempc3, rempc4
-    ];
+    // ✅ NOUVEAU : Items Carrosserie (REPC/REMPC)
+    const carrosserie = Array.isArray(activeMecaniqueItems)
+      ? activeMecaniqueItems. filter(item => carrosserieIds.includes(item.id))
+      : [];
 
     const pure = Array.isArray(activeMecaniqueItems)
-      ? activeMecaniqueItems. filter(item =>
+      ?  activeMecaniqueItems.filter(item =>
           ! LUSTRAGE_ITEMS.some(lustrageItem => lustrageItem.id === item.id) &&
           !item.id.startsWith('PLU') &&
-          !carrosserieIds.includes(item.id)  // ✅ EXCLURE REPC/REMPC
+          !carrosserieIds.includes(item.id)
         )
       : [];
 
     return { 
       activeLustrageItems: lustrage,
       activePlumeItems: plumes,
+      activeCarrosserieItems: carrosserie,  // ✅ NOUVEAU
       pureActiveMecaniqueItems: pure 
     };
-  }, [activeMecaniqueItems]);
+  }, [activeMecaniqueItems, carrosserieIds]);
 
   // Calcul de la ventilation comptable
   const ventilation = useMemo(() => {
@@ -90,6 +96,7 @@ export const useOrdreReparation = ({
   return {
     activeLustrageItems,
     activePlumeItems,
+    activeCarrosserieItems,  // ✅ NOUVEAU
     pureActiveMecaniqueItems,
     ventilation,
     finalTotals
