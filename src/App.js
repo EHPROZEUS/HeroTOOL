@@ -92,28 +92,6 @@ const CarrosserieSubMenus = ({
     return;
   }
   
-  html2pdf()
-    .set({
-      margin: 0.25,
-      filename: `Liste_Pieces_${headerInfo.lead || 'vehicule'}.pdf`,
-      html2canvas: { scale: 8},
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-    })
-    .from(el)
-    .save();
-
-                addPeintureSeuleForfait={addPeintureSeuleForfait}
-                removePeintureSeuleForfait={removePeintureSeuleForfait}
-                countP1Elem={countP1Elem}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 function App() {
   const [headerInfo, setHeaderInfo] = useState({
     lead: '',
